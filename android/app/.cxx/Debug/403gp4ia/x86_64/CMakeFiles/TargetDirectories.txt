@@ -1,0 +1,2 @@
+/Users/rushabhpatel/Documents/GitHub/poolmate/android/app/.cxx/Debug/403gp4ia/x86_64/CMakeFiles/edit_cache.dir
+/Users/rushabhpatel/Documents/GitHub/poolmate/android/app/.cxx/Debug/403gp4ia/x86_64/CMakeFiles/rebuild_cache.dir
