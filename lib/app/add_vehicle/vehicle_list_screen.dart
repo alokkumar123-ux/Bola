@@ -170,7 +170,6 @@ class VehicleListScreen extends StatelessWidget {
                           splashColor: Colors.transparent,
                           highlightColor: Colors.transparent,
                           onTap: () async {
-                            log("CLICK::2");
                             await Get.to(const AddVehicleScreen())?.then(
                               (value) async {
                                 if (value != null) {

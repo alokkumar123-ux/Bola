@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
 import 'package:poolmate/app/chat/model/chat_model.dart';
@@ -12,6 +13,7 @@ import 'package:poolmate/model/booking_model.dart';
 import 'package:poolmate/model/map/city_list_model.dart';
 import 'package:poolmate/model/review_model.dart';
 import 'package:poolmate/model/user_model.dart';
+import 'package:poolmate/model/wallet_transaction_model.dart';
 import 'package:poolmate/utils/fire_store_utils.dart';
 
 class PublishedDetailsController extends GetxController {
@@ -283,6 +285,11 @@ class PublishedDetailsController extends GetxController {
           userModel = value!;
         });
 
+        // Process refund if passenger paid for the ride
+        if (bookingUserModel.paymentStatus == true) {
+          await _processRefundToPassenger(bookingUserModel, userModel!);
+        }
+
         await FireStoreUtils.setCancelledUserBooking(
             bookingModel.value, bookingUserModel);
         await FireStoreUtils.removeUserBooking(
@@ -292,12 +299,12 @@ class PublishedDetailsController extends GetxController {
         String rideDetails = _formatRideDetailsForNotification();
 
         // Create full message for chat
-        // String chatMessage = "🚫 Ride Cancelled\n\n"
-        //     "Your booked ride has been cancelled by the publisher.\n\n"
-        //     "$rideDetails\n\n"
-        //     "We apologize for any inconvenience caused. You can book another ride or contact support if needed.";
-        String chatMessage =
-            "The driver has cancelled his trip. Please check apps.";
+        String chatMessage = "🚫 Ride Cancelled\n\n"
+            "Your booked ride has been cancelled by the publisher.\n\n"
+            "$rideDetails\n\n"
+            "We apologize for any inconvenience caused. You can book another ride or contact support if needed.";
+        // String chatMessage =
+        //     "The driver has cancelled his trip. Please check apps.";
         // Send message to chat room
         try {
           await _sendChatMessage(userModel!, chatMessage);
@@ -310,7 +317,8 @@ class PublishedDetailsController extends GetxController {
         try {
           await SendNotification.sendChatNotification(
               token: userModel!.fcmToken ?? "",
-              title: "Ride Cancelled - ${publisherUserModel.value.fullName()}",
+              title:
+                  "🚫Ride Cancelled - ${publisherUserModel.value.fullName()}",
               body: "The driver has cancelled his trip. Please check apps.",
               payload: {
                 "type": "ride_cancelled",
@@ -352,6 +360,91 @@ class PublishedDetailsController extends GetxController {
       ShowToastDialog.closeLoader();
       ShowToastDialog.showToast("Error cancelling ride: ${e.toString()}".tr);
       print("❌ Error in cancelRide: $e");
+    }
+  }
+
+  /// Process refund to passenger when driver cancels the ride
+  Future<void> _processRefundToPassenger(
+      BookedUserModel bookingUserModel, UserModel passengerUser) async {
+    try {
+      if (bookingUserModel.paymentType!.toLowerCase() != "cash") {
+        // 1. Deduct amount from publisher's wallet
+        WalletTransactionModel publisherDeduction = WalletTransactionModel(
+            id: Constant.getUuid(),
+            amount: calculateAmount(bookingUserModel).toString(),
+            createdDate: Timestamp.now(),
+            paymentType: "Wallet",
+            transactionId: bookingModel.value.id,
+            isCredit: false,
+            type: "publisher",
+            userId: bookingModel.value.createdBy.toString(),
+            note:
+                "Amount refunded to ${passengerUser.fullName()} for cancelled ride");
+
+        await FireStoreUtils.setWalletTransaction(publisherDeduction)
+            .then((value) async {
+          if (value == true) {
+            await FireStoreUtils.updateOtherUserWallet(
+                amount: "-${calculateAmount(bookingUserModel).toString()}",
+                id: bookingModel.value.createdBy.toString());
+          }
+        });
+
+        // 2. Reverse admin commission back to publisher
+        if (bookingUserModel.adminCommission != null &&
+            bookingUserModel.adminCommission!.enable == true) {
+          double adminCommissionAmount = Constant.calculateOrderAdminCommission(
+              amount: bookingUserModel.subTotal.toString(),
+              adminCommission: bookingUserModel.adminCommission);
+
+          WalletTransactionModel adminCommissionReversal = WalletTransactionModel(
+              id: Constant.getUuid(),
+              amount: adminCommissionAmount.toString(),
+              createdDate: Timestamp.now(),
+              paymentType: "Wallet",
+              isCredit: true,
+              transactionId: bookingModel.value.id,
+              type: "publisher",
+              userId: bookingModel.value.createdBy.toString(),
+              note:
+                  "Admin commission reversed for ${passengerUser.fullName()} cancellation");
+
+          await FireStoreUtils.setWalletTransaction(adminCommissionReversal)
+              .then((value) async {
+            if (value == true) {
+              await FireStoreUtils.updateOtherUserWallet(
+                  amount: adminCommissionAmount.toString(),
+                  id: bookingModel.value.createdBy.toString());
+            }
+          });
+        }
+      }
+
+      // 3. Refund to passenger's wallet (regardless of payment type)
+      WalletTransactionModel passengerRefund = WalletTransactionModel(
+          id: Constant.getUuid(),
+          amount: calculateAmount(bookingUserModel).toString(),
+          createdDate: Timestamp.now(),
+          paymentType: "Wallet",
+          transactionId: bookingModel.value.id,
+          isCredit: true,
+          type: "customer",
+          userId: passengerUser.id.toString(),
+          note:
+              "Refund for ride cancelled by ${publisherUserModel.value.fullName()}");
+
+      await FireStoreUtils.setWalletTransaction(passengerRefund)
+          .then((value) async {
+        if (value == true) {
+          await FireStoreUtils.updateOtherUserWallet(
+              amount: calculateAmount(bookingUserModel).toString(),
+              id: passengerUser.id.toString());
+        }
+      });
+
+      print("✅ Refund processed for ${passengerUser.fullName()}");
+    } catch (e) {
+      print("❌ Error processing refund for ${passengerUser.fullName()}: $e");
     }
   }
 
@@ -621,6 +714,12 @@ class PublishedDetailsController extends GetxController {
   Future<bool> checkSameCity(
       double lat1, double lon1, double lat2, double lon2) async {
     bool isSame = false;
+
+    // On web, skip geocoding and assume different cities for safety
+    if (kIsWeb) {
+      return false;
+    }
+
     try {
       // Get the placemarks for the first location
       List<Placemark> placemarks1 = await placemarkFromCoordinates(lat1, lon1);

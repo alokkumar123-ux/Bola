@@ -169,6 +169,68 @@ class FireStoreUtils {
     return isUpdate;
   }
 
+  // New function to update specific verification status
+  static Future<bool> updateUserVerificationStatus({
+    required String userId,
+    required String documentType,
+    required bool isVerified,
+  }) async {
+    bool isUpdate = false;
+
+    try {
+      // First get the current user data
+      UserModel? currentUser = await getUserProfile(userId);
+      if (currentUser == null) return false;
+
+      // Determine which verification field to update based on document type
+      bool isAadhaarDoc = documentType.toLowerCase().contains('aadhaar') ||
+          documentType.toLowerCase().contains('aadhar');
+      bool isRCDoc = documentType.toLowerCase().contains('rc') ||
+          documentType.toLowerCase().contains('registration certificate') ||
+          documentType.toLowerCase().contains('registration') ||
+          documentType.toLowerCase().contains('vehicle');
+
+      Map<String, dynamic> updateData = {};
+
+      if (isAadhaarDoc) {
+        // Update passenger verification for Aadhaar
+        currentUser.aadharVerified = isVerified;
+        updateData['aadharVerified'] = isVerified;
+        log("Updating aadharVerified to $isVerified for document: $documentType");
+      } 
+      // else if (isRCDoc) {
+      //   // Update driver verification for RC
+      //   currentUser.verifiedAsDriver = isVerified;
+      //   updateData['verifiedAsDriver'] = isVerified;
+      //   log("Updating verifiedAsDriver to $isVerified for document: $documentType");
+      // }
+
+      // Update overall verification status (keep existing logic for backward compatibility)
+      bool overallVerified = (currentUser.aadharVerified == true) &&
+          (currentUser.panVerified == true);
+      currentUser.isVerify = overallVerified;
+      updateData['isVerify'] = overallVerified;
+
+      // Update the user document in Firebase
+      await fireStore
+          .collection(CollectionName.users)
+          .doc(userId)
+          .update(updateData)
+          .then((_) {
+        isUpdate = true;
+        log("Successfully updated verification status for user $userId");
+      }).catchError((error) {
+        log("Failed to update verification status: $error");
+        isUpdate = false;
+      });
+    } catch (error) {
+      log("Error in updateUserVerificationStatus: $error");
+      isUpdate = false;
+    }
+
+    return isUpdate;
+  }
+
   static Future<UserModel?> getUserProfile(String uuid) async {
     print(uuid);
     UserModel? userModel;
@@ -373,6 +435,190 @@ class FireStoreUtils {
       }
     });
     return isAdded;
+  }
+
+  // Method to safely deduct money from user's wallet with balance validation
+  static Future<Map<String, dynamic>> deductFromUserWallet({
+    required String amount,
+    required String userId,
+    required String description,
+  }) async {
+    try {
+      double deductAmount = double.parse(amount);
+
+      // Get current user data
+      UserModel? userModel = await getUserProfile(userId);
+      if (userModel == null) {
+        return {
+          'success': false,
+          'message': 'User not found',
+          'code': 'USER_NOT_FOUND'
+        };
+      }
+
+      // Check current wallet balance
+      double currentBalance = double.parse(userModel.walletAmount ?? '0');
+
+      if (currentBalance < deductAmount) {
+        return {
+          'success': false,
+          'message':
+              'Insufficient wallet balance. Available: ${currentBalance.toStringAsFixed(2)}',
+          'code': 'INSUFFICIENT_BALANCE',
+          'availableBalance': currentBalance
+        };
+      }
+
+      // Calculate new balance
+      double newBalance = currentBalance - deductAmount;
+      userModel.walletAmount = newBalance.toString();
+
+      // Update user wallet
+      bool isUpdated = await updateUser(userModel);
+
+      if (isUpdated) {
+        // Create debit transaction record
+        WalletTransactionModel transactionModel = WalletTransactionModel(
+            id: Constant.getUuid(),
+            amount: amount,
+            createdDate: Timestamp.now(),
+            paymentType: 'Wallet',
+            transactionId: DateTime.now().millisecondsSinceEpoch.toString(),
+            userId: userId,
+            isCredit: false, // Debit transaction
+            note: description,
+            type: 'customer');
+
+        await setWalletTransaction(transactionModel);
+
+        return {
+          'success': true,
+          'message': 'Payment processed successfully',
+          'code': 'PAYMENT_SUCCESS',
+          'newBalance': newBalance,
+          'transactionId': transactionModel.transactionId
+        };
+      } else {
+        return {
+          'success': false,
+          'message': 'Failed to update wallet balance',
+          'code': 'UPDATE_FAILED'
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Payment processing error: $e',
+        'code': 'PROCESSING_ERROR'
+      };
+    }
+  }
+
+  // Method to add money to driver's wallet after commission calculation
+  static Future<Map<String, dynamic>> addToDriverWallet({
+    required String amount,
+    required String driverId,
+    required String bookingId,
+    required String description,
+  }) async {
+    try {
+      double addAmount = double.parse(amount);
+
+      // Get current driver data
+      UserModel? driverModel = await getUserProfile(driverId);
+      if (driverModel == null) {
+        return {
+          'success': false,
+          'message': 'Driver not found',
+          'code': 'DRIVER_NOT_FOUND'
+        };
+      }
+
+      // Calculate new balance
+      double currentBalance = double.parse(driverModel.walletAmount ?? '0');
+      double newBalance = currentBalance + addAmount;
+      driverModel.walletAmount = newBalance.toString();
+
+      // Update driver wallet
+      bool isUpdated = await updateUser(driverModel);
+
+      if (isUpdated) {
+        // Create credit transaction record for driver
+        WalletTransactionModel transactionModel = WalletTransactionModel(
+            id: Constant.getUuid(),
+            amount: amount,
+            createdDate: Timestamp.now(),
+            paymentType: 'Ride Payment',
+            transactionId: DateTime.now().millisecondsSinceEpoch.toString(),
+            userId: driverId,
+            isCredit: true, // Credit transaction
+            note: description,
+            type: 'customer');
+
+        await setWalletTransaction(transactionModel);
+
+        return {
+          'success': true,
+          'message': 'Payment transferred to driver successfully',
+          'code': 'TRANSFER_SUCCESS',
+          'newBalance': newBalance,
+          'transactionId': transactionModel.transactionId
+        };
+      } else {
+        return {
+          'success': false,
+          'message': 'Failed to update driver wallet balance',
+          'code': 'UPDATE_FAILED'
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Driver payment transfer error: $e',
+        'code': 'TRANSFER_ERROR'
+      };
+    }
+  }
+
+  // Method to record admin commission earnings
+  static Future<Map<String, dynamic>> recordAdminCommission({
+    required String amount,
+    required String bookingId,
+    required String description,
+    required String passengerId,
+    required String driverId,
+  }) async {
+    try {
+      // Create admin earnings record
+      Map<String, dynamic> adminEarningsData = {
+        'id': Constant.getUuid(),
+        'amount': amount,
+        'bookingId': bookingId,
+        'description': description,
+        'passengerId': passengerId,
+        'driverId': driverId,
+        'createdAt': Timestamp.now(),
+        'type': 'commission',
+        'status': 'earned',
+      };
+
+      await fireStore
+          .collection('admin_earnings')
+          .doc(adminEarningsData['id'])
+          .set(adminEarningsData);
+
+      return {
+        'success': true,
+        'message': 'Admin commission recorded successfully',
+        'code': 'COMMISSION_RECORDED'
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Failed to record admin commission: $e',
+        'code': 'COMMISSION_ERROR'
+      };
+    }
   }
 
   static Future<bool?> updateOtherUserWallet(
@@ -873,6 +1119,87 @@ class FireStoreUtils {
     });
 
     return isAdded;
+  }
+
+  // Function to handle document approval and update verification status
+  static Future<bool> approveUserDocument({
+    required String userId,
+    required String documentId,
+    required String documentTitle,
+  }) async {
+    bool isSuccess = false;
+
+    try {
+      // Get the user verification data for the specific user
+      UserVerificationModel? userVerification;
+      await fireStore
+          .collection(CollectionName.userVerification)
+          .doc(userId)
+          .get()
+          .then((value) {
+        if (value.exists) {
+          userVerification = UserVerificationModel.fromJson(value.data()!);
+        }
+      });
+
+      if (userVerification != null && userVerification!.documents != null) {
+        List<Documents> documents = userVerification!.documents!;
+
+        // Find and update the specific document
+        var docIndex =
+            documents.indexWhere((doc) => doc.documentId == documentId);
+
+        if (docIndex >= 0) {
+          documents[docIndex].verified = true;
+          documents[docIndex].status = "approved";
+
+          // Create updated verification model
+          UserVerificationModel updatedVerification = UserVerificationModel(
+            documents: documents,
+            id: userVerification!.id,
+          );
+
+          // Update the user verification document
+          await fireStore
+              .collection(CollectionName.userVerification)
+              .doc(userId)
+              .set(updatedVerification.toJson());
+
+          // Update user verification status based on document type
+          await updateUserVerificationStatus(
+            userId: userId,
+            documentType: documentTitle,
+            isVerified: true,
+          );
+
+          isSuccess = true;
+          log("Document approved and verification status updated for user $userId");
+        }
+      }
+    } catch (error) {
+      log("Error in approveUserDocument: $error");
+      isSuccess = false;
+    }
+
+    return isSuccess;
+  }
+
+  // Function to handle KYC verification (Aadhaar via webview)
+  static Future<bool> updateKYCVerificationStatus(String userId) async {
+    try {
+      // Update user verification status for Aadhaar (passenger verification)
+      await updateUserVerificationStatus(
+        userId: userId,
+        documentType: "aadhaar", // This will trigger passenger verification
+        isVerified: true,
+      );
+
+      log("KYC verification status updated for user $userId");
+      return true;
+    } catch (error) {
+      log("Error updating KYC verification status: $error");
+      return false;
+    }
   }
 
   static Future<bool?> setWalletTransaction(

@@ -53,7 +53,7 @@ class _CashfreeScreenState extends State<CashfreeScreen> {
   // ✅ Payment Success Callback
   void verifyPayment(String orderId) {
     log("✅ Payment successful for Order ID: $orderId");
-    if (!hasNavigated) {
+    if (!hasNavigated && mounted) {
       setState(() {
         hasNavigated = true;
         isProcessing = false;
@@ -67,6 +67,8 @@ class _CashfreeScreenState extends State<CashfreeScreen> {
           Get.back(result: true);
         }
       });
+    } else if (!mounted) {
+      log("⚠️ Payment success callback received but widget is already disposed");
     }
   }
 
@@ -75,7 +77,7 @@ class _CashfreeScreenState extends State<CashfreeScreen> {
     log("❌ Payment error for Order ID: $orderId");
     log("Error: ${errorResponse.getMessage()}");
 
-    if (!hasNavigated) {
+    if (!hasNavigated && mounted) {
       setState(() {
         hasNavigated = true;
         isProcessing = false;
@@ -90,6 +92,8 @@ class _CashfreeScreenState extends State<CashfreeScreen> {
           Get.back(result: false);
         }
       });
+    } else if (!mounted) {
+      log("⚠️ Payment error callback received but widget is already disposed");
     }
   }
 
@@ -171,69 +175,85 @@ class _CashfreeScreenState extends State<CashfreeScreen> {
   }
 
   @override
+  void dispose() {
+    log("🧹 Disposing CashfreeScreen - cleaning up callbacks");
+    // Note: The Cashfree SDK doesn't provide a way to remove callbacks
+    // but we've added mounted checks in the callbacks to prevent setState errors
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Cashfree Payment'),
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: handleBackPress,
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          handleBackPress();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Cashfree Payment'),
+          leading: IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: handleBackPress,
+          ),
         ),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (isProcessing) ...[
-              const CircularProgressIndicator(),
-              const SizedBox(height: 24),
-              const Text(
-                'Initializing Cashfree Payment...',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'Please wait while we prepare your payment',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-              const SizedBox(height: 24),
-              Card(
-                margin: const EdgeInsets.symmetric(horizontal: 32),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Payment Details:',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      Text('Order ID: ${widget.orderId}'),
-                      Text(
-                          'Environment: ${widget.isSandbox ? "Sandbox" : "Production"}'),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'The Cashfree payment window will open shortly...',
-                        style: TextStyle(fontSize: 12, color: Colors.blue),
-                      ),
-                    ],
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (isProcessing) ...[
+                const CircularProgressIndicator(),
+                const SizedBox(height: 24),
+                const Text(
+                  'Initializing Cashfree Payment...',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Please wait while we prepare your payment',
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+                const SizedBox(height: 24),
+                Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Payment Details:',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        Text('Order ID: ${widget.orderId}'),
+                        Text(
+                            'Environment: ${widget.isSandbox ? "Sandbox" : "Production"}'),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'The Cashfree payment window will open shortly...',
+                          style: TextStyle(fontSize: 12, color: Colors.blue),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ] else ...[
-              const Icon(
-                Icons.check_circle_outline,
-                size: 64,
-                color: Colors.green,
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Payment Processed',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-              ),
+              ] else ...[
+                const Icon(
+                  Icons.check_circle_outline,
+                  size: 64,
+                  color: Colors.green,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Payment Processed',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

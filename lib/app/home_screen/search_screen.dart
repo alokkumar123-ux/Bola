@@ -225,16 +225,25 @@ class _SearchScreenState extends State<SearchScreen> {
                                                                   .textTheme
                                                                   .bodyLarge,
                                                           children: [
-                                                            WidgetSpan(
-                                                                child: Constant.getCityName(
-                                                                    themeChange,
-                                                                    Location(
-                                                                        lat: stopOverModel
-                                                                            .startLocation!
-                                                                            .lat,
-                                                                        lng: stopOverModel
-                                                                            .startLocation!
-                                                                            .lng))),
+                                                            // Use address strings instead of geocoding
+                                                            TextSpan(
+                                                              text: stopOverModel
+                                                                      .startAddress
+                                                                      ?.split(
+                                                                          ',')
+                                                                      .first ??
+                                                                  'Location',
+                                                              style: TextStyle(
+                                                                  color: themeChange.getThem()
+                                                                      ? AppThemeData
+                                                                          .grey100
+                                                                      : AppThemeData
+                                                                          .grey800,
+                                                                  fontFamily:
+                                                                      AppThemeData
+                                                                          .bold,
+                                                                  fontSize: 14),
+                                                            ),
                                                             WidgetSpan(
                                                               child: Padding(
                                                                 padding: const EdgeInsets
@@ -246,24 +255,35 @@ class _SearchScreenState extends State<SearchScreen> {
                                                                         "assets/icons/ic_right_arrow.svg"),
                                                               ),
                                                             ),
-                                                            WidgetSpan(
-                                                                child: Constant.getCityName(
-                                                                    themeChange,
-                                                                    Location(
-                                                                        lat: stopOverModel
-                                                                            .endLocation!
-                                                                            .lat,
-                                                                        lng: stopOverModel
-                                                                            .endLocation!
-                                                                            .lng)))
+                                                            TextSpan(
+                                                              text: stopOverModel
+                                                                      .endAddress
+                                                                      ?.split(
+                                                                          ',')
+                                                                      .first ??
+                                                                  'Location',
+                                                              style: TextStyle(
+                                                                  color: themeChange.getThem()
+                                                                      ? AppThemeData
+                                                                          .grey100
+                                                                      : AppThemeData
+                                                                          .grey800,
+                                                                  fontFamily:
+                                                                      AppThemeData
+                                                                          .bold,
+                                                                  fontSize: 14),
+                                                            ),
                                                           ],
                                                         ),
                                                       ),
                                                     ),
                                                     Text(
                                                       Constant.amountShow(
-                                                          amount: stopOverModel
-                                                              .price),
+                                                          amount: controller
+                                                              .getCorrectPrice(
+                                                                  bookingModel,
+                                                                  stopOverModel)
+                                                              .toString()),
                                                       maxLines: 1,
                                                       style: TextStyle(
                                                         color: themeChange
@@ -336,18 +356,33 @@ class _SearchScreenState extends State<SearchScreen> {
                                                       color:
                                                           AppThemeData.grey700,
                                                     ),
-                                                    SvgPicture.asset(
-                                                      "assets/icons/ic_car.svg",
-                                                      colorFilter:
-                                                          ColorFilter.mode(
-                                                              themeChange
-                                                                      .getThem()
-                                                                  ? AppThemeData
-                                                                      .grey300
-                                                                  : AppThemeData
-                                                                      .grey600,
-                                                              BlendMode.srcIn),
-                                                    ),
+                                                    // Show icon based on vehicle type
+                                                    _isMotorcycleType(bookingModel
+                                                            .vehicleInformation
+                                                            ?.vehicleType
+                                                            ?.name)
+                                                        ? Icon(
+                                                            Icons.motorcycle,
+                                                            color: themeChange
+                                                                    .getThem()
+                                                                ? AppThemeData
+                                                                    .grey300
+                                                                : AppThemeData
+                                                                    .grey600,
+                                                            size: 20,
+                                                          )
+                                                        : SvgPicture.asset(
+                                                            "assets/icons/ic_car.svg",
+                                                            colorFilter: ColorFilter.mode(
+                                                                themeChange
+                                                                        .getThem()
+                                                                    ? AppThemeData
+                                                                        .grey300
+                                                                    : AppThemeData
+                                                                        .grey600,
+                                                                BlendMode
+                                                                    .srcIn),
+                                                          ),
                                                     const Icon(
                                                       Icons
                                                           .chevron_right_outlined,
@@ -383,7 +418,16 @@ class _SearchScreenState extends State<SearchScreen> {
                                                 ),
                                                 const SizedBox(height: 16),
                                                 Text(
-                                                    '${_calculateAvailableSeats(bookingModel)} seats are available'),
+                                                  '${_calculateAvailableSeats(bookingModel, stopOverModel)} seats available',
+                                                  style: TextStyle(
+                                                    color: themeChange.getThem()
+                                                        ? AppThemeData.grey200
+                                                        : AppThemeData.grey700,
+                                                    fontSize: 14,
+                                                    fontFamily:
+                                                        AppThemeData.medium,
+                                                  ),
+                                                ),
                                                 const Padding(
                                                   padding: EdgeInsets.symmetric(
                                                       vertical: 10),
@@ -1220,11 +1264,24 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
+  // Check if vehicle type is motorcycle/bike/twowheeler
+  bool _isMotorcycleType(String? vehicleTypeName) {
+    if (vehicleTypeName == null) return false;
+    final lowerName = vehicleTypeName.toLowerCase();
+    return lowerName == 'bike' ||
+        lowerName == 'motorcycle' ||
+        lowerName == 'twowheeler' ||
+        lowerName == 'two wheeler' ||
+        lowerName.contains('two wheeler');
+  }
+
   // Get appropriate icon for vehicle type
   IconData _getVehicleTypeIcon(String vehicleType) {
     switch (vehicleType.toLowerCase()) {
       case 'bike':
       case 'motorcycle':
+      case 'twowheeler':
+      case 'two wheeler':
         return Icons.motorcycle;
       case 'suv':
         return Icons.directions_car;
@@ -1266,27 +1323,6 @@ class _SearchScreenState extends State<SearchScreen> {
         _selectedVehicleType!.id;
   }
 
-  // Calculate available seats for a booking
-  int _calculateAvailableSeats(BookingModel booking) {
-    // Get the seats that the publisher is offering
-    final selectedSeats = booking.selectedSeats ?? [];
-
-    // Get the seats that are already booked
-    final bookedSeatsString = booking.bookedSeat ?? "";
-    final bookedSeats = bookedSeatsString.isEmpty
-        ? <String>[]
-        : bookedSeatsString
-            .split(',')
-            .where((s) => s.trim().isNotEmpty)
-            .toList();
-
-    // Calculate available seats = offered seats - booked seats
-    final availableSeats = selectedSeats.length - bookedSeats.length + 1;
-
-    // Ensure we don't return negative numbers
-    return availableSeats < 0 ? 0 : availableSeats;
-  }
-
   // Check user verification and show appropriate dialog
   Future<void> _checkUserVerificationAndShowDialog(
     BuildContext context,
@@ -1302,10 +1338,12 @@ class _SearchScreenState extends State<SearchScreen> {
         return; // User not found, do nothing
       }
 
-      // BLOCK ALL UNVERIFIED USERS FROM BOOKING ANY RIDE
-      if (currentUser.isVerify != true) {
-        _showVerificationRequiredDialog(context);
-        return;
+      // Only check verification if the ride specifically requires verified passengers
+      if (bookingModel.onlyVerifiedPassenger == true) {
+        if (currentUser.aadharVerified != true) {
+          _showVerificationRequiredDialog(context);
+          return;
+        }
       }
 
       // Check women only requirement (only for verified users)
@@ -1318,7 +1356,7 @@ class _SearchScreenState extends State<SearchScreen> {
       }
 
       // User is verified and can access the ride - show ride dialog
-      showDialog(
+      final result = await showDialog(
         context: context,
         barrierDismissible: true,
         builder: (BuildContext context) {
@@ -1328,6 +1366,17 @@ class _SearchScreenState extends State<SearchScreen> {
           );
         },
       );
+
+      // If booking was successful, reload the search results
+      if (result == true) {
+        final controller = Get.find<HomeController>();
+        await controller.searchRide();
+
+        // Force a rebuild of the UI to show updated results
+        if (mounted) {
+          setState(() {});
+        }
+      }
     } catch (e) {
       print('Error checking user verification: $e');
     }
@@ -1365,13 +1414,6 @@ class _SearchScreenState extends State<SearchScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'You need to verify your account to book any ride on our platform.',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black87,
-                ),
-              ),
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(12),
@@ -1393,7 +1435,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     const SizedBox(width: 8),
                     const Expanded(
                       child: Text(
-                        'Please verify yourself by uploading your documents to start booking rides.',
+                        'The driver has accepted booking only from  verified users, please verify yourself in profile section and book. Thanks',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.black87,
@@ -1545,5 +1587,40 @@ class _SearchScreenState extends State<SearchScreen> {
         );
       },
     );
+  }
+
+  // Calculate available seats for a booking and stopover
+  int _calculateAvailableSeats(
+      BookingModel bookingModel, StopOverModel stopOverModel) {
+    // Get total seats from vehicle information
+    final totalSeats =
+        int.tryParse(bookingModel.vehicleInformation?.seatCount ?? '0') ?? 0;
+
+    // Get selected seats that are available for booking
+    final allowedSeats = bookingModel.selectedSeats ?? [];
+
+    // Get already booked seats
+    final bookedSeats = (bookingModel.bookedSeat ?? "0")
+        .split(',')
+        .where((s) => s.isNotEmpty)
+        .map((s) => int.tryParse(s) ?? -1)
+        .toList();
+
+    // Get temporarily selected seats by other users
+    final tempSelectedSeats = bookingModel.tempSeatSelection ?? [];
+
+    // Count available seats
+    int availableCount = 0;
+    for (int i = 1; i < totalSeats; i++) {
+      // Skip driver seat (index 0)
+      // Check if seat is in allowed seats and not booked and not temp selected
+      if (allowedSeats.contains(i.toString()) &&
+          !bookedSeats.contains(i) &&
+          !tempSelectedSeats.contains(i)) {
+        availableCount++;
+      }
+    }
+
+    return availableCount;
   }
 }

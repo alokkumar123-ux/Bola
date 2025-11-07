@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:poolmate/app/verification_screen/aadhaar_webview_screen.dart';
+import 'package:poolmate/app/verification_screen/pan_webview_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:poolmate/constant/constant.dart';
@@ -32,7 +33,23 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
           .doc(userId)
           .get();
 
-      return doc.data()?['kyc'] == true;
+      return doc.data()?['aadharVerified'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> _checkPanKycStatus() async {
+    try {
+      final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+      if (userId.isEmpty) return false;
+
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      return doc.data()?['panVerified'] == true;
     } catch (e) {
       return false;
     }
@@ -54,13 +71,29 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
     }
   }
 
+  Future<String> _getPanNumber() async {
+    try {
+      final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+      if (userId.isEmpty) return '';
+
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      return doc.data()?['panNumber'] ?? '';
+    } catch (e) {
+      return '';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final themeChange = Provider.of<DarkThemeProvider>(context);
     return GetX<DetailsUploadController>(
         init: DetailsUploadController(),
         builder: (controller) {
-          // Check if this is Aadhaar document for Cashfree integration
+          // Check if this is Aadhaar document
           bool isAadhaarDocument = controller.documentModel.value.title
                       ?.toLowerCase()
                       .contains('aadhaar') ==
@@ -69,6 +102,12 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
                       ?.toLowerCase()
                       .contains('aadhar') ==
                   true;
+
+          // Check if this is PAN document
+          bool isPanDocument = controller.documentModel.value.title
+                  ?.toLowerCase()
+                  .contains('pan') ==
+              true;
 
           return Scaffold(
             appBar: AppBar(
@@ -113,8 +152,18 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
                 ? Center(child: Constant.loader())
                 : GetBuilder<DetailsUploadController>(
                     builder: (controller) {
+                      // Determine which KYC check to perform
+                      Future<bool> kycCheckFuture;
+                      if (isAadhaarDocument) {
+                        kycCheckFuture = _checkKycStatus();
+                      } else if (isPanDocument) {
+                        kycCheckFuture = _checkPanKycStatus();
+                      } else {
+                        kycCheckFuture = Future.value(false);
+                      }
+
                       return FutureBuilder<bool>(
-                        future: _checkKycStatus(),
+                        future: kycCheckFuture,
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
@@ -125,6 +174,9 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
 
                           if (isAadhaarDocument && !isKycVerified) {
                             return _buildAadhaarEntryPoint(
+                                context, controller, themeChange);
+                          } else if (isPanDocument && !isKycVerified) {
+                            return _buildPanEntryPoint(
                                 context, controller, themeChange);
                           } else {
                             return _buildRegularDocumentUI(
@@ -211,6 +263,79 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
     );
   }
 
+  // PAN entry via WebView and Firestore listener
+  Widget _buildPanEntryPoint(BuildContext context,
+      DetailsUploadController controller, DarkThemeProvider themeChange) {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'PAN Verification',
+            style: TextStyle(
+                color: themeChange.getThem()
+                    ? AppThemeData.grey100
+                    : AppThemeData.grey800,
+                fontFamily: AppThemeData.bold,
+                fontSize: 18),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Complete PAN KYC using in-app verification.',
+            style: TextStyle(
+                color: themeChange.getThem()
+                    ? AppThemeData.grey400
+                    : AppThemeData.grey600,
+                fontFamily: AppThemeData.regular,
+                fontSize: 14),
+          ),
+          const SizedBox(height: 24),
+          RoundedButtonFill(
+            title: 'Verify PAN',
+            color: AppThemeData.primary300,
+            textColor: AppThemeData.grey50,
+            onPress: () async {
+              final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+
+              // Get user's name from Firebase
+              String userName = '';
+              try {
+                final userDoc = await FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(userId)
+                    .get();
+
+                if (userDoc.exists) {
+                  final userData = userDoc.data();
+                  final firstName = userData?['firstName'] ?? '';
+                  final lastName = userData?['lastName'] ?? '';
+                  userName = '$firstName $lastName'.trim();
+                }
+              } catch (e) {
+                print('Error fetching user name: $e');
+              }
+
+              final result = await Get.to(() => PanWebViewScreen(
+                    userId: userId,
+                    name: userName,
+                  ));
+
+              // Force refresh the KYC status after WebView closes
+              controller.update(); // This triggers Obx to rebuild
+
+              // Optional: Show success message if verification completed
+              if (result == true) {
+                Get.snackbar(
+                    'Success', 'PAN verification completed successfully!');
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   // Regular document upload UI (original)
   Widget _buildRegularDocumentUI(BuildContext context,
       DetailsUploadController controller, DarkThemeProvider themeChange) {
@@ -222,6 +347,11 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
         controller.documentModel.value.title
                 ?.toLowerCase()
                 .contains('aadhar') ==
+            true;
+
+    // Check if this is PAN document
+    bool isPanDocument =
+        controller.documentModel.value.title?.toLowerCase().contains('pan') ==
             true;
 
     return SingleChildScrollView(
@@ -251,11 +381,33 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
                       );
                     },
                   )
-                : TextFieldWidget(
-                    hintText:
-                        '${controller.documentModel.value.title.toString()} Number',
-                    controller: controller.documentNumberController.value,
-                  ),
+                : isPanDocument
+                    ? FutureBuilder<String>(
+                        future: _getPanNumber(),
+                        builder: (context, snapshot) {
+                          String panNumber = snapshot.data ?? '';
+
+                          // Pre-fill the controller with PAN number if available
+                          if (panNumber.isNotEmpty &&
+                              controller.documentNumberController.value.text
+                                  .isEmpty) {
+                            controller.documentNumberController.value.text =
+                                panNumber;
+                          }
+
+                          return TextFieldWidget(
+                            hintText: 'PAN Number',
+                            controller:
+                                controller.documentNumberController.value,
+                            enable: panNumber.isEmpty, // Disable if PAN exists
+                          );
+                        },
+                      )
+                    : TextFieldWidget(
+                        hintText:
+                            '${controller.documentModel.value.title.toString()} Number',
+                        controller: controller.documentNumberController.value,
+                      ),
           ),
           // Show verification status for Aadhaar
           if (isAadhaarDocument)
@@ -276,6 +428,38 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
                         const SizedBox(width: 5),
                         Text(
                           "Aadhaar Verified via KYC",
+                          style: TextStyle(
+                            color: AppThemeData.success400,
+                            fontSize: 12,
+                            fontFamily: AppThemeData.medium,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                return const SizedBox();
+              },
+            ),
+          // Show verification status for PAN
+          if (isPanDocument)
+            FutureBuilder<String>(
+              future: _getPanNumber(),
+              builder: (context, snapshot) {
+                String panNumber = snapshot.data ?? '';
+                if (panNumber.isNotEmpty) {
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 20, right: 20, top: 5),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.verified,
+                          color: AppThemeData.success400,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          "PAN Verified via KYC",
                           style: TextStyle(
                             color: AppThemeData.success400,
                             fontSize: 12,

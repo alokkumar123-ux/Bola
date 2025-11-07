@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -143,8 +144,15 @@ class OtpScreen extends StatelessWidget {
                                             controller.verificationId.value,
                                         smsCode: controller
                                             .otpController.value.text);
-                                String fcmToken =
-                                    await NotificationService.getToken();
+                                String fcmToken = '';
+                                try {
+                                  fcmToken =
+                                      await NotificationService.getToken();
+                                } catch (e) {
+                                  debugPrint(
+                                      "Failed to get FCM token during phone verification: $e");
+                                  // Continue with verification even if FCM token fails
+                                }
                                 await FirebaseAuth.instance
                                     .signInWithCredential(credential)
                                     .then((value) async {
@@ -175,6 +183,22 @@ class OtpScreen extends StatelessWidget {
                                                 value.user!.uid);
                                         if (userModel != null) {
                                           if (userModel.isActive == true) {
+                                            // Update FCM token for existing user on phone login with error handling
+                                            try {
+                                              String fcmToken =
+                                                  await NotificationService
+                                                      .getToken();
+                                              userModel.fcmToken = fcmToken;
+                                              await FireStoreUtils.updateUser(
+                                                  userModel);
+                                              debugPrint(
+                                                  "FCM token updated for existing phone user: $fcmToken");
+                                            } catch (e) {
+                                              debugPrint(
+                                                  "Failed to update FCM token for existing phone user: $e");
+                                              // Continue with login even if FCM token update fails
+                                            }
+
                                             Get.offAll(const DashBoardScreen());
                                           } else {
                                             await FirebaseAuth.instance

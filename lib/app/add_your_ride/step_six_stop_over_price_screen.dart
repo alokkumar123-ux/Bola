@@ -124,9 +124,9 @@ class StepSixStopOverPriceScreen extends StatelessWidget {
                                   children: [
                                     InkWell(
                                       onTap: () {
-                                        if (double.parse(legs.price.toString()) >= Constant.getMinusPercentageAmount(legs.recommendedPrice.toString())) {
+                                        // if (double.parse(legs.price.toString()) >= Constant.getMinusPercentageAmount(legs.recommendedPrice.toString())) {
                                           controller.changeStopOverPrice(index, false);
-                                        }
+                                        // }
                                       },
                                       child: Container(
                                         decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppThemeData.primary300)),
@@ -149,9 +149,9 @@ class StepSixStopOverPriceScreen extends StatelessWidget {
                                     ),
                                     InkWell(
                                       onTap: () {
-                                        if (double.parse(legs.price.toString()) <= Constant.getPlusPercentageAmount(legs.recommendedPrice.toString())) {
+                                        // if (double.parse(legs.price.toString()) <= Constant.getPlusPercentageAmount(legs.recommendedPrice.toString())) {
                                           controller.changeStopOverPrice(index, true);
-                                        }
+                                        // }
                                       },
                                       child: Container(
                                         decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppThemeData.primary300)),

@@ -9,7 +9,6 @@ import 'package:poolmate/app/wallet_screen/wallet_screen.dart';
 import 'package:poolmate/constant/collection_name.dart';
 import 'package:poolmate/model/user_model.dart';
 import 'package:poolmate/utils/fire_store_utils.dart';
-import 'package:poolmate/utils/notification_service.dart';
 
 class DashboardScreenController extends GetxController {
   RxInt selectedIndex = 0.obs;
@@ -32,8 +31,13 @@ class DashboardScreenController extends GetxController {
   Rx<UserModel> senderUserModel = UserModel().obs;
 
   getData() async {
-    String token = await NotificationService.getToken();
-    FireStoreUtils.fireStore.collection(CollectionName.users).doc(FireStoreUtils.getCurrentUid()).snapshots().listen(
+    // Don't update FCM token on dashboard load - only during login/signup
+    
+    FireStoreUtils.fireStore
+        .collection(CollectionName.users)
+        .doc(FireStoreUtils.getCurrentUid())
+        .snapshots()
+        .listen(
       (event) async {
         if (event.exists) {
           senderUserModel.value = UserModel.fromJson(event.data()!);
@@ -41,12 +45,9 @@ class DashboardScreenController extends GetxController {
             await FirebaseAuth.instance.signOut();
             Get.offAll(const GetStartedScreen());
           }
-          senderUserModel.value.fcmToken = token;
-          await FireStoreUtils.updateUser(senderUserModel.value);
         }
       },
     );
-
 
     FireStoreUtils.fireStore
         .collection(CollectionName.chat)

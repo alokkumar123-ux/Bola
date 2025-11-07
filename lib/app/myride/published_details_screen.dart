@@ -80,24 +80,28 @@ class PublishedDetailsScreen extends StatelessWidget {
                   height: 4.0,
                 ),
               ),
-              // actions: [
-              //   controller.bookingModel.value.status != Constant.placed
-              //       ? const SizedBox()
-              //       : Transform.scale(
-              //           scale: 0.8,
-              //           child: CupertinoSwitch(
-              //             value: controller.bookingModel.value.publish ?? false,
-              //             onChanged: (value) {
-              //               if (controller.bookingModel.value.publish == true) {
-              //                 controller.bookingModel.value.publish = false;
-              //               } else {
-              //                 controller.bookingModel.value.publish = true;
-              //               }
-              //               controller.publishRide();
-              //             },
-              //           ),
-              //         ),
-              // ],
+              actions: [
+                controller.bookingModel.value.status != Constant.placed
+                    ? const SizedBox()
+                    : controller.bookingUserList.isEmpty
+                        ? Transform.scale(
+                            scale: 0.8,
+                            child: CupertinoSwitch(
+                              value: controller.bookingModel.value.publish ??
+                                  false,
+                              onChanged: (value) {
+                                if (controller.bookingModel.value.publish ==
+                                    true) {
+                                  controller.bookingModel.value.publish = false;
+                                } else {
+                                  controller.bookingModel.value.publish = true;
+                                }
+                                controller.publishRide();
+                              },
+                            ),
+                          )
+                        : const SizedBox(),
+              ],
             ),
             body: SingleChildScrollView(
               child: Column(
@@ -529,7 +533,7 @@ class PublishedDetailsScreen extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              "${controller.bookingModel.value.bookedSeat}",
+                              "${_formatSeatLabelsCsv(controller.bookingModel.value.bookedSeat)}",
                               maxLines: 1,
                               style: TextStyle(
                                 color: themeChange.getThem()
@@ -1166,14 +1170,16 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                     height: 10,
                                                   ),
                                                   SingleChildScrollView(
-                                                    physics: const BouncingScrollPhysics(),
+                                                    physics:
+                                                        const BouncingScrollPhysics(),
                                                     scrollDirection:
                                                         Axis.horizontal,
                                                     child: Row(
                                                       mainAxisAlignment:
                                                           MainAxisAlignment.end,
                                                       crossAxisAlignment:
-                                                          CrossAxisAlignment.end,
+                                                          CrossAxisAlignment
+                                                              .end,
                                                       children: [
                                                         RoundedButtonFill(
                                                           title: bookingUserModel
@@ -1186,8 +1192,16 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                                   true
                                                               ? AppThemeData
                                                                   .success400
-                                                              : const Color(
-                                                                  0xFF2DCF01),
+                                                              : (controller
+                                                                          .bookingModel
+                                                                          .value
+                                                                          .status ==
+                                                                      Constant
+                                                                          .onGoing)
+                                                                  ? const Color(
+                                                                      0xFF2DCF01)
+                                                                  : AppThemeData
+                                                                      .grey400,
                                                           width: 26,
                                                           height: 4,
                                                           fontSizes: 12,
@@ -1196,30 +1210,47 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                                   true
                                                               ? AppThemeData
                                                                   .grey50
-                                                              : AppThemeData
-                                                                  .grey900,
+                                                              : (controller
+                                                                          .bookingModel
+                                                                          .value
+                                                                          .status ==
+                                                                      Constant
+                                                                          .onGoing)
+                                                                  ? AppThemeData
+                                                                      .grey900
+                                                                  : AppThemeData
+                                                                      .grey600,
                                                           onPress: bookingUserModel
                                                                       .verified ==
                                                                   true
                                                               ? null
-                                                              : () {
-                                                                  Get.to(
-                                                                    const OtpVerificationScreen(),
-                                                                    arguments: {
-                                                                      "bookingModel":
-                                                                          controller
+                                                              : (controller
+                                                                          .bookingModel
+                                                                          .value
+                                                                          .status !=
+                                                                      Constant
+                                                                          .onGoing)
+                                                                  ? () {
+                                                                      ShowToastDialog.showToast(
+                                                                          "Please click Start button first to begin the ride"
+                                                                              .tr);
+                                                                    }
+                                                                  : () {
+                                                                      Get.to(
+                                                                        const OtpVerificationScreen(),
+                                                                        arguments: {
+                                                                          "bookingModel": controller
                                                                               .bookingModel
                                                                               .value,
-                                                                      "bookingUserModel":
-                                                                          bookingUserModel,
-                                                                      "onVerificationSuccess":
-                                                                          () {
-                                                                        controller
-                                                                            .getUserData();
-                                                                      },
+                                                                          "bookingUserModel":
+                                                                              bookingUserModel,
+                                                                          "onVerificationSuccess":
+                                                                              () {
+                                                                            controller.getUserData();
+                                                                          },
+                                                                        },
+                                                                      );
                                                                     },
-                                                                  );
-                                                                },
                                                         ),
                                                         const SizedBox(
                                                           width: 10,
@@ -1232,7 +1263,8 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                           height: 4,
                                                           fontSizes: 12,
                                                           textColor:
-                                                              AppThemeData.grey50,
+                                                              AppThemeData
+                                                                  .grey50,
                                                           onPress: () {
                                                             Get.to(
                                                                 const ReportHelpScreen(),
@@ -1262,7 +1294,8 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                           height: 4,
                                                           fontSizes: 12,
                                                           textColor:
-                                                              AppThemeData.grey50,
+                                                              AppThemeData
+                                                                  .grey50,
                                                           onPress: () {
                                                             Get.to(
                                                                 const PassengerDetailsScreen(),
@@ -1305,38 +1338,38 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                                         .done:
                                                                     if (snapshot
                                                                         .hasError) {
-                                                                      return Text(
-                                                                          snapshot
-                                                                              .error
-                                                                              .toString());
+                                                                      return Text(snapshot
+                                                                          .error
+                                                                          .toString());
                                                                     } else if (snapshot
                                                                             .data ==
                                                                         null) {
                                                                       return RoundedButtonFill(
-                                                                        title:
-                                                                            "Add Review"
-                                                                                .tr,
+                                                                        title: "Add Review"
+                                                                            .tr,
                                                                         color: AppThemeData
                                                                             .primary300,
-                                                                        width: 26,
-                                                                        height: 4,
+                                                                        width:
+                                                                            26,
+                                                                        height:
+                                                                            4,
                                                                         fontSizes:
                                                                             12,
                                                                         textColor:
-                                                                            AppThemeData
-                                                                                .grey50,
+                                                                            AppThemeData.grey50,
                                                                         onPress:
                                                                             () {
-                                                                          Get.to(() => const ReviewScreen(),
-                                                                                  arguments: {
-                                                                                "bookingModel": controller.bookingModel.value,
-                                                                                "senderUserModel": controller.publisherUserModel.value,
-                                                                                "reciverUserModel": userModel
-                                                                              })!
+                                                                          Get.to(() => const ReviewScreen(), arguments: {
+                                                                            "bookingModel":
+                                                                                controller.bookingModel.value,
+                                                                            "senderUserModel":
+                                                                                controller.publisherUserModel.value,
+                                                                            "reciverUserModel":
+                                                                                userModel
+                                                                          })!
                                                                               .then(
                                                                             (value) {
-                                                                              if (value ==
-                                                                                  true) {
+                                                                              if (value == true) {
                                                                                 controller.getUserData();
                                                                                 controller.getReview();
                                                                               }
@@ -1352,31 +1385,31 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                                       return RoundedButtonFill(
                                                                         title: reviewModel?.id ==
                                                                                 null
-                                                                            ? "Add Review"
-                                                                                .tr
-                                                                            : "Edit Review"
-                                                                                .tr,
+                                                                            ? "Add Review".tr
+                                                                            : "Edit Review".tr,
                                                                         color: AppThemeData
                                                                             .primary300,
-                                                                        width: 26,
-                                                                        height: 4,
+                                                                        width:
+                                                                            26,
+                                                                        height:
+                                                                            4,
                                                                         fontSizes:
                                                                             12,
                                                                         textColor:
-                                                                            AppThemeData
-                                                                                .grey50,
+                                                                            AppThemeData.grey50,
                                                                         onPress:
                                                                             () {
-                                                                          Get.to(() => const ReviewScreen(),
-                                                                                  arguments: {
-                                                                                "bookingModel": controller.bookingModel.value,
-                                                                                "senderUserModel": controller.publisherUserModel.value,
-                                                                                "reciverUserModel": userModel
-                                                                              })!
+                                                                          Get.to(() => const ReviewScreen(), arguments: {
+                                                                            "bookingModel":
+                                                                                controller.bookingModel.value,
+                                                                            "senderUserModel":
+                                                                                controller.publisherUserModel.value,
+                                                                            "reciverUserModel":
+                                                                                userModel
+                                                                          })!
                                                                               .then(
                                                                             (value) {
-                                                                              if (value ==
-                                                                                  true) {
+                                                                              if (value == true) {
                                                                                 controller.getUserData();
                                                                                 controller.getReview();
                                                                               }
@@ -1588,4 +1621,23 @@ class PublishedDetailsScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+// Convert stored seat indices CSV (e.g., "1,2") to labels CSV (e.g., "A1,A2")
+String _formatSeatLabelsCsv(String? csv) {
+  if (csv == null || csv.trim().isEmpty) return '';
+  final parts =
+      csv.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+  return parts.map((p) {
+    final idx = int.tryParse(p) ?? -1;
+    return _seatIndexToLabel(idx);
+  }).join(',');
+}
+
+String _seatIndexToLabel(int index) {
+  const labels = ['A1', 'A2', 'B1', 'B2', 'B3', 'C1', 'C2', 'C3'];
+  if (index >= 0 && index < labels.length) {
+    return labels[index];
+  }
+  return 'S$index';
 }

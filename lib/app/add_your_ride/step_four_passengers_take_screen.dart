@@ -109,7 +109,7 @@ class StepFourPassengerTakeScreen extends StatelessWidget {
                                     ),
                                   ),
                                   Text(
-                                    "License: ${controller.selectedUserVehicle.value.licensePlatNumber ?? ''}",
+                                    "RC Number: ${controller.selectedUserVehicle.value.licensePlatNumber ?? ''}",
                                     style: TextStyle(
                                       color: themeChange.getThem()
                                           ? AppThemeData.grey300

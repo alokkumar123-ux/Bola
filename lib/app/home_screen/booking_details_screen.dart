@@ -316,19 +316,14 @@ class BookingDetailsScreen extends StatelessWidget {
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                                  Constant.getCityName(
-                                                      themeChange,
-                                                      Location(
-                                                          lat: controller
+                                                  Text(
+                                                      controller
                                                               .stopOverModel
                                                               .value
-                                                              .startLocation!
-                                                              .lat,
-                                                          lng: controller
-                                                              .stopOverModel
-                                                              .value
-                                                              .startLocation!
-                                                              .lng),
+                                                              .startAddress
+                                                              ?.split(',')
+                                                              .first ??
+                                                          'Location',
                                                       style: TextStyle(
                                                           color: themeChange
                                                                   .getThem()
@@ -398,19 +393,12 @@ class BookingDetailsScreen extends StatelessWidget {
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                                  Constant.getCityName(
-                                                      themeChange,
-                                                      Location(
-                                                          lat: controller
-                                                              .stopOverModel
-                                                              .value
-                                                              .endLocation!
-                                                              .lat,
-                                                          lng: controller
-                                                              .stopOverModel
-                                                              .value
-                                                              .endLocation!
-                                                              .lng),
+                                                  Text(
+                                                      controller.stopOverModel
+                                                              .value.endAddress
+                                                              ?.split(',')
+                                                              .first ??
+                                                          'Location',
                                                       style: TextStyle(
                                                           color: themeChange
                                                                   .getThem()
@@ -570,7 +558,8 @@ class BookingDetailsScreen extends StatelessWidget {
                                     Text(
                                       Constant.amountShow(
                                           amount: controller
-                                              .stopOverModel.value.price),
+                                              .getCorrectPricePerSeat()
+                                              .toString()),
                                       maxLines: 1,
                                       style: TextStyle(
                                         color: themeChange.getThem()
@@ -1072,7 +1061,12 @@ class BookingDetailsScreen extends StatelessWidget {
                               Get.to(const SelectPaymentMethodScreen(),
                                       arguments: {
                                     "type": "bookingSelect",
-                                    "amount": ""
+                                    "amount": "",
+                                    "driverPaymentMethod": controller
+                                            .bookingModel
+                                            .value
+                                            .driverPaymentMethod ??
+                                        "",
                                   })!
                                   .then(
                                 (value) {

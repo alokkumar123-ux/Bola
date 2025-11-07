@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -51,7 +48,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDAtoIM96FSOvfImSFAjnrYGxG3_2_ClrQ',
-    appId: '1:588834041432:android:9e5477f6ee40c45cd4642d',
+    appId: '1:588834041432:android:b290b55ce8e6513fd4642d',
     messagingSenderId: '588834041432',
     projectId: 'bola-web-6448f',
     storageBucket: 'bola-web-6448f.firebasestorage.app',
@@ -59,13 +56,23 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyCvxHLWjJhncrEC2jOqadRxmXloWTxlPlA',
-    appId: '1:588834041432:ios:a30679108fc3d112d4642d',
+    appId: '1:588834041432:ios:fd5571b7ae1c8a63d4642d',
     messagingSenderId: '588834041432',
     projectId: 'bola-web-6448f',
     storageBucket: 'bola-web-6448f.firebasestorage.app',
     androidClientId: '588834041432-19psdrobihfqas319bkfpnuk5sau8r3k.apps.googleusercontent.com',
-    iosClientId: '588834041432-b10ed930s27hmp8edkuqvog82aav1j5n.apps.googleusercontent.com',
-    iosBundleId: 'com.poolmate',
+    iosClientId: '588834041432-6kdar449v6ru4llv2kfhc1ccsp2s9prb.apps.googleusercontent.com',
+    iosBundleId: 'com.alok.poolmate',
+  );
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyBOF0WZp3ZTBQc1DxE448eIqGPt42pWL8Y',
+    appId: '1:588834041432:web:510ef17ebc132c8ed4642d',
+    messagingSenderId: '588834041432',
+    projectId: 'bola-web-6448f',
+    authDomain: 'bola-web-6448f.firebaseapp.com',
+    storageBucket: 'bola-web-6448f.firebasestorage.app',
+    measurementId: 'G-QHE2Q8466W',
   );
 
 }

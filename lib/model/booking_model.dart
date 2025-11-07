@@ -15,6 +15,7 @@ class BookingModel {
   List<SeatBooking>? seatBookings; // New field for managing seat bookings
   String? totalSeat;
   String? bookedSeat;
+  List<int>? tempSeatSelection;
   String? distance;
   String? estimatedTime;
   String? pricePerSeat;
@@ -38,6 +39,8 @@ class BookingModel {
   bool? onlyVerifiedPassenger;
   bool? publish;
   String? additionalRequirements;
+  String?
+      driverPaymentMethod; // New field for driver's preferred payment method
 
   BookingModel({
     this.id,
@@ -45,6 +48,7 @@ class BookingModel {
     this.createdBy,
     this.totalSeat,
     this.bookedSeat,
+    this.tempSeatSelection,
     this.distance,
     this.estimatedTime,
     this.pricePerSeat,
@@ -68,6 +72,7 @@ class BookingModel {
     this.travelPreference,
     this.publish,
     this.additionalRequirements,
+    this.driverPaymentMethod,
   });
 
   BookingModel.fromJson(Map<String, dynamic> json) {
@@ -83,6 +88,9 @@ class BookingModel {
     createdBy = json['createdBy'];
     totalSeat = json['totalSeat'];
     bookedSeat = json['bookedSeat'] ?? "0";
+    tempSeatSelection = json['tempSeatSelection'] != null
+        ? List<int>.from(json['tempSeatSelection'])
+        : [];
     pricePerSeat = json['pricePerSeat'];
     luggageAllowed = json['luggageAllowed'];
     distance = json['distance'];
@@ -121,6 +129,7 @@ class BookingModel {
     onlyVerifiedPassenger = json['onlyVerifiedPassenger'];
     publish = json['publish'];
     additionalRequirements = json['additionalRequirements'];
+    driverPaymentMethod = json['driverPaymentMethod'];
     travelPreference = json['travelPreference'] != null
         ? TravelPreferenceModel.fromJson(json['travelPreference'])
         : null;
@@ -137,6 +146,7 @@ class BookingModel {
     data['createdBy'] = createdBy;
     data['totalSeat'] = totalSeat;
     data['bookedSeat'] = bookedSeat;
+    data['tempSeatSelection'] = tempSeatSelection ?? [];
     data['pricePerSeat'] = pricePerSeat;
     data['luggageAllowed'] = luggageAllowed;
     data['distance'] = distance;
@@ -170,6 +180,7 @@ class BookingModel {
     data['onlyVerifiedPassenger'] = onlyVerifiedPassenger;
     data['publish'] = publish;
     data['additionalRequirements'] = additionalRequirements;
+    data['driverPaymentMethod'] = driverPaymentMethod;
     if (travelPreference != null) {
       data['travelPreference'] = travelPreference!.toJson();
     }

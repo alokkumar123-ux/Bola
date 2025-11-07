@@ -63,8 +63,8 @@ class SeatIcon extends StatelessWidget {
         children: [
           // Seat image as background
           seatImage,
-          // Seat number overlay
-          if (seatNumber != null && status != SeatStatus.driver)
+          // Seat number overlay (including driver seat)
+          if (seatNumber != null)
             Positioned.fill(
               child: Center(
                 child: Container(
@@ -96,14 +96,22 @@ class SeatIcon extends StatelessWidget {
     );
   }
 
-  // Helper method to format seat number as A1, A2, A3, etc.
+  // Helper method to format seat number to row-letter scheme
   String _formatSeatNumber(int seatIndex) {
-    // Driver seat (index 0) should not show number, but just in case
-    if (seatIndex == 0) return 'D';
-
-    // Convert passenger seats to A1, A2, A3, A4... format
-    // Index 1 becomes A1, Index 2 becomes A2, etc.
-    return 'A$seatIndex';
+    const List<String> labels = [
+      'A1',
+      'A2',
+      'B1',
+      'B2',
+      'B3',
+      'C1',
+      'C2',
+      'C3'
+    ];
+    if (seatIndex >= 0 && seatIndex < labels.length) {
+      return labels[seatIndex];
+    }
+    return 'S$seatIndex';
   }
 
   // Helper method to get seat number background color based on status
@@ -118,7 +126,7 @@ class SeatIcon extends StatelessWidget {
       case SeatStatus.reservedForLadies:
         return Colors.pink.shade100;
       case SeatStatus.driver:
-        return Colors.blue.shade600;
+        return Colors.black;
     }
   }
 
@@ -134,7 +142,7 @@ class SeatIcon extends StatelessWidget {
       case SeatStatus.reservedForLadies:
         return Colors.pink.shade300;
       case SeatStatus.driver:
-        return Colors.blue.shade800;
+        return Colors.black;
     }
   }
 

@@ -466,8 +466,9 @@ class PassengerDetailsScreen extends StatelessWidget {
                                   ),
                                   Text(
                                     Constant.amountShow(
-                                        amount: controller.bookingUserModel
-                                            .value.stopOver!.price),
+                                        amount: controller
+                                            .getCorrectPricePerSeat()
+                                            .toString()),
                                     maxLines: 1,
                                     style: TextStyle(
                                       color: themeChange.getThem()

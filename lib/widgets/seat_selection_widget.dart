@@ -244,18 +244,53 @@ class _SeatSelectionWidgetState extends State<SeatSelectionWidget> {
       );
     }
 
-    if (passengerSeats <= 4) {
-      // For 4 or fewer passenger seats, use the original layout
+    // Only three supported configurations: 2-seater, 5-seater and 7-seater
+    if (passengerSeats == 1) {
+      // 2-seater vehicle (driver + 1 passenger)
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Column(
+            children: [
+              if (widget.isDriverSeatVisible)
+                Column(
+                  children: [
+                    const Icon(Icons.drive_eta_outlined,
+                        size: 32, color: Colors.black54),
+                    const SizedBox(height: 4),
+                    _buildSeat(0),
+                  ],
+                ),
+              Padding(
+                padding: const EdgeInsets.only(top: 5.0, right: 15, left: 15),
+                child: SizedBox(
+                  width: 100,
+                  child: Divider(
+                    color: Colors.black54,
+                    height: 12,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 5),
+              Padding(
+                padding: const EdgeInsets.only(top: 0.0),
+                child: _buildSeat(1),
+              ),
+            ],
+          )
+        ],
+      );
+    } else if (passengerSeats == 4) {
+      // 5-seater vehicle (driver + 4 passengers)
       return Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (passengerSeats >= 1)
-                Padding(
-                  padding: const EdgeInsets.only(top: 36.0),
-                  child: _buildSeat(1),
-                ),
+              Padding(
+                padding: const EdgeInsets.only(top: 36.0),
+                child: _buildSeat(1),
+              ),
               const SizedBox(width: 15),
               if (widget.isDriverSeatVisible)
                 Column(
@@ -268,79 +303,71 @@ class _SeatSelectionWidgetState extends State<SeatSelectionWidget> {
                 ),
             ],
           ),
-          if (passengerSeats > 1) ...[
-            const SizedBox(height: 4),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(
-                  passengerSeats - 1, (index) => _buildSeat(index + 2)),
-            ),
-          ],
-        ],
-      );
-    } else {
-      // For more than 4 seats, use structured rows with driver row having 2 seats
-      return Column(
-        children: [
-          // Driver row with 2 seats (driver + 1 passenger)
+          const SizedBox(height: 4),
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (passengerSeats >= 1)
-                Padding(
-                  padding: const EdgeInsets.only(top: 36.0),
-                  child: _buildSeat(1),
-                ),
-              const SizedBox(width: 15),
-              if (widget.isDriverSeatVisible)
-                Column(
-                  children: [
-                    const Icon(Icons.drive_eta_outlined,
-                        size: 32, color: Colors.black54),
-                    const SizedBox(height: 4),
-                    _buildSeat(0),
-                  ],
-                ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          // Remaining passenger seats in rows of max 3
-          ..._buildSeatRows(passengerSeats -
-              1), // -1 because we already placed 1 passenger in driver row
-        ],
-      );
-    }
-  }
-
-  // Helper method to build seat rows with max 3 seats per row
-  List<Widget> _buildSeatRows(int totalSeats) {
-    List<Widget> rows = [];
-    int seatsPerRow = 3;
-
-    for (int i = 0; i < totalSeats; i += seatsPerRow) {
-      int seatsInThisRow =
-          (i + seatsPerRow <= totalSeats) ? seatsPerRow : totalSeats - i;
-
-      List<Widget> rowSeats = [];
-      for (int j = 0; j < seatsInThisRow; j++) {
-        rowSeats.add(_buildSeat(i +
-            j +
-            2)); // +2 to skip driver seat (0) and first passenger seat (1)
-      }
-
-      rows.add(
-        Padding(
-          padding: const EdgeInsets.only(bottom: 4.0),
-          child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: rowSeats,
+            children: [
+              _buildSeat(2),
+              _buildSeat(3),
+              _buildSeat(4),
+            ],
           ),
-        ),
+        ],
+      );
+    } else if (passengerSeats == 6) {
+      // 7-seater vehicle (driver + 6 passengers)
+      return Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 36.0),
+                child: _buildSeat(1),
+              ),
+              const SizedBox(width: 15),
+              if (widget.isDriverSeatVisible)
+                Column(
+                  children: [
+                    const Icon(Icons.drive_eta_outlined,
+                        size: 32, color: Colors.black54),
+                    const SizedBox(height: 4),
+                    _buildSeat(0),
+                  ],
+                ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildSeat(2),
+              _buildSeat(3),
+              _buildSeat(4),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildSeat(5),
+              _buildSeat(6),
+            ],
+          ),
+        ],
       );
     }
 
-    return rows;
+    // Unsupported seat configuration
+    return const SizedBox(
+      height: 100,
+      child: Center(
+        child: Text('Unsupported seat configuration'),
+      ),
+    );
   }
+
+  // No generic rows builder needed with fixed 2/5/7 seater layouts
 
   // Builds a single seat widget with tap detection
   Widget _buildSeat(int index) {
@@ -359,7 +386,7 @@ class _SeatSelectionWidgetState extends State<SeatSelectionWidget> {
 
     // Driver seat should not be selectable
     if (currentStatus == SeatStatus.driver) {
-      return _SeatIcon(status: currentStatus);
+      return _SeatIcon(status: currentStatus, seatNumber: index);
     }
 
     return GestureDetector(
@@ -378,6 +405,7 @@ class _SeatSelectionWidgetState extends State<SeatSelectionWidget> {
       },
       child: _SeatIcon(
         status: isSelected ? SeatStatus.selected : currentStatus,
+        seatNumber: index,
       ),
     );
   }
@@ -438,38 +466,39 @@ class _SeatSelectionWidgetState extends State<SeatSelectionWidget> {
 // A helper widget to display a single seat icon based on its status
 class _SeatIcon extends StatelessWidget {
   final SeatStatus status;
+  final int? seatNumber; // Add seat number parameter
 
-  const _SeatIcon({required this.status});
+  const _SeatIcon({required this.status, this.seatNumber});
 
   @override
   Widget build(BuildContext context) {
     Color? fillColor;
     Color? borderColor;
-    Widget? child;
+    Widget? seatImage;
 
     switch (status) {
       case SeatStatus.available:
         fillColor = Colors.transparent;
         borderColor = Colors.transparent;
-        child =
+        seatImage =
             Image.asset('assets/icons/available_seat.png', fit: BoxFit.cover);
         break;
       case SeatStatus.unavailable:
         fillColor = Colors.transparent;
         borderColor = Colors.transparent;
-        child =
+        seatImage =
             Image.asset('assets/icons/unavailable_seat.png', fit: BoxFit.cover);
         break;
       case SeatStatus.selected:
         fillColor = Colors.transparent;
         borderColor = Colors.transparent;
-        child =
+        seatImage =
             Image.asset('assets/icons/unavailable_seat.png', fit: BoxFit.cover);
         break;
       case SeatStatus.driver:
         fillColor = Colors.transparent;
         borderColor = Colors.transparent;
-        child = Image.asset(
+        seatImage = Image.asset(
           'assets/icons/driver_seat.png',
           fit: BoxFit.cover,
         );
@@ -488,8 +517,101 @@ class _SeatIcon extends StatelessWidget {
         // ),
         border: Border.all(color: borderColor, width: 2),
       ),
-      child: child,
+      child: Stack(
+        children: [
+          // Seat image as background
+          seatImage,
+          // Seat number overlay (including driver seat)
+          if (seatNumber != null)
+            Positioned.fill(
+              child: Center(
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: _getSeatNumberBackgroundColor(status),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: _getSeatNumberBorderColor(status),
+                      width: 1,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      _formatSeatNumber(seatNumber!),
+                      style: TextStyle(
+                        color: _getSeatNumberTextColor(status),
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
+  }
+
+  // Helper method to format seat number to row-letter scheme
+  String _formatSeatNumber(int seatIndex) {
+    const List<String> labels = [
+      'A1',
+      'A2',
+      'B1',
+      'B2',
+      'B3',
+      'C1',
+      'C2',
+      'C3'
+    ];
+    if (seatIndex >= 0 && seatIndex < labels.length) {
+      return labels[seatIndex];
+    }
+    return 'S$seatIndex';
+  }
+
+  // Helper method to get seat number background color based on status
+  Color _getSeatNumberBackgroundColor(SeatStatus status) {
+    switch (status) {
+      case SeatStatus.available:
+        return Colors.white;
+      case SeatStatus.selected:
+        return Colors.green.shade600;
+      case SeatStatus.unavailable:
+        return Colors.grey.shade300;
+      case SeatStatus.driver:
+        return Colors.black;
+    }
+  }
+
+  // Helper method to get seat number border color
+  Color _getSeatNumberBorderColor(SeatStatus status) {
+    switch (status) {
+      case SeatStatus.available:
+        return Colors.grey.shade600;
+      case SeatStatus.selected:
+        return Colors.green.shade800;
+      case SeatStatus.unavailable:
+        return Colors.grey.shade500;
+      case SeatStatus.driver:
+        return Colors.black;
+    }
+  }
+
+  // Helper method to get seat number text color
+  Color _getSeatNumberTextColor(SeatStatus status) {
+    switch (status) {
+      case SeatStatus.available:
+        return Colors.black;
+      case SeatStatus.selected:
+        return Colors.white;
+      case SeatStatus.unavailable:
+        return Colors.grey.shade600;
+      case SeatStatus.driver:
+        return Colors.white;
+    }
   }
 }
 

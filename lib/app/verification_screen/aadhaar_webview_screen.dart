@@ -35,7 +35,7 @@ class _AadhaarWebViewScreenState extends State<AadhaarWebViewScreen> {
         .snapshots()
         .listen((doc) {
       final data = doc.data();
-      final isValid = (data != null && (data['kyc'] == true));
+      final isValid = (data != null && (data['aadharVerified'] == true));
       if (isValid && !_completed) {
         _completed = true;
         Get.back(result: true);

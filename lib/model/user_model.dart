@@ -16,6 +16,8 @@ class UserModel {
   String? gender;
   bool? isActive;
   bool? isVerify;
+  bool? aadharVerified;
+  bool? panVerified;
   TravelPreferenceModel? travelPreference;
   Timestamp? createdAt;
   String? reviewCount;
@@ -39,6 +41,8 @@ class UserModel {
     this.bio,
     this.reviewSum,
     this.reviewCount,
+    this.aadharVerified,
+    this.panVerified,
   });
 
   fullName() {
@@ -61,6 +65,8 @@ class UserModel {
     dateOfBirth = json['dateOfBirth'] ?? '';
     isActive = json['isActive'];
     isVerify = json['isVerify'];
+    aadharVerified = json['aadharVerified'] ?? false;
+    panVerified = json['panVerified'] ?? false;
     bio = json['bio'] ?? '';
     travelPreference = json['travelPreference'] != null
         ? TravelPreferenceModel.fromJson(json['travelPreference'])
@@ -89,6 +95,8 @@ class UserModel {
     data['dateOfBirth'] = dateOfBirth;
     data['isActive'] = isActive;
     data['isVerify'] = isVerify;
+    data['aadharVerified'] = aadharVerified;
+    data['panVerified'] = panVerified;
     data['bio'] = bio;
     data['reviewSum'] = reviewSum;
     data['reviewCount'] = reviewCount;

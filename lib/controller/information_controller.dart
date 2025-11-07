@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -22,7 +23,8 @@ class InformationController extends GetxController {
   Rx<TextEditingController> phoneNumberController = TextEditingController().obs;
   Rx<TextEditingController> dateOfBirthController = TextEditingController().obs;
 
-  Rx<TextEditingController> countryCode = TextEditingController(text: "+91").obs;
+  Rx<TextEditingController> countryCode =
+      TextEditingController(text: "+91").obs;
   RxString loginType = "".obs;
   final ImagePicker imagePicker = ImagePicker();
   RxString profileImage = "".obs;
@@ -43,7 +45,8 @@ class InformationController extends GetxController {
       userModel.value = argumentData['userModel'];
       loginType.value = userModel.value.loginType.toString();
       if (loginType.value == Constant.phoneLoginType) {
-        phoneNumberController.value.text = userModel.value.phoneNumber.toString();
+        phoneNumberController.value.text =
+            userModel.value.phoneNumber.toString();
         countryCode.value.text = userModel.value.countryCode.toString();
       } else {
         emailController.value.text = userModel.value.email ?? "";
@@ -55,7 +58,14 @@ class InformationController extends GetxController {
   }
 
   createAccount() async {
-    String fcmToken = await NotificationService.getToken();
+    String fcmToken = '';
+    try {
+      fcmToken = await NotificationService.getToken();
+    } catch (e) {
+      debugPrint("Failed to get FCM token during account creation: $e");
+      // Continue with account creation even if FCM token fails
+    }
+
     if (profileImage.value.isNotEmpty) {
       profileImage.value = await Constant.uploadUserImageToFireStorage(
         File(profileImage.value),
@@ -74,7 +84,8 @@ class InformationController extends GetxController {
     userModelData.fcmToken = fcmToken;
     userModelData.createdAt = Timestamp.now();
     userModelData.isActive = true;
-    userModelData.isVerify = false;
+    userModelData.aadharVerified = false;
+    userModelData.panVerified = false;
     userModelData.gender = preAddressOfName.value;
     userModelData.dateOfBirth = dateOfBirthController.value.text;
 
@@ -98,7 +109,8 @@ class InformationController extends GetxController {
     //       userModelData.fcmToken = fcmToken;
     //       userModelData.createdAt = Timestamp.now();
     //       userModelData.isActive = true;
-    //       userModelData.isVerify = false;
+    //       userModelData.aadharVerified = false;
+    //       userModelData.verifiedAsDriver = false;
     //       userModelData.gender = preAddressOfName.value;
     //       userModelData.dateOfBirth = dateOfBirthController.value.text;
     //

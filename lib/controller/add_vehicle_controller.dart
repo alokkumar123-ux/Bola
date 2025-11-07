@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/constant/show_toast_dialog.dart';
@@ -22,18 +24,145 @@ class AddVehicleController extends GetxController {
   RxInt selectedSeatCount = 0.obs;
 
   RxBool isLoading = true.obs;
+  RxBool isRcVerified = false.obs;
 
   @override
   void onInit() {
     log("CLICK::33");
     // TODO: implement onInit
     getVehicleData();
+    // Load argument first (if editing existing vehicle)
     getArgument();
+    // Then check RC verification status (only if not already set from argument)
+    if (!isRcVerified.value) {
+      checkRcVerificationStatus();
+    }
     super.onInit();
   }
 
   Rx<VehicleInformationModel> vehicleInformationModel =
       VehicleInformationModel().obs;
+
+  // Check if RC is already verified in Firebase
+  checkRcVerificationStatus() async {
+    try {
+      final currentVehicleNumber =
+          licensePlatNumberController.value.text.trim().toUpperCase();
+      if (currentVehicleNumber.isEmpty) {
+        isRcVerified.value = false;
+        return;
+      }
+
+      final userId = FireStoreUtils.getCurrentUid();
+
+      // Check if vehicle with this number has RC verified in user_vehicle_information
+      final querySnapshot = await FireStoreUtils.fireStore
+          .collection('user_vehicle_information')
+          .where('userId', isEqualTo: userId)
+          .where('licensePlatNumber', isEqualTo: currentVehicleNumber)
+          .where('rcVerified', isEqualTo: true)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        // Load RC data from Firebase
+        final doc = querySnapshot.docs.first;
+        final data = doc.data();
+        
+        // Update vehicle information model with RC data from Firebase
+        vehicleInformationModel.value.rcVerified = data['rcVerified'] ?? false;
+        vehicleInformationModel.value.rcStatus = data['rcStatus'];
+        vehicleInformationModel.value.rcExpiryDate = data['rcExpiryDate'];
+        vehicleInformationModel.value.vehicleInsuranceUpto = data['vehicleInsuranceUpto'];
+        vehicleInformationModel.value.verifiedAt = data['verifiedAt'];
+        
+        isRcVerified.value = true;
+        
+        // Trigger update to refresh UI
+        vehicleInformationModel.refresh();
+        return;
+      }
+
+      isRcVerified.value = false;
+    } catch (e) {
+      log("Error checking RC verification: $e");
+      isRcVerified.value = false;
+    }
+  }
+
+  // Check if vehicle number already exists in user_vehicle_information collection
+  Future<bool> checkVehicleNumberExists(String vehicleNumber) async {
+    try {
+      final userId = FireStoreUtils.getCurrentUid();
+      final vehicleNumberUpper = vehicleNumber.trim().toUpperCase();
+
+      // If editing existing vehicle, exclude current vehicle from check
+      final currentVehicleId = vehicleInformationModel.value.id;
+
+      final querySnapshot = await FireStoreUtils.fireStore
+          .collection('user_vehicle_information')
+          .where('userId', isEqualTo: userId)
+          .where('licensePlatNumber', isEqualTo: vehicleNumberUpper)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        // Check if it's not the current vehicle being edited
+        for (var doc in querySnapshot.docs) {
+          if (currentVehicleId == null || doc.id != currentVehicleId) {
+            // Found another vehicle with same number
+            return true;
+          }
+        }
+      }
+
+      return false;
+    } catch (e) {
+      log("Error checking vehicle number exists: $e");
+      return false;
+    }
+  }
+
+  // Verify RC using API call
+  Future<Map<String, dynamic>?> verifyRcWithApi(String vehicleNumber) async {
+    try {
+      final url = Uri.parse('https://bolaletsgo.com/aadhar/rc.php');
+
+      // Send POST request to PHP API
+      final response = await http.post(
+        url,
+        body: {'vehicle_number': vehicleNumber.trim().toUpperCase()},
+      );
+
+      if (response.statusCode == 200) {
+        final jsonResponse = json.decode(response.body);
+
+        if (jsonResponse['success'] == true) {
+          final rcData = jsonResponse['data'];
+
+          // Store RC data in vehicle information model
+          vehicleInformationModel.value.rcVerified = true;
+          vehicleInformationModel.value.rcStatus = rcData['rc_status'];
+          vehicleInformationModel.value.rcExpiryDate = rcData['rc_expiry_date'];
+          vehicleInformationModel.value.vehicleInsuranceUpto =
+              rcData['vehicle_insurance_upto'];
+          vehicleInformationModel.value.verifiedAt = rcData['verified_at'];
+
+          return rcData;
+        } else {
+          ShowToastDialog.showToast(
+              jsonResponse['message'] ?? "RC verification failed".tr);
+          return null;
+        }
+      } else {
+        ShowToastDialog.showToast(
+            "Failed to connect to verification server".tr);
+        return null;
+      }
+    } catch (e) {
+      log("Error verifying RC: $e");
+      ShowToastDialog.showToast("Error verifying RC: ${e.toString()}".tr);
+      return null;
+    }
+  }
 
   RxList images = <dynamic>[].obs;
 
@@ -52,6 +181,7 @@ class AddVehicleController extends GetxController {
           int.tryParse(vehicleInformationModel.value.seatCount ?? '2') ?? 2;
       selectedColor.value =
           vehicleInformationModel.value.vehicleColor.toString();
+      isRcVerified.value = vehicleInformationModel.value.rcVerified ?? false;
       if (vehicleInformationModel.value.vehicleImages != null &&
           vehicleInformationModel.value.vehicleImages!.isNotEmpty) {
         images.value = vehicleInformationModel.value.vehicleImages!;

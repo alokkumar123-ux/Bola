@@ -382,86 +382,26 @@ class HomeScreen extends StatelessWidget {
                                             ),
                                             InkWell(
                                               onTap: () async {
-                                                if (Constant.verifyBooking ==
-                                                    true) {
-                                                  if (controller.userModel.value
-                                                          .isVerify ==
-                                                      true) {
-                                                    if (controller
-                                                        .pickUpLocationController
-                                                        .value
-                                                        .text
-                                                        .isEmpty) {
-                                                      ShowToastDialog.showToast(
-                                                          "Please select pickup location"
-                                                              .tr);
-                                                    } else if (controller
-                                                        .dropLocationController
-                                                        .value
-                                                        .text
-                                                        .isEmpty) {
-                                                      ShowToastDialog.showToast(
-                                                          "Please select pickup location"
-                                                              .tr);
-                                                    } else {
-                                                      controller
-                                                          .setSearchHistory();
-                                                      controller.searchRide();
-                                                    }
-                                                  } else {
-                                                    showDialog(
-                                                        context: context,
-                                                        builder: (BuildContext
-                                                            context) {
-                                                          return CustomDialogBox(
-                                                            title:
-                                                                "Verification Required"
-                                                                    .tr,
-                                                            descriptions:
-                                                                "You need to verify your account to continue. Please complete the verification process to access all features."
-                                                                    .tr,
-                                                            positiveString:
-                                                                "Verify".tr,
-                                                            negativeString:
-                                                                "Cancel".tr,
-                                                            positiveClick:
-                                                                () async {
-                                                              Get.to(
-                                                                  VerificationScreen());
-                                                            },
-                                                            negativeClick: () {
-                                                              Get.back();
-                                                            },
-                                                            img: Image.asset(
-                                                              'assets/images/ic_verify_image.png',
-                                                              height: 40,
-                                                              width: 40,
-                                                            ),
-                                                          );
-                                                        });
-                                                  }
+                                                // Allow any passenger to book rides
+                                                if (controller
+                                                    .pickUpLocationController
+                                                    .value
+                                                    .text
+                                                    .isEmpty) {
+                                                  ShowToastDialog.showToast(
+                                                      "Please select pickup location"
+                                                          .tr);
+                                                } else if (controller
+                                                    .dropLocationController
+                                                    .value
+                                                    .text
+                                                    .isEmpty) {
+                                                  ShowToastDialog.showToast(
+                                                      "Please select drop location"
+                                                          .tr);
                                                 } else {
-                                                  if (controller
-                                                      .pickUpLocationController
-                                                      .value
-                                                      .text
-                                                      .isEmpty) {
-                                                    ShowToastDialog.showToast(
-                                                        "Please select pickup location"
-                                                            .tr);
-                                                  } else if (controller
-                                                      .dropLocationController
-                                                      .value
-                                                      .text
-                                                      .isEmpty) {
-                                                    ShowToastDialog.showToast(
-                                                        "Please select pickup location"
-                                                            .tr);
-                                                  } else {
-                                                    controller
-                                                        .setSearchHistory();
-                                                    controller.searchRide();
-                                                  }
+                                                  controller.setSearchHistory();
+                                                  controller.searchRide();
                                                 }
                                               },
                                               child: Container(
@@ -496,7 +436,7 @@ class HomeScreen extends StatelessWidget {
                                                             .center,
                                                     children: [
                                                       Text(
-                                                        "Search Cab".tr,
+                                                        "Search Seat".tr,
                                                         style: TextStyle(
                                                             fontSize: 16,
                                                             color: themeChange
@@ -694,7 +634,8 @@ class HomeScreen extends StatelessWidget {
               backgroundColor: AppThemeData.primary300,
               onPressed: () async {
                 if (Constant.verifyPublish == true) {
-                  if (controller.userModel.value.isVerify == true) {
+                  if (controller.userModel.value.panVerified == true &&
+                      controller.userModel.value.aadharVerified == true) {
                     Get.to(const AddYourRideScreen(),
                         transition: Transition.downToUp);
                   } else {

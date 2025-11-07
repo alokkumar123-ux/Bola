@@ -7,17 +7,33 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:588834041432:android:9e5477f6ee40c45cd4642d",
+        "mobilesdk_app_id": "1:588834041432:android:b290b55ce8e6513fd4642d",
         "android_client_info": {
-          "package_name": "com.poolmate"
+          "package_name": "com.alok.poolmate"
         }
       },
       "oauth_client": [
         {
-          "client_id": "588834041432-t0sg3v21k6qfmha1pci9bdrljnrbse6j.apps.googleusercontent.com",
+          "client_id": "588834041432-1itfmhp69qr9qol80j1cejk3r80ar69j.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.poolmate",
+            "package_name": "com.alok.poolmate",
+            "certificate_hash": "d88780f973d0318fc8a3c51979e709820ccf1eb0"
+          }
+        },
+        {
+          "client_id": "588834041432-5jl25gqdo637ee1af4ovbq60ggo1a5s3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.alok.poolmate",
+            "certificate_hash": "0c3519c063a22389ab8478519d795b81b45a57bb"
+          }
+        },
+        {
+          "client_id": "588834041432-hra88ia9s18dq5c4kkvga9bp188jajvm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.alok.poolmate",
             "certificate_hash": "63e73fb70c4a5264b2251c76cfd2126b0b5ff3c8"
           }
         },
@@ -39,10 +55,10 @@
               "client_type": 3
             },
             {
-              "client_id": "588834041432-b10ed930s27hmp8edkuqvog82aav1j5n.apps.googleusercontent.com",
+              "client_id": "588834041432-6kdar449v6ru4llv2kfhc1ccsp2s9prb.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.poolmate"
+                "bundle_id": "com.alok.poolmate"
               }
             }
           ]

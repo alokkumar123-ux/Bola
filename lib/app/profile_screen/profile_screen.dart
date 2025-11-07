@@ -198,6 +198,9 @@ class ProfileScreen extends StatelessWidget {
                                     .tr,
                             svgImage: "assets/icons/ic_account_setting.svg",
                             themeChange: themeChange,
+                            isVerified:
+                                controller.userModel.value.aadharVerified ==
+                                    true,
                           ),
                           menuItemWidget(
                             onTap: () {
@@ -343,6 +346,7 @@ class ProfileScreen extends StatelessWidget {
     required String subTitle,
     required VoidCallback onTap,
     required themeChange,
+    bool isVerified = false,
   }) {
     return Column(
       children: [
@@ -378,14 +382,18 @@ class ProfileScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontFamily: AppThemeData.bold,
-                          color: themeChange.getThem()
-                              ? AppThemeData.grey100
-                              : AppThemeData.grey800),
+                    Row(
+                      children: [
+                        Text(
+                          title,
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontFamily: AppThemeData.bold,
+                              color: themeChange.getThem()
+                                  ? AppThemeData.grey100
+                                  : AppThemeData.grey800),
+                        ),
+                      ],
                     ),
                     Text(
                       subTitle,
@@ -396,7 +404,28 @@ class ProfileScreen extends StatelessWidget {
                           color: themeChange.getThem()
                               ? AppThemeData.grey300
                               : AppThemeData.grey600),
-                    )
+                    ),
+                    if (isVerified) ...[
+                      const SizedBox(width: 8),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.check_circle,
+                            size: 18,
+                            color: AppThemeData.success400,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            "Verified as Passenger",
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontFamily: AppThemeData.medium,
+                              color: AppThemeData.success400,
+                            ),
+                          ),
+                        ],
+                      )
+                    ],
                   ],
                 ),
               ),

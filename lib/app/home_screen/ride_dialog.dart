@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
-import 'package:poolmate/app/wallet_screen/select_payment_method_screen.dart';
+import 'dart:async';
+import 'package:poolmate/app/booking/booking_payment_screen.dart';
+import 'package:poolmate/app/wallet_screen/wallet_screen.dart';
 import 'package:poolmate/app/profile_screen/profile_screen.dart';
 import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/constant/show_toast_dialog.dart';
@@ -32,7 +34,7 @@ class RideDialog extends StatefulWidget {
   State<RideDialog> createState() => _RideDialogState();
 }
 
-class _RideDialogState extends State<RideDialog> {
+class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
   // Use a List to track multiple selected seats.
   final List<int> _selectedSeatIndices = [];
 
@@ -45,16 +47,245 @@ class _RideDialogState extends State<RideDialog> {
   // Payment method selection
   String _selectedPaymentMethod = ''; // Empty initially, user must select
 
+  // Firebase listener for real-time updates
+  StreamSubscription<DocumentSnapshot>? _bookingListener;
+
+  // Store temporarily selected seats with timestamps for cleanup
+  final Map<int, DateTime> _tempSeatTimestamps = {};
+
+  // Timer for periodic cleanup of expired temp selections
+  Timer? _cleanupTimer;
+
+  // Store remaining seconds for each selected seat
+  final Map<int, int> _seatRemainingSeconds = {};
+
+  // ValueNotifier to update only timer display without rebuilding entire widget
+  final ValueNotifier<int> _timerNotifier = ValueNotifier<int>(0);
+  Timer? _countdownTimer;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _initializeSeatStatus();
+    _setupRealtimeListener();
+    _startCleanupTimer();
+    _startCountdownTimer();
+
     // This logic is kept in case you ever have seats pre-selected
     // in the _seatStatus list. It will find them and add them to the selection.
     for (int i = 0; i < _seatStatus.length; i++) {
       if (_seatStatus[i] == SeatStatus.selected) {
         _selectedSeatIndices.add(i);
       }
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _bookingListener?.cancel();
+    _cleanupTimer?.cancel();
+    _countdownTimer?.cancel();
+    _timerNotifier.dispose();
+    _releaseTemporarySeats();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    // Release seats when app goes to background (minimized) or inactive
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      print('🔴 App going to background - releasing temporary seats');
+
+      Navigator.of(context).pop();
+    }
+  }
+
+  // Setup real-time listener for booking changes
+  void _setupRealtimeListener() {
+    if (widget.bookingModel.id == null) return;
+
+    // Initialize tempSeatSelection field if it doesn't exist
+    _initializeTempSeatSelection();
+
+    _bookingListener = FirebaseFirestore.instance
+        .collection('booking')
+        .doc(widget.bookingModel.id)
+        .snapshots()
+        .listen((snapshot) {
+      if (!snapshot.exists || !mounted) return;
+
+      final data = snapshot.data();
+      if (data == null) return;
+
+      // Update booking model with latest data
+      widget.bookingModel.bookedSeat = data['bookedSeat'];
+      widget.bookingModel.tempSeatSelection = data['tempSeatSelection'] != null
+          ? List<int>.from(data['tempSeatSelection'])
+          : [];
+
+      // Refresh seat status based on new data
+      setState(() {
+        _initializeSeatStatus();
+      });
+    });
+  }
+
+  // Initialize tempSeatSelection field if it doesn't exist
+  Future<void> _initializeTempSeatSelection() async {
+    if (widget.bookingModel.id == null) return;
+
+    try {
+      final docRef = FirebaseFirestore.instance
+          .collection('booking')
+          .doc(widget.bookingModel.id);
+
+      final snapshot = await docRef.get();
+      if (snapshot.exists) {
+        final data = snapshot.data();
+        if (data != null && data['tempSeatSelection'] == null) {
+          // Field doesn't exist, initialize it
+          await docRef.update({'tempSeatSelection': []});
+          print(
+              '✅ Initialized tempSeatSelection field for booking ${widget.bookingModel.id}');
+        }
+      }
+    } catch (e) {
+      print('Note: Could not initialize tempSeatSelection: $e');
+      // Non-critical error, continue anyway
+    }
+  }
+
+  // Start periodic timer to cleanup expired temporary selections
+  void _startCleanupTimer() {
+    _cleanupTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      _cleanupExpiredTempSeats();
+    });
+  }
+
+  // Start countdown timer for seat reservation display
+  void _startCountdownTimer() {
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+
+      final now = DateTime.now();
+      int minRemainingSeconds = 5 * 60;
+      bool hasExpiredSeats = false;
+
+      // Update remaining seconds for each selected seat
+      for (var seatIndex in _selectedSeatIndices) {
+        if (_tempSeatTimestamps.containsKey(seatIndex)) {
+          final elapsed = now.difference(_tempSeatTimestamps[seatIndex]!);
+          final remainingSeconds = (5 * 60) - elapsed.inSeconds;
+
+          if (remainingSeconds > 0) {
+            _seatRemainingSeconds[seatIndex] = remainingSeconds;
+            if (remainingSeconds < minRemainingSeconds) {
+              minRemainingSeconds = remainingSeconds;
+            }
+          } else {
+            // Time expired
+            _seatRemainingSeconds[seatIndex] = 0;
+            hasExpiredSeats = true;
+          }
+        }
+      }
+
+      // Only update the timer notifier, not the entire widget
+      _timerNotifier.value = minRemainingSeconds;
+
+      // If any seat has expired (timer reached 0), close the dialog
+      if (hasExpiredSeats ||
+          (minRemainingSeconds <= 0 && _selectedSeatIndices.isNotEmpty)) {
+        timer.cancel();
+        ShowToastDialog.showToast(
+            'Seat reservation time expired. Please try again.');
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      }
+    });
+  }
+
+  // Cleanup expired temporary seat selections (older than 5 minutes)
+  Future<void> _cleanupExpiredTempSeats() async {
+    if (widget.bookingModel.id == null) return;
+
+    final now = DateTime.now();
+    final expiredSeats = <int>[];
+
+    // Find expired seats from our local tracking
+    _tempSeatTimestamps.forEach((seatIndex, timestamp) {
+      if (now.difference(timestamp).inMinutes >= 5) {
+        expiredSeats.add(seatIndex);
+      }
+    });
+
+    if (expiredSeats.isEmpty) return;
+
+    // Remove expired seats from Firebase
+    try {
+      final docRef = FirebaseFirestore.instance
+          .collection('booking')
+          .doc(widget.bookingModel.id);
+
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        final snapshot = await transaction.get(docRef);
+        if (!snapshot.exists) return;
+
+        final currentTempSeats =
+            List<int>.from(snapshot.data()?['tempSeatSelection'] ?? []);
+
+        // Remove expired seats
+        currentTempSeats.removeWhere((seat) => expiredSeats.contains(seat));
+
+        transaction.update(docRef, {
+          'tempSeatSelection': currentTempSeats,
+        });
+      });
+
+      // Clean local tracking
+      expiredSeats.forEach((seat) {
+        _tempSeatTimestamps.remove(seat);
+      });
+    } catch (e) {
+      print('Error cleaning up expired seats: $e');
+    }
+  }
+
+  // Release temporary seats when dialog closes
+  Future<void> _releaseTemporarySeats() async {
+    if (_selectedSeatIndices.isEmpty || widget.bookingModel.id == null) return;
+
+    try {
+      final docRef = FirebaseFirestore.instance
+          .collection('booking')
+          .doc(widget.bookingModel.id);
+
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        final snapshot = await transaction.get(docRef);
+        if (!snapshot.exists) return;
+
+        final currentTempSeats =
+            List<int>.from(snapshot.data()?['tempSeatSelection'] ?? []);
+
+        // Remove this user's selected seats
+        currentTempSeats
+            .removeWhere((seat) => _selectedSeatIndices.contains(seat));
+
+        transaction.update(docRef, {
+          'tempSeatSelection': currentTempSeats,
+        });
+      });
+    } catch (e) {
+      print('Error releasing temporary seats: $e');
     }
   }
 
@@ -72,12 +303,21 @@ class _RideDialogState extends State<RideDialog> {
         .map((s) => int.tryParse(s) ?? -1)
         .toList();
 
+    // Get temporarily selected seats by other users
+    final tempSelectedSeats = widget.bookingModel.tempSeatSelection ?? [];
+
     _seatStatus = List.generate(totalSeats, (index) {
       // First seat is always driver
       if (index == 0) return SeatStatus.driver;
 
       // If the seat is already booked
       if (bookedSeats.contains(index)) {
+        return SeatStatus.unavailable;
+      }
+
+      // If seat is temporarily selected by another user (not by current user)
+      if (tempSelectedSeats.contains(index) &&
+          !_selectedSeatIndices.contains(index)) {
         return SeatStatus.unavailable;
       }
 
@@ -162,7 +402,7 @@ class _RideDialogState extends State<RideDialog> {
           ),
           const SizedBox(height: 16),
           _buildDriverInfo(),
-          const Divider(height: 32, thickness: 1),
+          const Divider(height: 22, thickness: 1),
           _buildSeatSelection(),
           const SizedBox(height: 24),
           _buildLegend(),
@@ -192,67 +432,83 @@ class _RideDialogState extends State<RideDialog> {
         final userModel = snapshot.data;
         final vehicleInfo = widget.bookingModel.vehicleInformation;
 
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return Column(
           children: [
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: Colors.black,
-                  backgroundImage: userModel?.profilePic != null &&
-                          userModel!.profilePic!.isNotEmpty
-                      ? NetworkImage(userModel.profilePic!)
-                      : null,
-                  child: userModel?.profilePic == null ||
-                          userModel!.profilePic!.isEmpty
-                      ? const Icon(Icons.person, color: Colors.white, size: 30)
-                      : null,
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Row(
                   children: [
-                    Text(
-                      userModel?.fullName() ?? 'Driver',
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Colors.black),
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor: Colors.black,
+                      backgroundImage: userModel?.profilePic != null &&
+                              userModel!.profilePic!.isNotEmpty
+                          ? NetworkImage(userModel.profilePic!)
+                          : null,
+                      child: userModel?.profilePic == null ||
+                              userModel!.profilePic!.isEmpty
+                          ? const Icon(Icons.person,
+                              color: Colors.white, size: 30)
+                          : null,
                     ),
-                    const SizedBox(height: 4),
-                    Row(
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.star, color: Colors.amber, size: 18),
-                        const SizedBox(width: 4),
                         Text(
-                            userModel?.reviewCount != null
-                                ? (double.parse(userModel!.reviewSum ?? "0") /
-                                        double.parse(
-                                            userModel.reviewCount ?? "1"))
-                                    .toStringAsFixed(1)
-                                : '0',
-                            style: const TextStyle(color: Colors.black54)),
+                          userModel?.fullName() ?? 'Driver',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Colors.black),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(Icons.star,
+                                color: Colors.amber, size: 18),
+                            const SizedBox(width: 4),
+                            Text(
+                                userModel?.reviewCount != null
+                                    ? (double.parse(
+                                                userModel!.reviewSum ?? "0") /
+                                            double.parse(
+                                                userModel.reviewCount ?? "1"))
+                                        .toStringAsFixed(1)
+                                    : '0',
+                                style: const TextStyle(color: Colors.black54)),
+                          ],
+                        ),
                       ],
                     ),
                   ],
                 ),
               ],
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                const Icon(Icons.directions_car, size: 28),
-                const SizedBox(height: 4),
-                Text(vehicleInfo?.licensePlatNumber ?? 'N/A',
-                    style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold)),
-                Text(
-                    '${vehicleInfo?.vehicleBrand?.name ?? ''} ${vehicleInfo?.vehicleModel?.name ?? ''}',
-                    style: const TextStyle(fontSize: 12, color: Colors.black)),
-              ],
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  const Icon(Icons.directions_car, size: 28),
+                  const SizedBox(width: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    // mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(vehicleInfo?.licensePlatNumber ?? 'N/A',
+                          style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold)),
+                      Text(
+                          '${vehicleInfo?.vehicleBrand?.name ?? ''} ${vehicleInfo?.vehicleModel?.name ?? ''}',
+                          style: const TextStyle(
+                              fontSize: 12, color: Colors.black)),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         );
@@ -349,10 +605,107 @@ class _RideDialogState extends State<RideDialog> {
             ),
           ],
         ),
+        // Display timer if seats are selected
+        if (_selectedSeatIndices.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          _buildTimerDisplay(),
+        ],
         const SizedBox(height: 20),
         // Dynamic seat layout based on actual seats
         _buildDynamicSeatLayout(),
       ],
+    );
+  }
+
+  // Widget to display the countdown timer for seat reservation
+  Widget _buildTimerDisplay() {
+    return ValueListenableBuilder<int>(
+      valueListenable: _timerNotifier,
+      builder: (context, minRemainingSeconds, child) {
+        final minutes = minRemainingSeconds ~/ 60;
+        final seconds = minRemainingSeconds % 60;
+
+        // Determine color based on remaining time
+        Color timerColor;
+        Color backgroundColor;
+        if (minRemainingSeconds < 60) {
+          // Less than 1 minute - red (urgent)
+          timerColor = Colors.red;
+          backgroundColor = Colors.red.shade50;
+        } else if (minRemainingSeconds < 120) {
+          // Less than 2 minutes - orange (warning)
+          timerColor = Colors.orange;
+          backgroundColor = Colors.orange.shade50;
+        } else {
+          // More than 2 minutes - green (safe)
+          timerColor = Colors.green;
+          backgroundColor = Colors.green.shade50;
+        }
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: timerColor.withOpacity(0.3),
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.timer,
+                color: timerColor,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Seat reserved for',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade700,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}',
+                      style: TextStyle(
+                        fontSize: 24,
+                        color: timerColor,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (minRemainingSeconds < 60)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Text(
+                    'HURRY!',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -382,18 +735,52 @@ class _RideDialogState extends State<RideDialog> {
       );
     }
 
-    if (passengerSeats <= 4) {
-      // For 4 or fewer passenger seats, use the original layout
+    // Only three supported configurations: 2-seater, 5-seater and 7-seater
+    if (passengerSeats == 1) {
+      // 2-seater (driver + 1 passenger)
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Column(
+            children: [
+              Column(
+                children: [
+                  const Icon(Icons.drive_eta_outlined,
+                      size: 32, color: Colors.black54),
+                  const SizedBox(height: 4),
+                  _buildSeat(0),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 5.0, right: 15, left: 15),
+                child: SizedBox(
+                  width: 100,
+                  child: Divider(
+                    color: Colors.black54,
+                    height: 12,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 5),
+              Padding(
+                padding: const EdgeInsets.only(top: 0.0),
+                child: _buildSeat(1),
+              ),
+            ],
+          )
+        ],
+      );
+    } else if (passengerSeats == 4) {
+      // 5-seater (driver + 4 passengers)
       return Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (passengerSeats >= 1)
-                Padding(
-                  padding: const EdgeInsets.only(top: 36.0),
-                  child: _buildSeat(1),
-                ),
+              Padding(
+                padding: const EdgeInsets.only(top: 36.0),
+                child: _buildSeat(1),
+              ),
               const SizedBox(width: 15),
               Column(
                 children: [
@@ -405,78 +792,70 @@ class _RideDialogState extends State<RideDialog> {
               ),
             ],
           ),
-          if (passengerSeats > 1) ...[
-            const SizedBox(height: 4),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(
-                  passengerSeats - 1, (index) => _buildSeat(index + 2)),
-            ),
-          ],
-        ],
-      );
-    } else {
-      // For more than 4 seats, use structured rows with driver row having 2 seats
-      return Column(
-        children: [
-          // Driver row with 2 seats (driver + 1 passenger)
+          const SizedBox(height: 4),
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (passengerSeats >= 1)
-                Padding(
-                  padding: const EdgeInsets.only(top: 36.0),
-                  child: _buildSeat(1),
-                ),
-              const SizedBox(width: 15),
-              Column(
-                children: [
-                  const Icon(Icons.drive_eta_outlined,
-                      size: 32, color: Colors.black54),
-                  const SizedBox(height: 4),
-                  _buildSeat(0),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          // Remaining passenger seats in rows of max 3
-          ..._buildSeatRows(passengerSeats -
-              1), // -1 because we already placed 1 passenger in driver row
-        ],
-      );
-    }
-  }
-
-  // Helper method to build seat rows with max 3 seats per row
-  List<Widget> _buildSeatRows(int totalSeats) {
-    List<Widget> rows = [];
-    int seatsPerRow = 3;
-
-    for (int i = 0; i < totalSeats; i += seatsPerRow) {
-      int seatsInThisRow =
-          (i + seatsPerRow <= totalSeats) ? seatsPerRow : totalSeats - i;
-
-      List<Widget> rowSeats = [];
-      for (int j = 0; j < seatsInThisRow; j++) {
-        rowSeats.add(_buildSeat(i +
-            j +
-            2)); // +2 to skip driver seat (0) and first passenger seat (1)
-      }
-
-      rows.add(
-        Padding(
-          padding: const EdgeInsets.only(bottom: 4.0),
-          child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: rowSeats,
+            children: [
+              _buildSeat(2),
+              _buildSeat(3),
+              _buildSeat(4),
+            ],
           ),
-        ),
+        ],
+      );
+    } else if (passengerSeats == 6) {
+      // 7-seater (driver + 6 passengers)
+      return Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 36.0),
+                child: _buildSeat(1),
+              ),
+              const SizedBox(width: 15),
+              Column(
+                children: [
+                  const Icon(Icons.drive_eta_outlined,
+                      size: 32, color: Colors.black54),
+                  const SizedBox(height: 4),
+                  _buildSeat(0),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildSeat(2),
+              _buildSeat(3),
+              _buildSeat(4),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildSeat(5),
+              _buildSeat(6),
+            ],
+          ),
+        ],
       );
     }
 
-    return rows;
+    // Unsupported seat configuration
+    return const SizedBox(
+      height: 100,
+      child: Center(
+        child: Text('Unsupported seat configuration'),
+      ),
+    );
   }
+
+  // No generic rows builder needed with fixed 2/5/7 seater layouts
 
   // Builds a single seat widget with tap detection
   Widget _buildSeat(int index) {
@@ -495,16 +874,15 @@ class _RideDialogState extends State<RideDialog> {
     }
 
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
         if (isAvailable) {
-          // Add/remove from the list instead of setting a single variable.
-          setState(() {
-            if (isSelected) {
-              _selectedSeatIndices.remove(index); // Deselect
-            } else {
-              _selectedSeatIndices.add(index); // Select
-            }
-          });
+          if (isSelected) {
+            // Deselecting - remove from local list and Firebase
+            await _deselectSeat(index);
+          } else {
+            // Selecting - use transaction to ensure atomicity
+            await _selectSeatWithTransaction(index);
+          }
         }
       },
       child: SeatIcon(
@@ -512,6 +890,147 @@ class _RideDialogState extends State<RideDialog> {
         seatNumber: index, // Pass seat number (index is the seat number)
       ),
     );
+  }
+
+  // Select seat using Firebase Transaction to prevent race conditions
+  Future<void> _selectSeatWithTransaction(int seatIndex) async {
+    if (widget.bookingModel.id == null) {
+      print('Error: Booking ID is null');
+      ShowToastDialog.showToast('Booking ID not found');
+      return;
+    }
+
+    try {
+      final docRef = FirebaseFirestore.instance
+          .collection('booking')
+          .doc(widget.bookingModel.id);
+
+      print(
+          'Attempting to select seat $seatIndex for booking ${widget.bookingModel.id}');
+
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        final snapshot = await transaction.get(docRef);
+
+        if (!snapshot.exists) {
+          throw Exception('Booking not found');
+        }
+
+        final data = snapshot.data();
+        if (data == null) {
+          throw Exception('Booking data is null');
+        }
+
+        print('Current booking data: ${data.keys.toList()}');
+
+        // Get current temp seats with null safety
+        List<int> currentTempSeats = [];
+        if (data['tempSeatSelection'] != null) {
+          try {
+            currentTempSeats = List<int>.from(data['tempSeatSelection']);
+          } catch (e) {
+            print('Error parsing tempSeatSelection: $e');
+            currentTempSeats = [];
+          }
+        }
+
+        // Get booked seats
+        final bookedSeatsString = data['bookedSeat'] ?? "0";
+        final List<int> bookedSeats = bookedSeatsString
+            .toString()
+            .split(',')
+            .where((String s) => s.isNotEmpty)
+            .map((String s) => int.tryParse(s) ?? -1)
+            .toList();
+
+        print('Current temp seats: $currentTempSeats');
+        print('Booked seats: $bookedSeats');
+
+        // Check if seat is already booked
+        if (bookedSeats.contains(seatIndex)) {
+          throw Exception('This seat is already booked');
+        }
+
+        // Check if seat is already in temp selection by another user
+        if (currentTempSeats.contains(seatIndex)) {
+          throw Exception('This seat was just selected by another user');
+        }
+
+        // Add seat to temp selection
+        currentTempSeats.add(seatIndex);
+
+        print('Updating tempSeatSelection to: $currentTempSeats');
+
+        // Update Firebase
+        transaction.update(docRef, {
+          'tempSeatSelection': currentTempSeats,
+        });
+      });
+
+      // Transaction successful - update local state
+      setState(() {
+        _selectedSeatIndices.add(seatIndex);
+        _tempSeatTimestamps[seatIndex] = DateTime.now();
+        _seatRemainingSeconds[seatIndex] = 5 * 60; // 5 minutes in seconds
+      });
+
+      // Update timer notifier to trigger timer display
+      _timerNotifier.value = 5 * 60;
+
+      print('✅ Seat $seatIndex selected successfully');
+    } catch (e) {
+      // Show error message to user
+      print('❌ Error selecting seat $seatIndex: $e');
+
+      if (e.toString().contains('just selected by another user')) {
+        ShowToastDialog.showToast(
+            'This seat was just selected by another user. Please choose a different seat.');
+      } else if (e.toString().contains('already booked')) {
+        ShowToastDialog.showToast('This seat is already booked');
+      } else if (e.toString().contains('Booking not found')) {
+        ShowToastDialog.showToast(
+            'Booking not found. Please refresh and try again.');
+      } else {
+        ShowToastDialog.showToast('Error: ${e.toString()}');
+      }
+    }
+  }
+
+  // Deselect seat and remove from Firebase
+  Future<void> _deselectSeat(int seatIndex) async {
+    if (widget.bookingModel.id == null) return;
+
+    try {
+      final docRef = FirebaseFirestore.instance
+          .collection('booking')
+          .doc(widget.bookingModel.id);
+
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        final snapshot = await transaction.get(docRef);
+
+        if (!snapshot.exists) return;
+
+        final currentTempSeats =
+            List<int>.from(snapshot.data()?['tempSeatSelection'] ?? []);
+
+        // Remove seat from temp selection
+        currentTempSeats.remove(seatIndex);
+
+        transaction.update(docRef, {
+          'tempSeatSelection': currentTempSeats,
+        });
+      });
+
+      // Update local state
+      setState(() {
+        _selectedSeatIndices.remove(seatIndex);
+        _tempSeatTimestamps.remove(seatIndex);
+        _seatRemainingSeconds.remove(seatIndex);
+      });
+
+      print('Seat $seatIndex deselected successfully');
+    } catch (e) {
+      print('Error deselecting seat: $e');
+    }
   }
 
   // Widget for the color-coded legend
@@ -527,12 +1046,107 @@ class _RideDialogState extends State<RideDialog> {
     );
   }
 
+  // Helper method to determine if this is a full route booking
+  // Compares the stopOverModel locations with the booking's main pickup/drop locations
+  bool _isFullRouteBooking() {
+    // Get the main booking pickup and drop locations
+    final bookingPickupLat =
+        widget.bookingModel.pickupLocation?.geometry?.location?.lat;
+    final bookingPickupLng =
+        widget.bookingModel.pickupLocation?.geometry?.location?.lng;
+    final bookingDropLat =
+        widget.bookingModel.dropLocation?.geometry?.location?.lat;
+    final bookingDropLng =
+        widget.bookingModel.dropLocation?.geometry?.location?.lng;
+
+    // Get the stopOver start and end locations
+    final stopOverStartLat = widget.stopOverModel.startLocation?.lat;
+    final stopOverStartLng = widget.stopOverModel.startLocation?.lng;
+    final stopOverEndLat = widget.stopOverModel.endLocation?.lat;
+    final stopOverEndLng = widget.stopOverModel.endLocation?.lng;
+
+    // If any location is null, default to using stopOverModel price
+    if (bookingPickupLat == null ||
+        bookingPickupLng == null ||
+        bookingDropLat == null ||
+        bookingDropLng == null ||
+        stopOverStartLat == null ||
+        stopOverStartLng == null ||
+        stopOverEndLat == null ||
+        stopOverEndLng == null) {
+      return false;
+    }
+
+    // Check if stopOver start matches booking pickup (within small tolerance for floating point)
+    bool startMatches = (bookingPickupLat - stopOverStartLat).abs() < 0.001 &&
+        (bookingPickupLng - stopOverStartLng).abs() < 0.001;
+
+    // Check if stopOver end matches booking drop (within small tolerance)
+    bool endMatches = (bookingDropLat - stopOverEndLat).abs() < 0.001 &&
+        (bookingDropLng - stopOverEndLng).abs() < 0.001;
+
+    // It's a full route if both start and end match
+    return startMatches && endMatches;
+  }
+
+  // Helper method to get the correct price
+  // Checks if the route matches a preset stopover and uses that price, otherwise calculates
+  double _getCorrectPrice() {
+    // First check if it's a full route
+    if (_isFullRouteBooking()) {
+      return double.tryParse(widget.bookingModel.pricePerSeat ?? '0') ?? 0.0;
+    }
+
+    // Check if this stopOverModel matches any of the preset stopovers in stopOverList
+    final stopOverList = widget.bookingModel.stopOverList;
+    if (stopOverList != null && stopOverList.isNotEmpty) {
+      final stopOverStartLat = widget.stopOverModel.startLocation?.lat;
+      final stopOverStartLng = widget.stopOverModel.startLocation?.lng;
+      final stopOverEndLat = widget.stopOverModel.endLocation?.lat;
+      final stopOverEndLng = widget.stopOverModel.endLocation?.lng;
+
+      if (stopOverStartLat != null &&
+          stopOverStartLng != null &&
+          stopOverEndLat != null &&
+          stopOverEndLng != null) {
+        // Find matching preset stopover
+        for (var presetStopOver in stopOverList) {
+          final presetStartLat = presetStopOver.startLocation?.lat;
+          final presetStartLng = presetStopOver.startLocation?.lng;
+          final presetEndLat = presetStopOver.endLocation?.lat;
+          final presetEndLng = presetStopOver.endLocation?.lng;
+
+          if (presetStartLat != null &&
+              presetStartLng != null &&
+              presetEndLat != null &&
+              presetEndLng != null) {
+            // Check if locations match (within small tolerance)
+            bool startMatches =
+                (presetStartLat - stopOverStartLat).abs() < 0.001 &&
+                    (presetStartLng - stopOverStartLng).abs() < 0.001;
+            bool endMatches = (presetEndLat - stopOverEndLat).abs() < 0.001 &&
+                (presetEndLng - stopOverEndLng).abs() < 0.001;
+
+            if (startMatches && endMatches) {
+              // Found matching preset stopover, use its price (not recommendedPrice)
+              return double.tryParse(presetStopOver.price ?? '0') ?? 0.0;
+            }
+          }
+        }
+      }
+    }
+
+    // No matching preset found, use the calculated stopOverModel price
+    return double.tryParse(widget.stopOverModel.price ?? '0') ?? 0.0;
+  }
+
   // Widget for the trip cost summary
   Widget _buildSummary() {
     // Get the number of seats from the list's length.
     final int numberOfSeats = _selectedSeatIndices.length;
-    final double pricePerSeat =
-        double.tryParse(widget.stopOverModel.price ?? '0') ?? 0.0;
+
+    // Use the helper method to get the correct price
+    final double pricePerSeat = _getCorrectPrice();
     final double totalAmount = numberOfSeats * pricePerSeat;
 
     return Column(
@@ -606,7 +1220,7 @@ class _RideDialogState extends State<RideDialog> {
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 )
-              : const Text('Proceed to pay', style: TextStyle(fontSize: 16)),
+              : const Text('Proceed to Book', style: TextStyle(fontSize: 16)),
         ),
       ],
     );
@@ -682,14 +1296,75 @@ class _RideDialogState extends State<RideDialog> {
 
   // Method to handle payment method selection
   void _selectPaymentMethod() {
+    // Check driver's payment preference
+    String? driverPaymentMethod = widget.bookingModel.driverPaymentMethod;
+
+    if (driverPaymentMethod != null && driverPaymentMethod.isNotEmpty) {
+      // Driver has set a payment preference, restrict passenger options
+      if (driverPaymentMethod == "Cash") {
+        // Driver prefers cash, only allow cash
+        setState(() {
+          _selectedPaymentMethod = "Cash";
+        });
+        ShowToastDialog.showToast("This driver only accepts cash payments");
+        return;
+      } else if (driverPaymentMethod == "Online") {
+        // Driver prefers online, go to payment method selection but restrict to online options
+        // Calculate total amount for payment
+        final int numberOfSeats = _selectedSeatIndices.length;
+        final double pricePerSeat = _getCorrectPrice();
+        final double totalAmount = numberOfSeats * pricePerSeat;
+
+        Get.to(
+          const BookingPaymentScreen(),
+          arguments: {
+            "numberOfSeats": numberOfSeats,
+            "pricePerSeat": pricePerSeat.toString(),
+            "totalAmount": totalAmount.toString(),
+            "bookingId": widget.bookingModel.id,
+            "driverPaymentMethod": "Online",
+          },
+        )?.then((value) {
+          if (value != null) {
+            setState(() {
+              _selectedPaymentMethod = value['paymentType'];
+            });
+
+            // If payment was successful, proceed with booking automatically
+            if (value['paymentSuccess'] == true) {
+              _processBooking();
+            }
+          }
+        });
+        return;
+      }
+    }
+
+    // No driver preference set, allow all payment methods
+    // Calculate total amount for payment
+    final int numberOfSeats = _selectedSeatIndices.length;
+    final double pricePerSeat = _getCorrectPrice();
+    final double totalAmount = numberOfSeats * pricePerSeat;
+
     Get.to(
-      const SelectPaymentMethodScreen(),
-      arguments: {"type": "bookingSelect", "amount": ""},
+      const BookingPaymentScreen(),
+      arguments: {
+        "numberOfSeats": numberOfSeats,
+        "pricePerSeat": pricePerSeat.toString(),
+        "totalAmount": totalAmount.toString(),
+        "bookingId": widget.bookingModel.id,
+        "driverPaymentMethod": driverPaymentMethod,
+      },
     )?.then((value) {
       if (value != null) {
         setState(() {
           _selectedPaymentMethod = value['paymentType'];
         });
+
+        // If payment was successful, proceed with booking automatically
+        if (value['paymentSuccess'] == true) {
+          _processBooking();
+        }
       }
     });
   }
@@ -721,7 +1396,7 @@ class _RideDialogState extends State<RideDialog> {
 
       // Check if ride requires verification and user is not verified
       if (widget.bookingModel.onlyVerifiedPassenger == true) {
-        if (currentUser.isVerify != true) {
+        if (currentUser.aadharVerified != true) {
           setState(() {
             _isProcessingBooking = false;
           });
@@ -789,8 +1464,22 @@ class _RideDialogState extends State<RideDialog> {
       // Store the actual seat numbers that were booked
       bookingUserModel.bookedSeat =
           _selectedSeatIndices.map((index) => index.toString()).join(',');
-      bookingUserModel.paymentStatus = _selectedPaymentMethod.toLowerCase() ==
-          'wallet'; // True if wallet, false if cash
+      // Set payment status based on payment method
+      // True for wallet and successful online payments (like Cashfree), false for cash
+      bookingUserModel.paymentStatus =
+          _selectedPaymentMethod.toLowerCase() == 'wallet' ||
+              _selectedPaymentMethod.toLowerCase() == 'cashfree' ||
+              _selectedPaymentMethod.toLowerCase() == 'razorpay' ||
+              _selectedPaymentMethod.toLowerCase() == 'stripe' ||
+              _selectedPaymentMethod.toLowerCase() == 'paypal' ||
+              _selectedPaymentMethod.toLowerCase() == 'paystack' ||
+              _selectedPaymentMethod.toLowerCase() == 'flutterwave' ||
+              _selectedPaymentMethod.toLowerCase() == 'payfast' ||
+              _selectedPaymentMethod.toLowerCase() == 'paytm' ||
+              _selectedPaymentMethod.toLowerCase() == 'xendit' ||
+              _selectedPaymentMethod.toLowerCase() == 'orangepay' ||
+              _selectedPaymentMethod.toLowerCase() == 'midtrans' ||
+              _selectedPaymentMethod.toLowerCase() == 'mercadopago';
       bookingUserModel.paymentType = _selectedPaymentMethod;
       bookingUserModel.stopOver = widget.stopOverModel;
       bookingUserModel.createdAt = Timestamp.now();
@@ -813,11 +1502,124 @@ class _RideDialogState extends State<RideDialog> {
       bookingUserModel.taxList = Constant.taxList;
 
       // Calculate subtotal
-      double pricePerSeat = double.parse(widget.stopOverModel.price ?? '0');
-      double subtotal = pricePerSeat * _selectedSeatIndices.length;
-      bookingUserModel.subTotal = subtotal.toString();
+      double pricePerSeat = _getCorrectPrice();
+      double totalAmount = pricePerSeat * _selectedSeatIndices.length;
+      bookingUserModel.subTotal = totalAmount.toString();
+
+      // Process payment if wallet is selected
+      Map<String, dynamic>? paymentResult;
+      if (_selectedPaymentMethod.toLowerCase() == 'wallet' ||
+          _selectedPaymentMethod.toLowerCase() == 'my wallet') {
+        ShowToastDialog.showLoader("Processing payment...");
+
+        paymentResult = await FireStoreUtils.deductFromUserWallet(
+            amount: totalAmount.toString(),
+            userId: FireStoreUtils.getCurrentUid(),
+            description:
+                "Ride booking payment - ${widget.bookingModel.pickUpAddress ?? 'Pickup'} to ${widget.bookingModel.dropAddress ?? 'Drop'}");
+
+        ShowToastDialog.closeLoader();
+
+        if (paymentResult['success'] != true) {
+          setState(() {
+            _isProcessingBooking = false;
+          });
+
+          if (paymentResult['code'] == 'INSUFFICIENT_BALANCE') {
+            _showInsufficientBalanceDialog(
+                required: totalAmount,
+                available: paymentResult['availableBalance'] ?? 0.0);
+          } else {
+            ShowToastDialog.showToast(
+                paymentResult['message'] ?? 'Payment failed');
+          }
+          return;
+        }
+
+        // Payment successful, now transfer money to driver after commission
+        ShowToastDialog.showLoader("Transferring payment to driver...");
+
+        // Calculate admin commission (from your Firebase settings: 10%)
+        double adminCommissionRate =
+            double.parse(Constant.adminCommission?.amount ?? '10');
+        double adminCommissionAmount =
+            (totalAmount * adminCommissionRate) / 100;
+        double driverAmount = totalAmount - adminCommissionAmount;
+
+        // Transfer money to driver's wallet
+        Map<String, dynamic> driverPaymentResult =
+            await FireStoreUtils.addToDriverWallet(
+                amount: driverAmount.toString(),
+                driverId: widget.bookingModel.createdBy.toString(),
+                bookingId: widget.bookingModel.id ?? '',
+                description:
+                    "Ride booking payment received - ${widget.bookingModel.pickUpAddress ?? 'Pickup'} to ${widget.bookingModel.dropAddress ?? 'Drop'} (After ${adminCommissionRate}% commission)");
+
+        // Record admin commission
+        await FireStoreUtils.recordAdminCommission(
+          amount: adminCommissionAmount.toString(),
+          bookingId: widget.bookingModel.id ?? '',
+          description:
+              "Platform commission (${adminCommissionRate}%) from ride booking",
+          passengerId: FireStoreUtils.getCurrentUid(),
+          driverId: widget.bookingModel.createdBy.toString(),
+        );
+
+        ShowToastDialog.closeLoader();
+
+        if (driverPaymentResult['success'] == true) {
+          ShowToastDialog.showToast(
+              "Payment successful! ₹${totalAmount.toStringAsFixed(2)} paid. Driver receives ₹${driverAmount.toStringAsFixed(2)} (₹${adminCommissionAmount.toStringAsFixed(2)} platform fee)");
+        } else {
+          // If driver payment fails, we should ideally refund the passenger
+          ShowToastDialog.showToast(
+              "Payment deducted but transfer to driver failed. Contact support.");
+        }
+      }
 
       ShowToastDialog.showLoader("Processing booking...");
+
+      // Move seats from tempSeatSelection to bookedSeat in Firebase
+      if (widget.bookingModel.id != null) {
+        final docRef = FirebaseFirestore.instance
+            .collection('booking')
+            .doc(widget.bookingModel.id);
+
+        await FirebaseFirestore.instance.runTransaction((transaction) async {
+          final snapshot = await transaction.get(docRef);
+
+          if (snapshot.exists) {
+            final data = snapshot.data();
+
+            // Get current temp seats
+            final currentTempSeats =
+                List<int>.from(data?['tempSeatSelection'] ?? []);
+
+            // Get current booked seats
+            final currentBookedSeatsString = data?['bookedSeat'] ?? "0";
+            List<String> currentBookedSeatsList =
+                currentBookedSeatsString.isEmpty ||
+                        currentBookedSeatsString == "0"
+                    ? []
+                    : currentBookedSeatsString.toString().split(',');
+
+            // Add newly selected seats to booked seats
+            currentBookedSeatsList
+                .addAll(_selectedSeatIndices.map((index) => index.toString()));
+
+            // Remove booked seats from temp selection
+            currentTempSeats
+                .removeWhere((seat) => _selectedSeatIndices.contains(seat));
+
+            // Update both fields in the same transaction
+            transaction.update(docRef, {
+              'tempSeatSelection': currentTempSeats,
+              'bookedSeat': currentBookedSeatsList.join(','),
+              'bookedUserId': widget.bookingModel.bookedUserId,
+            });
+          }
+        });
+      }
 
       // Save user booking
       await FireStoreUtils.setUserBooking(
@@ -829,6 +1631,15 @@ class _RideDialogState extends State<RideDialog> {
         token: publisherUser.fcmToken.toString(),
         payload: {},
       );
+
+      // Send notification to passenger (user who booked) confirming their booking
+      if (currentUser.fcmToken != null && currentUser.fcmToken!.isNotEmpty) {
+        await SendNotification.sendOneNotification(
+          type: Constant.booking_confirmed_by_passager,
+          token: currentUser.fcmToken.toString(),
+          payload: {},
+        );
+      }
 
       // Send WhatsApp notifications
       // Get current user profile for phone number
@@ -974,6 +1785,173 @@ class _RideDialogState extends State<RideDialog> {
               ),
               child: const Text(
                 'Verify Now',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Show insufficient balance dialog
+  void _showInsufficientBalanceDialog({
+    required double required,
+    required double available,
+  }) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        double shortfall = required - available;
+
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(
+                Icons.account_balance_wallet_outlined,
+                color: Colors.red,
+                size: 28,
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Insufficient Balance',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'You don\'t have enough balance in your wallet to book this ride.',
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Colors.red.shade200,
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Required amount:',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        Text(
+                          '₹${required.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Available balance:',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        Text(
+                          '₹${available.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Need to add:',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red,
+                          ),
+                        ),
+                        Text(
+                          '₹${shortfall.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text(
+                'Cancel',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                // Navigate to wallet screen to add money
+                Get.to(() => const WalletScreen());
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+              child: const Text(
+                'Add Money',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,

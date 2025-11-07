@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart' as geocoding;
 import 'package:get/get.dart';
@@ -86,11 +87,19 @@ class HomeController extends GetxController {
       UserModel? currentUser =
           await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid());
 
-      if (pickUpLocation.value.lat != null) {
-        List<geocoding.Placemark> placeMarks =
-            await geocoding.placemarkFromCoordinates(
-                pickUpLocation.value.lat!, pickUpLocation.value.lng!);
-        Constant.country = placeMarks.first.country;
+      // Only use geocoding on non-web platforms
+      if (!kIsWeb && pickUpLocation.value.lat != null) {
+        try {
+          List<geocoding.Placemark> placeMarks =
+              await geocoding.placemarkFromCoordinates(
+                  pickUpLocation.value.lat!, pickUpLocation.value.lng!);
+          if (placeMarks.isNotEmpty && placeMarks.first.country != null) {
+            Constant.country = placeMarks.first.country;
+          }
+        } catch (e) {
+          print('Geocoding error: $e');
+          // Continue without country code on web or if geocoding fails
+        }
       }
 
       await FireStoreUtils().getTaxList().then((value) {
@@ -396,33 +405,123 @@ class HomeController extends GetxController {
   Future<StopOverModel?> getStopOverData(
       {required BookingModel bookingModel,
       required StopOverModel stopOverModel}) async {
-    final response = await http.get(Uri.parse(
-        'https://maps.googleapis.com/maps/api/directions/json?origin=${stopOverModel.startLocation?.lat},${stopOverModel.startLocation?.lng}&destination=${stopOverModel.endLocation?.lat},${stopOverModel.endLocation?.lng}&alternatives=true&key=${Constant.mapAPIKey}'));
-    print("===>${response.request}");
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      DirectionAPIModel directionAPIModel = DirectionAPIModel.fromJson(data);
-      Routes route = directionAPIModel.routes!.first;
-      String price = (double.parse(Constant.distanceCalculate(
-                  route.legs![0].distance!.value.toString())) *
-              double.parse(
-                  bookingModel.vehicleInformation?.vehicleType?.perKmCharges ??
-                      '0'))
-          .toString();
-      String recommendedPrice = (double.parse(Constant.distanceCalculate(
-                  route.legs![0].distance!.value.toString())) *
-              double.parse(
-                  bookingModel.vehicleInformation?.vehicleType?.perKmCharges ??
-                      '0'))
-          .toString();
-      stopOverModel.distance = route.legs!.first.distance;
-      stopOverModel.duration = route.legs!.first.duration;
-      stopOverModel.price = price;
-      stopOverModel.recommendedPrice = recommendedPrice;
+    // On web, skip the API call due to CORS restrictions
+    // Return the stopOverModel with existing data or calculate estimated values
+    if (kIsWeb) {
+      // For web, we can't use the Directions API directly
+      // You could either:
+      // 1. Use a proxy server
+      // 2. Calculate straight-line distance as estimate
+      // 3. Return existing data from the booking
+
+      // For now, return the stopOverModel as-is with a basic calculation
+      // or use existing data from the booking
       return stopOverModel;
-    } else {
-      return null;
     }
+
+    try {
+      final response = await http.get(Uri.parse(
+          'https://maps.googleapis.com/maps/api/directions/json?origin=${stopOverModel.startLocation?.lat},${stopOverModel.startLocation?.lng}&destination=${stopOverModel.endLocation?.lat},${stopOverModel.endLocation?.lng}&alternatives=true&key=${Constant.mapAPIKey}'));
+      print("===>${response.request}");
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        DirectionAPIModel directionAPIModel = DirectionAPIModel.fromJson(data);
+        Routes route = directionAPIModel.routes!.first;
+        String price = (double.parse(Constant.distanceCalculate(
+                    route.legs![0].distance!.value.toString())) *
+                double.parse(bookingModel
+                        .vehicleInformation?.vehicleType?.perKmCharges ??
+                    '0'))
+            .toString();
+        String recommendedPrice = (double.parse(Constant.distanceCalculate(
+                    route.legs![0].distance!.value.toString())) *
+                double.parse(bookingModel
+                        .vehicleInformation?.vehicleType?.perKmCharges ??
+                    '0'))
+            .toString();
+        stopOverModel.distance = route.legs!.first.distance;
+        stopOverModel.duration = route.legs!.first.duration;
+        stopOverModel.price = price;
+        stopOverModel.recommendedPrice = recommendedPrice;
+        return stopOverModel;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching directions: $e');
+      // On error, return stopOverModel with existing data
+      return stopOverModel;
+    }
+  }
+
+  // Helper method to get the correct price for a stopOverModel
+  // Checks if it's a full route or matches a preset stopover
+  double getCorrectPrice(
+      BookingModel bookingModel, StopOverModel stopOverModel) {
+    // First check if it's a full route
+    final bookingPickupLat =
+        bookingModel.pickupLocation?.geometry?.location?.lat;
+    final bookingPickupLng =
+        bookingModel.pickupLocation?.geometry?.location?.lng;
+    final bookingDropLat = bookingModel.dropLocation?.geometry?.location?.lat;
+    final bookingDropLng = bookingModel.dropLocation?.geometry?.location?.lng;
+
+    final stopOverStartLat = stopOverModel.startLocation?.lat;
+    final stopOverStartLng = stopOverModel.startLocation?.lng;
+    final stopOverEndLat = stopOverModel.endLocation?.lat;
+    final stopOverEndLng = stopOverModel.endLocation?.lng;
+
+    if (bookingPickupLat != null &&
+        bookingPickupLng != null &&
+        bookingDropLat != null &&
+        bookingDropLng != null &&
+        stopOverStartLat != null &&
+        stopOverStartLng != null &&
+        stopOverEndLat != null &&
+        stopOverEndLng != null) {
+      // Check if it's a full route (start and end match booking's pickup and drop)
+      bool startMatches = (bookingPickupLat - stopOverStartLat).abs() < 0.001 &&
+          (bookingPickupLng - stopOverStartLng).abs() < 0.001;
+      bool endMatches = (bookingDropLat - stopOverEndLat).abs() < 0.001 &&
+          (bookingDropLng - stopOverEndLng).abs() < 0.001;
+
+      if (startMatches && endMatches) {
+        // It's a full route, use bookingModel.pricePerSeat
+        return double.tryParse(bookingModel.pricePerSeat ?? '0') ?? 0.0;
+      }
+
+      // Check if this matches any preset stopover in stopOverList
+      final stopOverList = bookingModel.stopOverList;
+      if (stopOverList != null && stopOverList.isNotEmpty) {
+        for (var presetStopOver in stopOverList) {
+          final presetStartLat = presetStopOver.startLocation?.lat;
+          final presetStartLng = presetStopOver.startLocation?.lng;
+          final presetEndLat = presetStopOver.endLocation?.lat;
+          final presetEndLng = presetStopOver.endLocation?.lng;
+
+          if (presetStartLat != null &&
+              presetStartLng != null &&
+              presetEndLat != null &&
+              presetEndLng != null) {
+            // Check if locations match (within small tolerance)
+            bool presetStartMatches =
+                (presetStartLat - stopOverStartLat).abs() < 0.001 &&
+                    (presetStartLng - stopOverStartLng).abs() < 0.001;
+            bool presetEndMatches =
+                (presetEndLat - stopOverEndLat).abs() < 0.001 &&
+                    (presetEndLng - stopOverEndLng).abs() < 0.001;
+
+            if (presetStartMatches && presetEndMatches) {
+              // Found matching preset stopover, use its price (not recommendedPrice)
+              return double.tryParse(presetStopOver.price ?? '0') ?? 0.0;
+            }
+          }
+        }
+      }
+    }
+
+    // No matching preset found, use the calculated stopOverModel price
+    return double.tryParse(stopOverModel.price ?? '0') ?? 0.0;
   }
 
   @override
@@ -474,7 +573,7 @@ class HomeController extends GetxController {
 
       // Check if ride requires only verified passengers
       if (bookingModel.onlyVerifiedPassenger == true) {
-        if (currentUser.isVerify != true) {
+        if (currentUser.aadharVerified != true) {
           return false; // User is not verified, cannot book
         }
       }

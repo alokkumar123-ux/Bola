@@ -7,14 +7,12 @@ import 'package:poolmate/app/chat/chat_screen.dart';
 import 'package:poolmate/app/rating_view_screen/rating_view_screen.dart';
 import 'package:poolmate/app/report_help_screen/report_help_screen.dart';
 import 'package:poolmate/app/review/review_screen.dart';
-import 'package:poolmate/app/wallet_screen/select_payment_method_screen.dart';
 import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/constant/show_toast_dialog.dart';
 import 'package:poolmate/controller/booked_details_controller.dart';
 import 'package:poolmate/model/map/geometry.dart';
 import 'package:poolmate/model/sos_model.dart';
 import 'package:poolmate/model/tax_model.dart';
-import 'package:poolmate/model/wallet_transaction_model.dart';
 import 'package:poolmate/themes/app_them_data.dart';
 import 'package:poolmate/themes/custom_dialog_box.dart';
 import 'package:poolmate/themes/responsive.dart';
@@ -24,7 +22,6 @@ import 'package:poolmate/utils/fire_store_utils.dart';
 import 'package:poolmate/utils/network_image_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:timelines_plus/timelines_plus.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class BookedDetailsScreen extends StatelessWidget {
   const BookedDetailsScreen({super.key});
@@ -483,21 +480,15 @@ class BookedDetailsScreen extends StatelessWidget {
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                                  Constant.getCityName(
-                                                      themeChange,
-                                                      Location(
-                                                          lat: controller
+                                                  Text(
+                                                      controller
                                                               .bookingUserModel
                                                               .value
                                                               .stopOver!
-                                                              .startLocation!
-                                                              .lat,
-                                                          lng: controller
-                                                              .bookingUserModel
-                                                              .value
-                                                              .stopOver!
-                                                              .startLocation!
-                                                              .lng),
+                                                              .startAddress
+                                                              ?.split(',')
+                                                              .first ??
+                                                          'Location',
                                                       style: TextStyle(
                                                           color: themeChange
                                                                   .getThem()
@@ -570,21 +561,15 @@ class BookedDetailsScreen extends StatelessWidget {
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                                  Constant.getCityName(
-                                                      themeChange,
-                                                      Location(
-                                                          lat: controller
+                                                  Text(
+                                                      controller
                                                               .bookingUserModel
                                                               .value
                                                               .stopOver!
-                                                              .endLocation!
-                                                              .lat,
-                                                          lng: controller
-                                                              .bookingUserModel
-                                                              .value
-                                                              .stopOver!
-                                                              .endLocation!
-                                                              .lng),
+                                                              .endAddress
+                                                              ?.split(',')
+                                                              .first ??
+                                                          'Location',
                                                       style: TextStyle(
                                                           color: themeChange
                                                                   .getThem()
@@ -679,7 +664,7 @@ class BookedDetailsScreen extends StatelessWidget {
                                       ),
                                     ),
                                     Text(
-                                      " ${controller.bookingUserModel.value.bookedSeat.toString()}",
+                                      " ${_formatSeatLabelsCsv(controller.bookingUserModel.value.bookedSeat)}",
                                       maxLines: 1,
                                       style: TextStyle(
                                         color: themeChange.getThem()
@@ -713,8 +698,9 @@ class BookedDetailsScreen extends StatelessWidget {
                                     ),
                                     Text(
                                       Constant.amountShow(
-                                          amount: controller.bookingUserModel
-                                              .value.stopOver!.price),
+                                          amount: controller
+                                              .getCorrectPricePerSeat()
+                                              .toString()),
                                       maxLines: 1,
                                       style: TextStyle(
                                         color: themeChange.getThem()
@@ -1345,298 +1331,6 @@ class BookedDetailsScreen extends StatelessWidget {
                                                             "Error cancelling booking"
                                                                 .tr);
                                                       }
-
-                                                      // Remove user from booked users
-                                                      String currentUserId =
-                                                          FireStoreUtils
-                                                              .getCurrentUid();
-                                                      controller.bookingModel
-                                                          .value.bookedUserId
-                                                          ?.remove(
-                                                              currentUserId);
-
-                                                      // Add user to cancelled users if not already there
-                                                      if (!controller
-                                                          .bookingModel
-                                                          .value
-                                                          .cancelledUserId!
-                                                          .contains(
-                                                              currentUserId)) {
-                                                        controller
-                                                            .bookingModel
-                                                            .value
-                                                            .cancelledUserId!
-                                                            .add(currentUserId);
-                                                      }
-
-                                                      // Update seat bookings list
-                                                      if (controller
-                                                              .bookingModel
-                                                              .value
-                                                              .seatBookings !=
-                                                          null) {
-                                                        controller.bookingModel
-                                                            .value.seatBookings!
-                                                            .removeWhere((seat) =>
-                                                                seat.userId ==
-                                                                currentUserId);
-                                                      }
-                                                      if (controller
-                                                              .bookingModel
-                                                              .value
-                                                              .cancelledUserId!
-                                                              .contains(
-                                                                  FireStoreUtils
-                                                                      .getCurrentUid()) ==
-                                                          false) {
-                                                        controller
-                                                            .bookingModel
-                                                            .value
-                                                            .cancelledUserId!
-                                                            .add(FireStoreUtils
-                                                                .getCurrentUid());
-                                                      }
-
-                                                      if (controller
-                                                              .bookingUserModel
-                                                              .value
-                                                              .paymentStatus ==
-                                                          true) {
-                                                        if (controller
-                                                                .bookingUserModel
-                                                                .value
-                                                                .paymentType!
-                                                                .toLowerCase() !=
-                                                            "cash") {
-                                                          WalletTransactionModel transactionModel = WalletTransactionModel(
-                                                              id: Constant
-                                                                  .getUuid(),
-                                                              amount: controller
-                                                                  .calculateAmount()
-                                                                  .toString(),
-                                                              createdDate:
-                                                                  Timestamp
-                                                                      .now(),
-                                                              paymentType:
-                                                                  "Wallet",
-                                                              transactionId:
-                                                                  controller
-                                                                      .bookingModel
-                                                                      .value
-                                                                      .id,
-                                                              isCredit: false,
-                                                              type: "publisher",
-                                                              userId: controller
-                                                                  .bookingModel
-                                                                  .value
-                                                                  .createdBy
-                                                                  .toString(),
-                                                              note:
-                                                                  "Amount refunded for ${controller.userModel.value.fullName()} ride");
-
-                                                          await FireStoreUtils
-                                                                  .setWalletTransaction(
-                                                                      transactionModel)
-                                                              .then(
-                                                                  (value) async {
-                                                            if (value == true) {
-                                                              await FireStoreUtils.updateOtherUserWallet(
-                                                                  amount:
-                                                                      "-${controller.calculateAmount().toString()}",
-                                                                  id: controller
-                                                                      .bookingModel
-                                                                      .value
-                                                                      .createdBy
-                                                                      .toString());
-                                                            }
-                                                          });
-                                                          if (controller
-                                                                      .bookingUserModel
-                                                                      .value
-                                                                      .adminCommission !=
-                                                                  null &&
-                                                              controller
-                                                                      .bookingUserModel
-                                                                      .value
-                                                                      .adminCommission!
-                                                                      .enable ==
-                                                                  true) {
-                                                            WalletTransactionModel adminCommissionWallet = WalletTransactionModel(
-                                                                id: Constant
-                                                                    .getUuid(),
-                                                                amount:
-                                                                    "${Constant.calculateOrderAdminCommission(amount: double.parse(controller.bookingUserModel.value.subTotal.toString()).toString(), adminCommission: controller.bookingUserModel.value.adminCommission)}",
-                                                                createdDate:
-                                                                    Timestamp
-                                                                        .now(),
-                                                                paymentType:
-                                                                    "Wallet",
-                                                                isCredit: true,
-                                                                transactionId:
-                                                                    controller
-                                                                        .bookingModel
-                                                                        .value
-                                                                        .id,
-                                                                type:
-                                                                    "publisher",
-                                                                userId: controller
-                                                                    .bookingModel
-                                                                    .value
-                                                                    .createdBy
-                                                                    .toString(),
-                                                                note:
-                                                                    "Admin commission credited for  ${controller.userModel.value.fullName()}");
-
-                                                            await FireStoreUtils
-                                                                    .setWalletTransaction(
-                                                                        adminCommissionWallet)
-                                                                .then(
-                                                                    (value) async {
-                                                              if (value ==
-                                                                  true) {
-                                                                await FireStoreUtils.updateOtherUserWallet(
-                                                                    amount:
-                                                                        "${Constant.calculateOrderAdminCommission(amount: controller.bookingUserModel.value.subTotal.toString(), adminCommission: controller.bookingUserModel.value.adminCommission)}",
-                                                                    id: controller
-                                                                        .bookingModel
-                                                                        .value
-                                                                        .createdBy
-                                                                        .toString());
-                                                              }
-                                                            });
-                                                          }
-                                                        } else {
-                                                          if (controller
-                                                                      .bookingUserModel
-                                                                      .value
-                                                                      .adminCommission !=
-                                                                  null &&
-                                                              controller
-                                                                      .bookingUserModel
-                                                                      .value
-                                                                      .adminCommission!
-                                                                      .enable ==
-                                                                  true) {
-                                                            WalletTransactionModel adminCommissionWallet = WalletTransactionModel(
-                                                                id: Constant
-                                                                    .getUuid(),
-                                                                amount:
-                                                                    "${Constant.calculateOrderAdminCommission(amount: double.parse(controller.bookingUserModel.value.subTotal.toString()).toString(), adminCommission: controller.bookingUserModel.value.adminCommission)}",
-                                                                createdDate:
-                                                                    Timestamp
-                                                                        .now(),
-                                                                paymentType:
-                                                                    "Wallet",
-                                                                isCredit: true,
-                                                                transactionId:
-                                                                    controller
-                                                                        .bookingModel
-                                                                        .value
-                                                                        .id,
-                                                                type:
-                                                                    "publisher",
-                                                                userId: controller
-                                                                    .bookingModel
-                                                                    .value
-                                                                    .createdBy
-                                                                    .toString(),
-                                                                note:
-                                                                    "Admin commission credited for  ${controller.userModel.value.fullName()}");
-                                                            await FireStoreUtils
-                                                                    .setWalletTransaction(
-                                                                        adminCommissionWallet)
-                                                                .then(
-                                                                    (value) async {
-                                                              if (value ==
-                                                                  true) {
-                                                                await FireStoreUtils.updateOtherUserWallet(
-                                                                    amount:
-                                                                        "-${Constant.calculateOrderAdminCommission(amount: controller.bookingUserModel.value.subTotal.toString(), adminCommission: controller.bookingUserModel.value.adminCommission)}",
-                                                                    id: controller
-                                                                        .bookingModel
-                                                                        .value
-                                                                        .createdBy
-                                                                        .toString());
-                                                              }
-                                                            });
-                                                          }
-                                                        }
-
-                                                        WalletTransactionModel transactionModel = WalletTransactionModel(
-                                                            id: Constant
-                                                                .getUuid(),
-                                                            amount: controller
-                                                                .calculateAmount()
-                                                                .toString(),
-                                                            createdDate:
-                                                                Timestamp.now(),
-                                                            paymentType:
-                                                                "Wallet",
-                                                            transactionId:
-                                                                controller
-                                                                    .bookingModel
-                                                                    .value
-                                                                    .id,
-                                                            isCredit: true,
-                                                            type: "customer",
-                                                            userId: controller
-                                                                .userModel
-                                                                .value
-                                                                .id
-                                                                .toString(),
-                                                            note:
-                                                                "Amount refunded for ${controller.publisherUserModel.value.fullName()} ride");
-
-                                                        await FireStoreUtils
-                                                                .setWalletTransaction(
-                                                                    transactionModel)
-                                                            .then(
-                                                                (value) async {
-                                                          if (value == true) {
-                                                            await FireStoreUtils.updateOtherUserWallet(
-                                                                amount: controller
-                                                                    .calculateAmount()
-                                                                    .toString(),
-                                                                id: controller
-                                                                    .userModel
-                                                                    .value
-                                                                    .id
-                                                                    .toString());
-                                                          }
-                                                        });
-                                                      }
-
-                                                      await FireStoreUtils
-                                                          .setCancelledUserBooking(
-                                                              controller
-                                                                  .bookingModel
-                                                                  .value,
-                                                              controller
-                                                                  .bookingUserModel
-                                                                  .value);
-                                                      await FireStoreUtils
-                                                          .removeUserBooking(
-                                                              controller
-                                                                  .bookingModel
-                                                                  .value,
-                                                              controller
-                                                                  .bookingUserModel
-                                                                  .value);
-
-                                                      await FireStoreUtils
-                                                              .setBooking(
-                                                                  controller
-                                                                      .bookingModel
-                                                                      .value)
-                                                          .then((value) {
-                                                        ShowToastDialog
-                                                            .closeLoader();
-                                                        ShowToastDialog.showToast(
-                                                            "Booking Cancelled"
-                                                                .tr);
-                                                        Get.back(result: true);
-                                                        Get.back(result: true);
-                                                      });
                                                     },
                                                     negativeClick: () {
                                                       Get.back();
@@ -1756,35 +1450,16 @@ class BookedDetailsScreen extends StatelessWidget {
                                                   textColor:
                                                       AppThemeData.grey50,
                                                   onPress: () async {
-                                                    Get.to(const SelectPaymentMethodScreen(),
-                                                            arguments: {
-                                                          "type": "booking",
-                                                          "amount": controller
-                                                              .calculateAmount()
-                                                              .toString(),
-                                                          "selectedPaymentMethod":
-                                                              controller
-                                                                  .bookingUserModel
-                                                                  .value
-                                                                  .paymentType
-                                                                  .toString(),
-                                                          "bookingId":
-                                                              controller
-                                                                  .bookingModel
-                                                                  .value
-                                                                  .id
-                                                                  .toString()
-                                                        })!
-                                                        .then(
-                                                      (value) {
-                                                        controller.paymentType
-                                                                .value =
-                                                            value[
-                                                                'paymentType'];
+                                                    // Payment method is already selected, directly process payment
+                                                    controller
+                                                            .paymentType.value =
                                                         controller
-                                                            .paymentCompleted();
-                                                      },
-                                                    );
+                                                            .bookingUserModel
+                                                            .value
+                                                            .paymentType
+                                                            .toString();
+                                                    controller
+                                                        .paymentCompleted();
                                                   },
                                                 ),
                                               ),
@@ -1802,5 +1477,21 @@ class BookedDetailsScreen extends StatelessWidget {
                 ),
               ));
         });
+  }
+
+  String _formatSeatLabelsCsv(String? csv) {
+    if (csv == null || csv.trim().isEmpty) return '';
+    final parts =
+        csv.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+    return parts.map((p) {
+      final idx = int.tryParse(p) ?? -1;
+      return _seatIndexToLabel(idx);
+    }).join(',');
+  }
+
+  String _seatIndexToLabel(int index) {
+    const labels = ['A1', 'A2', 'B1', 'B2', 'B3', 'C1', 'C2', 'C3'];
+    if (index >= 0 && index < labels.length) return labels[index];
+    return 'S$index';
   }
 }

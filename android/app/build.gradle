@@ -32,7 +32,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace "com.poolmate"
+    namespace "com.alok.poolmate"
     compileSdk 36
     ndkVersion flutter.ndkVersion
 
@@ -51,11 +51,11 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.poolmate"
+        applicationId "com.alok.poolmate"
         minSdkVersion 24
         targetSdkVersion 35
-        versionCode flutterVersionCode.toInteger()
-        versionName flutterVersionName
+        versionCode 22
+        versionName "1.2.1"
         multiDexEnabled true
     }
 

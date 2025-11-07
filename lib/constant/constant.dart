@@ -5,6 +5,7 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:asn1lib/asn1lib.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:geocoding/geocoding.dart' as geocoding;
 import 'package:get/get.dart';
 import 'package:get_thumbnail_video/index.dart';
@@ -255,6 +256,7 @@ class Constant {
   static const booking_confirmed = "booking_confirmed";
   static const payment_successful = "payment_successful";
   static const ride_arrive = "ride_arrive";
+  static const booking_confirmed_by_passager = "booking_confirmed_by_passager";
 
   static String orderId({String orderId = ''}) {
     return "#${(orderId).substring(orderId.length - 6)}";
@@ -312,19 +314,89 @@ class Constant {
   }
 
   static getCityName(themeChange, Location location, {TextStyle? style}) {
+    // Check if coordinates are valid before making the API call
+    if (location.lat == null ||
+        location.lng == null ||
+        location.lat == 0.0 ||
+        location.lng == 0.0) {
+      return Text(
+        "Location",
+        maxLines: 1,
+        style: style ??
+            TextStyle(
+                color: themeChange.getThem()
+                    ? AppThemeData.grey100
+                    : AppThemeData.grey800,
+                fontFamily: AppThemeData.bold,
+                fontSize: 14),
+      );
+    }
+
+    // For web platform, geocoding doesn't work reliably - return placeholder
+    if (kIsWeb) {
+      return Text(
+        "Location",
+        maxLines: 1,
+        style: style ??
+            TextStyle(
+                color: themeChange.getThem()
+                    ? AppThemeData.grey100
+                    : AppThemeData.grey800,
+                fontFamily: AppThemeData.bold,
+                fontSize: 14),
+      );
+    }
+
     return FutureBuilder<List<geocoding.Placemark>?>(
-        future:
-            geocoding.placemarkFromCoordinates(location.lat!, location.lng!),
+        future: geocoding
+            .placemarkFromCoordinates(location.lat!, location.lng!)
+            .catchError((error) {
+          // Catch any errors from geocoding and return empty list
+          return <geocoding.Placemark>[];
+        }),
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.waiting:
               return const SizedBox();
             case ConnectionState.done:
               if (snapshot.hasError) {
-                return const SizedBox();
-              } else {
                 return Text(
-                  "${snapshot.data!.first.locality}",
+                  "Location",
+                  maxLines: 1,
+                  style: style ??
+                      TextStyle(
+                          color: themeChange.getThem()
+                              ? AppThemeData.grey100
+                              : AppThemeData.grey800,
+                          fontFamily: AppThemeData.bold,
+                          fontSize: 14),
+                );
+              } else {
+                // Add null safety checks for web compatibility
+                if (snapshot.data == null || snapshot.data!.isEmpty) {
+                  // Fallback: show coordinates or a placeholder
+                  return Text(
+                    "Location",
+                    maxLines: 1,
+                    style: style ??
+                        TextStyle(
+                            color: themeChange.getThem()
+                                ? AppThemeData.grey100
+                                : AppThemeData.grey800,
+                            fontFamily: AppThemeData.bold,
+                            fontSize: 14),
+                  );
+                }
+
+                // Check if locality is available, otherwise use other placemark data
+                final placemark = snapshot.data!.first;
+                final cityName = placemark.locality ??
+                    placemark.subLocality ??
+                    placemark.administrativeArea ??
+                    "Location";
+
+                return Text(
+                  cityName,
                   maxLines: 1,
                   style: style ??
                       TextStyle(

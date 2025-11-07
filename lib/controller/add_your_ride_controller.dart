@@ -2,10 +2,12 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as google_map;
 import 'package:poolmate/app/dashboard_screen.dart';
+import 'package:poolmate/app/wallet_screen/wallet_screen.dart';
 import 'package:poolmate/controller/dashboard_controller.dart';
 import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/constant/show_toast_dialog.dart';
@@ -38,6 +40,8 @@ class AddYourRideController extends GetxController {
   RxBool onlyVerifiedPassenger = false.obs;
   RxBool twoPassengerMaxInBack = false.obs;
   RxList<int> selectedSeats = <int>[].obs;
+  RxString driverPaymentMethod =
+      "".obs; // New field for driver's payment preference
 
   Rx<DateTime> selectedDate = DateTime.now().obs;
 
@@ -93,33 +97,44 @@ class AddYourRideController extends GetxController {
   }
 
   void fetchRoutes() async {
-    final response = await http.get(Uri.parse(
-        'https://maps.googleapis.com/maps/api/directions/json?origin=${pickUpLocation.value.geometry!.location!.lat},${pickUpLocation.value.geometry!.location!.lng}&destination=${dropLocation.value.geometry!.location!.lat},${dropLocation.value.geometry!.location!.lng}&alternatives=true&key=${Constant.mapAPIKey}'));
-    print("===>${response.request}");
-    if (response.statusCode == 200) {
-      log("======>");
-      log(response.body);
-      final data = json.decode(response.body);
-      DirectionAPIModel directionAPIModel = DirectionAPIModel.fromJson(data);
+    // On web, skip the API call due to CORS restrictions
+    if (kIsWeb) {
+      print("Directions API not available on web due to CORS restrictions");
+      // You would need to implement a server-side proxy or use Google Maps JavaScript API
+      return;
+    }
 
-      routes.clear();
-      polylines.clear();
-      routes.value = directionAPIModel.routes!;
-      selectRoute(0);
-      // for (int i = 0; i < directionAPIModel.routes!.length; i++) {
-      //   Routes route = directionAPIModel.routes![i];
-      //   final overviewPolyline = route.overviewPolyline!.points;
-      //   final polylineCoordinates = Constant.decodePolyline(overviewPolyline!);
-      //
-      //   final polyline = google_map.Polyline(
-      //     polylineId: google_map.PolylineId('route_$i'),
-      //     color:  AppThemeData.grey400, // Highlight first route
-      //     points: polylineCoordinates,
-      //     width: 5,
-      //   );
-      //
-      //   polylines.add(polyline);
-      // }
+    try {
+      final response = await http.get(Uri.parse(
+          'https://maps.googleapis.com/maps/api/directions/json?origin=${pickUpLocation.value.geometry!.location!.lat},${pickUpLocation.value.geometry!.location!.lng}&destination=${dropLocation.value.geometry!.location!.lat},${dropLocation.value.geometry!.location!.lng}&alternatives=true&key=${Constant.mapAPIKey}'));
+      print("===>${response.request}");
+      if (response.statusCode == 200) {
+        log("======>");
+        log(response.body);
+        final data = json.decode(response.body);
+        DirectionAPIModel directionAPIModel = DirectionAPIModel.fromJson(data);
+
+        routes.clear();
+        polylines.clear();
+        routes.value = directionAPIModel.routes!;
+        selectRoute(0);
+        // for (int i = 0; i < directionAPIModel.routes!.length; i++) {
+        //   Routes route = directionAPIModel.routes![i];
+        //   final overviewPolyline = route.overviewPolyline!.points;
+        //   final polylineCoordinates = Constant.decodePolyline(overviewPolyline!);
+        //
+        //   final polyline = google_map.Polyline(
+        //     polylineId: google_map.PolylineId('route_$i'),
+        //     color:  AppThemeData.grey400, // Highlight first route
+        //     points: polylineCoordinates,
+        //     width: 5,
+        //   );
+        //
+        //   polylines.add(polyline);
+        // }
+      }
+    } catch (e) {
+      print('Error fetching routes: $e');
     }
   }
 
@@ -202,59 +217,73 @@ class AddYourRideController extends GetxController {
     filterSelectedCityList.clear();
     wayPointPolyLines.clear();
     stopOverList.clear();
-    final waypointsString = selectedCityList
-        .map((point) =>
-            '${point.geometry!.location!.lat},${point.geometry!.location!.lng}')
-        .join('|');
-    final response = await http.get(Uri.parse(
-        'https://maps.googleapis.com/maps/api/directions/json?origin=${pickUpLocation.value.geometry!.location!.lat},${pickUpLocation.value.geometry!.location!.lng}&destination=${dropLocation.value.geometry!.location!.lat},${dropLocation.value.geometry!.location!.lng}&alternatives=true&waypoints=optimize:true|$waypointsString&key=${Constant.mapAPIKey}'));
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      DirectionAPIModel directionAPIModel = DirectionAPIModel.fromJson(data);
 
-      Routes route = directionAPIModel.routes!.length == 1
-          ? directionAPIModel.routes!.first
-          : directionAPIModel.routes![selectedRouteIndex.value];
-      for (var element in route.legs!) {
-        String price = (double.parse(Constant.distanceCalculate(
-                    element.distance!.value.toString())) *
-                double.parse(selectedUserVehicle.value.vehicleType!.perKmCharges
-                    .toString()))
-            .toString();
-        String recommendedPrice = (double.parse(Constant.distanceCalculate(
-                    element.distance!.value.toString())) *
-                double.parse(selectedUserVehicle.value.vehicleType!.perKmCharges
-                    .toString()))
-            .toString();
-        stopOverList.add(StopOverModel(
-            duration: element.duration,
-            distance: element.distance,
-            endAddress: element.endAddress,
-            endLocation: element.endLocation,
-            price: price,
-            recommendedPrice: recommendedPrice,
-            startAddress: element.startAddress,
-            startLocation: element.startLocation));
-      }
-      final overviewPolyline = route.overviewPolyline!.points;
-      final polylineCoordinates = Constant.decodePolyline(overviewPolyline!);
-      final polyline = google_map.Polyline(
-        polylineId: const google_map.PolylineId("0"),
-        color: AppThemeData.primary300, // Highlight first route
-        points: polylineCoordinates,
-        width: 5,
-      );
-
-      wayPointPolyLines.add(polyline);
-      for (int i = 0; i < selectedCityList.length; i++) {
-        filterSelectedCityList.add(selectedCityList[directionAPIModel
-            .routes!.first.waypointOrder![i]]); // 2 replace with waypoint order
-      }
+    // On web, skip the API call due to CORS restrictions
+    if (kIsWeb) {
+      print(
+          "Waypoint directions not available on web due to CORS restrictions");
+      return;
     }
 
-    allSelectedCityList.add(pickUpLocation.value);
-    allSelectedCityList.addAll(filterSelectedCityList);
-    allSelectedCityList.add(dropLocation.value);
+    try {
+      final waypointsString = selectedCityList
+          .map((point) =>
+              '${point.geometry!.location!.lat},${point.geometry!.location!.lng}')
+          .join('|');
+      final response = await http.get(Uri.parse(
+          'https://maps.googleapis.com/maps/api/directions/json?origin=${pickUpLocation.value.geometry!.location!.lat},${pickUpLocation.value.geometry!.location!.lng}&destination=${dropLocation.value.geometry!.location!.lat},${dropLocation.value.geometry!.location!.lng}&alternatives=true&waypoints=optimize:true|$waypointsString&key=${Constant.mapAPIKey}'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        DirectionAPIModel directionAPIModel = DirectionAPIModel.fromJson(data);
+
+        Routes route = directionAPIModel.routes!.length == 1
+            ? directionAPIModel.routes!.first
+            : directionAPIModel.routes![selectedRouteIndex.value];
+        for (var element in route.legs!) {
+          String price = (double.parse(Constant.distanceCalculate(
+                      element.distance!.value.toString())) *
+                  double.parse(selectedUserVehicle
+                      .value.vehicleType!.perKmCharges
+                      .toString()))
+              .toString();
+          String recommendedPrice = (double.parse(Constant.distanceCalculate(
+                      element.distance!.value.toString())) *
+                  double.parse(selectedUserVehicle
+                      .value.vehicleType!.perKmCharges
+                      .toString()))
+              .toString();
+          stopOverList.add(StopOverModel(
+              duration: element.duration,
+              distance: element.distance,
+              endAddress: element.endAddress,
+              endLocation: element.endLocation,
+              price: price,
+              recommendedPrice: recommendedPrice,
+              startAddress: element.startAddress,
+              startLocation: element.startLocation));
+        }
+        final overviewPolyline = route.overviewPolyline!.points;
+        final polylineCoordinates = Constant.decodePolyline(overviewPolyline!);
+        final polyline = google_map.Polyline(
+          polylineId: const google_map.PolylineId("0"),
+          color: AppThemeData.primary300, // Highlight first route
+          points: polylineCoordinates,
+          width: 5,
+        );
+
+        wayPointPolyLines.add(polyline);
+        for (int i = 0; i < selectedCityList.length; i++) {
+          filterSelectedCityList.add(selectedCityList[directionAPIModel.routes!
+              .first.waypointOrder![i]]); // 2 replace with waypoint order
+        }
+      }
+
+      allSelectedCityList.add(pickUpLocation.value);
+      allSelectedCityList.addAll(filterSelectedCityList);
+      allSelectedCityList.add(dropLocation.value);
+    } catch (e) {
+      print('Error in wayPointFilter: $e');
+    }
   }
 
   RxDouble price = 0.0.obs;
@@ -297,6 +326,18 @@ class AddYourRideController extends GetxController {
 
   publishRide() async {
     ShowToastDialog.showLoader("Please wait");
+
+    // Check wallet balance before publishing ride
+    double walletBalance =
+        double.tryParse(userModel.value.walletAmount ?? "0.0") ?? 0.0;
+    const double minAllowedBalance = -500.0;
+
+    if (walletBalance < minAllowedBalance) {
+      ShowToastDialog.closeLoader();
+      _showWalletTopUpDialog();
+      return;
+    }
+
     BookingModel bookingModel = BookingModel();
     bookingModel.id = Constant.getUuid();
     bookingModel.createdBy = FireStoreUtils.getCurrentUid();
@@ -323,8 +364,11 @@ class AddYourRideController extends GetxController {
     bookingModel.stopOverList = stopOverList;
     bookingModel.status = Constant.placed;
     bookingModel.travelPreference = userModel.value.travelPreference;
-    bookingModel.driverVerify = userModel.value.isVerify;
+    bookingModel.driverVerify = (userModel.value.aadharVerified == true) &&
+        (userModel.value.panVerified == true);
     bookingModel.publish = true;
+    bookingModel.driverPaymentMethod =
+        driverPaymentMethod.value; // Set driver's payment preference
     // Add selected seats information
     bookingModel.selectedSeats =
         selectedSeats.map((seat) => seat.toString()).toList();
@@ -355,6 +399,57 @@ class AddYourRideController extends GetxController {
     });
   }
 
+  void _showWalletTopUpDialog() {
+    String currentBalance =
+        Constant.amountShow(amount: userModel.value.walletAmount ?? "0.0");
+    // String minBalance = Constant.amountShow(amount: "-500.0");
+
+    Get.dialog(
+      AlertDialog(
+        title: Text("Wallet Balance Low".tr),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Your current wallet balance is $currentBalance",
+              style: const TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              "You need to top up the wallet to make it zero before publishing any ride.",
+              style: const TextStyle(fontSize: 14),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Get.back();
+            },
+            child: Text("Cancel".tr),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Get.back();
+              Get.to(
+                const WalletScreen(),
+                arguments: {"type": "wallet"},
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppThemeData.primary300,
+            ),
+            child: Text(
+              "Top up Wallet".tr,
+              style: const TextStyle(color: AppThemeData.grey50),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   var newPublishRideActive = <BookingModel>[].obs;
   var OldPublishRideActive = <BookingModel>[].obs;
 
@@ -364,30 +459,42 @@ class AddYourRideController extends GetxController {
 
   Future<Duration> getDuration(
       {required Location startLocation, required Location endLocation}) async {
-    final response = await http.get(Uri.parse(
-        'https://maps.googleapis.com/maps/api/directions/json?origin=${startLocation.lat},${startLocation.lng}&destination=${endLocation.lat},${endLocation.lng}&alternatives=true&key=${Constant.mapAPIKey}'));
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      DirectionAPIModel directionAPIModel = DirectionAPIModel.fromJson(data);
+    // On web, return a default duration due to CORS restrictions
+    if (kIsWeb) {
+      print(
+          "Duration calculation not available on web due to CORS restrictions");
+      return Duration(minutes: 30); // Default estimate
+    }
 
-      if (directionAPIModel.routes != null &&
-          directionAPIModel.routes!.isNotEmpty) {
-        Routes route = directionAPIModel.routes!.first;
-        int? durationInSeconds = route.legs!.first.duration?.value;
+    try {
+      final response = await http.get(Uri.parse(
+          'https://maps.googleapis.com/maps/api/directions/json?origin=${startLocation.lat},${startLocation.lng}&destination=${endLocation.lat},${endLocation.lng}&alternatives=true&key=${Constant.mapAPIKey}'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        DirectionAPIModel directionAPIModel = DirectionAPIModel.fromJson(data);
 
-        if (durationInSeconds != null) {
-          Duration duration = Duration(seconds: durationInSeconds);
-          return duration;
+        if (directionAPIModel.routes != null &&
+            directionAPIModel.routes!.isNotEmpty) {
+          Routes route = directionAPIModel.routes!.first;
+          int? durationInSeconds = route.legs!.first.duration?.value;
+
+          if (durationInSeconds != null) {
+            Duration duration = Duration(seconds: durationInSeconds);
+            return duration;
+          } else {
+            print("Duration data not found in the response");
+            return Duration();
+          }
         } else {
-          print("Duration data not found in the response");
+          print("No routes found in the response");
           return Duration();
         }
       } else {
-        print("No routes found in the response");
+        print("Failed to fetch data. Status code: ${response.statusCode}");
         return Duration();
       }
-    } else {
-      print("Failed to fetch data. Status code: ${response.statusCode}");
+    } catch (e) {
+      print('Error getting duration: $e');
       return Duration();
     }
   }

@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:io';
+import 'dart:io' show Platform;
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_paypal/flutter_paypal.dart';
@@ -38,6 +39,7 @@ class SelectPaymentMethodController extends GetxController {
   RxString selectedPaymentMethod = "".obs;
   RxString bookingId = "".obs;
   RxString type = "wallet".obs;
+  RxString driverPaymentMethod = "".obs; // Driver's payment preference
 
   Rx<TextEditingController> amountController = TextEditingController().obs;
 
@@ -59,6 +61,9 @@ class SelectPaymentMethodController extends GetxController {
       }
       if (argumentData['bookingId'] != null) {
         bookingId.value = argumentData['bookingId'];
+      }
+      if (argumentData['driverPaymentMethod'] != null) {
+        driverPaymentMethod.value = argumentData['driverPaymentMethod'];
       }
       type.value = argumentData['type'];
     }
@@ -368,10 +373,14 @@ class SelectPaymentMethodController extends GetxController {
     maths.Random numRef = maths.Random();
     int year = DateTime.now().year;
     int refNumber = numRef.nextInt(20000);
-    if (Platform.isAndroid) {
-      _ref = "AndroidRef$year$refNumber";
-    } else if (Platform.isIOS) {
-      _ref = "IOSRef$year$refNumber";
+    if (kIsWeb) {
+      _ref = "WebRef$year$refNumber";
+    } else {
+      if (Platform.isAndroid) {
+        _ref = "AndroidRef$year$refNumber";
+      } else if (Platform.isIOS) {
+        _ref = "IOSRef$year$refNumber";
+      }
     }
   }
 
@@ -837,11 +846,23 @@ class SelectPaymentMethodController extends GetxController {
       // Check if Cashfree is configured and enabled
       if (paymentModel.value.cashfree == null) {
         ShowToastDialog.showToast("Cashfree payment is not configured.");
+        if (type.value == "bookingSelect") {
+          Get.back(result: {
+            "paymentType": selectedPaymentMethod.value,
+            "paymentSuccess": false
+          });
+        }
         return;
       }
 
       if (paymentModel.value.cashfree!.enable != true) {
         ShowToastDialog.showToast("Cashfree payment is not enabled.");
+        if (type.value == "bookingSelect") {
+          Get.back(result: {
+            "paymentType": selectedPaymentMethod.value,
+            "paymentSuccess": false
+          });
+        }
         return;
       }
 
@@ -866,20 +887,53 @@ class SelectPaymentMethodController extends GetxController {
             ));
 
         // Handle result after navigation is complete
+        log("Cashfree payment result: $result");
         if (result == true) {
+          log("Payment successful for type: ${type.value}");
           ShowToastDialog.showToast("Payment Successful!!");
-          walletTopUp();
+          if (type.value == "bookingSelect") {
+            // For seat booking, return payment success with payment method
+            Get.back(result: {
+              "paymentType": selectedPaymentMethod.value,
+              "paymentSuccess": true
+            });
+          } else {
+            // For wallet top-up, proceed with wallet top-up
+            walletTopUp();
+          }
         } else {
+          log("Payment failed or cancelled for type: ${type.value}, result: $result");
           ShowToastDialog.showToast("Payment cancelled or failed");
+          if (type.value == "bookingSelect") {
+            // For seat booking, return failure status
+            Get.back(result: {
+              "paymentType": selectedPaymentMethod.value,
+              "paymentSuccess": false
+            });
+          }
         }
       } else {
         ShowToastDialog.showToast(
             "Failed to create payment session. Please try again.");
+        if (type.value == "bookingSelect") {
+          // For seat booking, return failure status
+          Get.back(result: {
+            "paymentType": selectedPaymentMethod.value,
+            "paymentSuccess": false
+          });
+        }
       }
     } catch (e) {
       ShowToastDialog.closeLoader();
       log("Cashfree payment error: $e");
       ShowToastDialog.showToast("Payment failed: $e");
+      if (type.value == "bookingSelect") {
+        // For seat booking, return failure status
+        Get.back(result: {
+          "paymentType": selectedPaymentMethod.value,
+          "paymentSuccess": false
+        });
+      }
     }
   }
 

@@ -7,7 +7,6 @@ import 'package:poolmate/app/rating_view_screen/rating_view_screen.dart';
 import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/controller/myride_controller.dart';
 import 'package:poolmate/model/booking_model.dart';
-import 'package:poolmate/model/map/geometry.dart';
 import 'package:poolmate/model/stop_over_model.dart';
 import 'package:poolmate/model/user_model.dart';
 import 'package:poolmate/themes/app_them_data.dart';
@@ -202,14 +201,21 @@ class MyRideScreen extends StatelessWidget {
                                                                             style:
                                                                                 Theme.of(context).textTheme.bodyLarge,
                                                                             children: [
-                                                                              WidgetSpan(child: Constant.getCityName(themeChange, Location(lat: stopOverModel?.startLocation?.lat ?? 0.0, lng: stopOverModel?.startLocation?.lng ?? 0.0))),
+                                                                              // Use address strings instead of geocoding for better web support
+                                                                              TextSpan(
+                                                                                text: stopOverModel?.startAddress?.split(',').first ?? 'Location',
+                                                                                style: TextStyle(color: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800, fontFamily: AppThemeData.bold, fontSize: 14),
+                                                                              ),
                                                                               WidgetSpan(
                                                                                 child: Padding(
                                                                                   padding: const EdgeInsets.symmetric(horizontal: 10),
                                                                                   child: SvgPicture.asset("assets/icons/ic_right_arrow.svg"),
                                                                                 ),
                                                                               ),
-                                                                              WidgetSpan(child: Constant.getCityName(themeChange, Location(lat: stopOverModel?.endLocation?.lat ?? 0.0, lng: stopOverModel?.endLocation?.lng ?? 0.0)))
+                                                                              TextSpan(
+                                                                                text: stopOverModel?.endAddress?.split(',').first ?? 'Location',
+                                                                                style: TextStyle(color: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800, fontFamily: AppThemeData.bold, fontSize: 14),
+                                                                              ),
                                                                             ],
                                                                           ),
                                                                         ),
@@ -378,7 +384,7 @@ class MyRideScreen extends StatelessWidget {
                                                                               10,
                                                                         ),
                                                                         Text(
-                                                                          "${bookingUserModel.bookedSeat} Passenger",
+                                                                          "${_formatSeatLabelsCsv(bookingUserModel.bookedSeat)} Passenger",
                                                                           maxLines:
                                                                               1,
                                                                           style:
@@ -655,20 +661,25 @@ class MyRideScreen extends StatelessWidget {
                                                           .textTheme
                                                           .bodyLarge,
                                                       children: [
-                                                        WidgetSpan(
-                                                            child: Constant.getCityName(
-                                                                themeChange,
-                                                                Location(
-                                                                    lat: bookingModel
-                                                                        .pickupLocation!
-                                                                        .geometry!
-                                                                        .location!
-                                                                        .lat,
-                                                                    lng: bookingModel
-                                                                        .pickupLocation!
-                                                                        .geometry!
-                                                                        .location!
-                                                                        .lng))),
+                                                        // Use address strings instead of geocoding
+                                                        TextSpan(
+                                                          text: bookingModel
+                                                                  .pickUpAddress
+                                                                  ?.split(',')
+                                                                  .first ??
+                                                              'Location',
+                                                          style: TextStyle(
+                                                              color: themeChange
+                                                                      .getThem()
+                                                                  ? AppThemeData
+                                                                      .grey100
+                                                                  : AppThemeData
+                                                                      .grey800,
+                                                              fontFamily:
+                                                                  AppThemeData
+                                                                      .bold,
+                                                              fontSize: 14),
+                                                        ),
                                                         WidgetSpan(
                                                           child: Padding(
                                                             padding:
@@ -680,20 +691,24 @@ class MyRideScreen extends StatelessWidget {
                                                                 "assets/icons/ic_right_arrow.svg"),
                                                           ),
                                                         ),
-                                                        WidgetSpan(
-                                                            child: Constant.getCityName(
-                                                                themeChange,
-                                                                Location(
-                                                                    lat: bookingModel
-                                                                        .dropLocation!
-                                                                        .geometry!
-                                                                        .location!
-                                                                        .lat,
-                                                                    lng: bookingModel
-                                                                        .dropLocation!
-                                                                        .geometry!
-                                                                        .location!
-                                                                        .lng)))
+                                                        TextSpan(
+                                                          text: bookingModel
+                                                                  .dropAddress
+                                                                  ?.split(',')
+                                                                  .first ??
+                                                              'Location',
+                                                          style: TextStyle(
+                                                              color: themeChange
+                                                                      .getThem()
+                                                                  ? AppThemeData
+                                                                      .grey100
+                                                                  : AppThemeData
+                                                                      .grey800,
+                                                              fontFamily:
+                                                                  AppThemeData
+                                                                      .bold,
+                                                              fontSize: 14),
+                                                        ),
                                                       ],
                                                     ),
                                                   ),
@@ -854,7 +869,7 @@ class MyRideScreen extends StatelessWidget {
                                                       width: 10,
                                                     ),
                                                     Text(
-                                                      "${bookingModel.bookedSeat} Seats Booked"
+                                                      "${_formatSeatLabelsCsv(bookingModel.bookedSeat)} Seats Booked"
                                                           .tr,
                                                       maxLines: 1,
                                                       style: TextStyle(
@@ -1162,16 +1177,16 @@ class MyRideScreen extends StatelessWidget {
                     text: TextSpan(
                       style: Theme.of(context).textTheme.bodyLarge,
                       children: [
-                        WidgetSpan(
-                          child: Constant.getCityName(
-                            themeChange,
-                            Location(
-                              lat: bookingModel
-                                  .pickupLocation!.geometry!.location!.lat,
-                              lng: bookingModel
-                                  .pickupLocation!.geometry!.location!.lng,
-                            ),
-                          ),
+                        // Use address strings instead of geocoding
+                        TextSpan(
+                          text: bookingModel.pickUpAddress?.split(',').first ??
+                              'Location',
+                          style: TextStyle(
+                              color: themeChange.getThem()
+                                  ? AppThemeData.grey100
+                                  : AppThemeData.grey800,
+                              fontFamily: AppThemeData.bold,
+                              fontSize: 14),
                         ),
                         WidgetSpan(
                           child: Padding(
@@ -1180,17 +1195,16 @@ class MyRideScreen extends StatelessWidget {
                                 "assets/icons/ic_right_arrow.svg"),
                           ),
                         ),
-                        WidgetSpan(
-                          child: Constant.getCityName(
-                            themeChange,
-                            Location(
-                              lat: bookingModel
-                                  .dropLocation!.geometry!.location!.lat,
-                              lng: bookingModel
-                                  .dropLocation!.geometry!.location!.lng,
-                            ),
-                          ),
-                        )
+                        TextSpan(
+                          text: bookingModel.dropAddress?.split(',').first ??
+                              'Location',
+                          style: TextStyle(
+                              color: themeChange.getThem()
+                                  ? AppThemeData.grey100
+                                  : AppThemeData.grey800,
+                              fontFamily: AppThemeData.bold,
+                              fontSize: 14),
+                        ),
                       ],
                     ),
                   ),
@@ -1302,7 +1316,8 @@ class MyRideScreen extends StatelessWidget {
                     ),
                     const SizedBox(width: 10),
                     Text(
-                      "${bookingModel.bookedSeat} Seats Booked".tr,
+                      "${_formatSeatLabelsCsv(bookingModel.bookedSeat)} Seats Booked"
+                          .tr,
                       maxLines: 1,
                       style: TextStyle(
                         color: themeChange.getThem()
@@ -1375,5 +1390,31 @@ class MyRideScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  // Convert stored seat indices CSV (e.g., "1,2") to labels CSV (e.g., "A1,A2")
+  String _formatSeatLabelsCsv(String? csv) {
+    if (csv == null || csv.trim().isEmpty) return 'No';
+    final parts =
+        csv.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+    // Filter out seat index 0 (A1 - driver's seat) as it's always occupied by the driver
+    final passengerSeats =
+        parts.where((p) => (int.tryParse(p) ?? -1) != 0).map((p) {
+      final idx = int.tryParse(p) ?? -1;
+      return _seatIndexToLabel(idx);
+    }).toList();
+
+    // If no passenger seats are booked (only driver seat), return 'No'
+    if (passengerSeats.isEmpty) return 'No';
+
+    return passengerSeats.join(',');
+  }
+
+  String _seatIndexToLabel(int index) {
+    const labels = ['A1', 'A2', 'B1', 'B2', 'B3', 'C1', 'C2', 'C3'];
+    if (index >= 0 && index < labels.length) {
+      return labels[index];
+    }
+    return 'S$index';
   }
 }

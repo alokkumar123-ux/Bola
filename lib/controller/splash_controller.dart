@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get/get.dart';
 import 'package:poolmate/app/dashboard_screen.dart';
 import 'package:poolmate/app/help_support_screen/help_support_screen.dart';
@@ -22,11 +23,14 @@ class SplashController extends GetxController {
 
   redirectScreen() async {
     if (Preferences.getBoolean(Preferences.isClickOnNotification) != true) {
-      if (Preferences.getBoolean(Preferences.isFinishOnBoardingKey) == false) {
+      // Skip onboarding screen on web platform
+      if (!kIsWeb &&
+          Preferences.getBoolean(Preferences.isFinishOnBoardingKey) == false) {
         Get.offAll(const OnBoardingScreen());
       } else {
         bool isLogin = await FireStoreUtils.isLogin();
         if (isLogin == true) {
+          // Don't update FCM token on app startup - only during login/signup
           Get.offAll(const DashBoardScreen());
         } else {
           Get.offAll(const GetStartedScreen());

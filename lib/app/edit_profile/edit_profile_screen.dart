@@ -138,6 +138,20 @@ class EditProfileScreen extends StatelessWidget {
                               const SizedBox(
                                 height: 10,
                               ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(top: 5, bottom: 10),
+                                child: Text(
+                                  "Name as per the AADHAR".tr,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: themeChange.getThem()
+                                        ? AppThemeData.grey200
+                                        : AppThemeData.grey700,
+                                    fontFamily: AppThemeData.regular,
+                                  ),
+                                ),
+                              ),
                               TextFieldWidget(
                                 hintText: 'Enter your first name'.tr,
                                 controller:
@@ -337,7 +351,7 @@ class EditProfileScreen extends StatelessWidget {
                                 hintText: 'Email ID'.tr,
                                 controller: controller.emailController.value,
                                 title: 'Email ID'.tr,
-                                enable: false,
+                                enable: true,
                               ),
                               TextFieldWidget(
                                 hintText: 'Region'.tr,
@@ -394,7 +408,45 @@ class EditProfileScreen extends StatelessWidget {
                                 controller:
                                     controller.phoneNumberController.value,
                                 title: 'Phone number'.tr,
-                                enable: false,
+                                enable: true,
+                              ),
+                            ],
+                          ),
+                        ),
+                        PreferredSize(
+                          preferredSize: const Size.fromHeight(4.0),
+                          child: Container(
+                            color: themeChange.getThem()
+                                ? AppThemeData.grey700
+                                : AppThemeData.grey200,
+                            height: 4.0,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 10),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "WhatsApp Information".tr,
+                                style: TextStyle(
+                                    color: themeChange.getThem()
+                                        ? AppThemeData.grey100
+                                        : AppThemeData.grey800,
+                                    fontFamily: AppThemeData.bold,
+                                    fontSize: 16),
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              TextFieldWidget(
+                                hintText: 'WhatsApp number'.tr,
+                                controller:
+                                    controller.phoneNumberController.value,
+                                title: 'WhatsApp number'.tr,
+                                enable: true,
                               ),
                             ],
                           ),

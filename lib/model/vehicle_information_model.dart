@@ -13,6 +13,11 @@ class VehicleInformationModel {
   VehicleModel? vehicleModel;
   VehicleTypeModel? vehicleType;
   List<dynamic>? vehicleImages;
+  bool? rcVerified;
+  String? rcStatus;
+  String? rcExpiryDate;
+  String? vehicleInsuranceUpto;
+  String? verifiedAt;
 
   VehicleInformationModel({
     this.id,
@@ -25,6 +30,11 @@ class VehicleInformationModel {
     this.vehicleModel,
     this.vehicleType,
     this.vehicleImages,
+    this.rcVerified,
+    this.rcStatus,
+    this.rcExpiryDate,
+    this.vehicleInsuranceUpto,
+    this.verifiedAt,
   });
 
   VehicleInformationModel.fromJson(Map<String, dynamic> json) {
@@ -35,6 +45,11 @@ class VehicleInformationModel {
     vehicleRegistrationYear = json['vehicleRegistrationYear'];
     seatCount = json['seatCount'];
     vehicleImages = json['vehicleImages'];
+    rcVerified = json['rcVerified'] ?? false;
+    rcStatus = json['rcStatus'];
+    rcExpiryDate = json['rcExpiryDate'];
+    vehicleInsuranceUpto = json['vehicleInsuranceUpto'];
+    verifiedAt = json['verifiedAt'];
 
     vehicleBrand = json['vehicleBrand'] != null
         ? VehicleBrandModel.fromJson(json['vehicleBrand'])
@@ -56,6 +71,11 @@ class VehicleInformationModel {
     data['vehicleRegistrationYear'] = vehicleRegistrationYear;
     data['seatCount'] = seatCount;
     data['vehicleImages'] = vehicleImages;
+    data['rcVerified'] = rcVerified;
+    data['rcStatus'] = rcStatus;
+    data['rcExpiryDate'] = rcExpiryDate;
+    data['vehicleInsuranceUpto'] = vehicleInsuranceUpto;
+    data['verifiedAt'] = verifiedAt;
     if (vehicleBrand != null) {
       data['vehicleBrand'] = vehicleBrand!.toJson();
     }

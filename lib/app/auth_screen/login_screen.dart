@@ -1,6 +1,7 @@
-import 'dart:io';
+import 'dart:io' show Platform;
 
 import 'package:country_code_picker/country_code_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -25,9 +26,13 @@ class LoginScreen extends StatelessWidget {
         init: LoginController(),
         builder: (controller) {
           return Scaffold(
-            backgroundColor: themeChange.getThem() ? AppThemeData.grey900 : AppThemeData.grey50,
+            backgroundColor: themeChange.getThem()
+                ? AppThemeData.grey900
+                : AppThemeData.grey50,
             appBar: AppBar(
-              backgroundColor: themeChange.getThem() ? AppThemeData.grey900 : AppThemeData.grey50,
+              backgroundColor: themeChange.getThem()
+                  ? AppThemeData.grey900
+                  : AppThemeData.grey50,
               centerTitle: true,
               leading: InkWell(
                   onTap: () {
@@ -35,11 +40,18 @@ class LoginScreen extends StatelessWidget {
                   },
                   child: Icon(
                     Icons.close,
-                    color: themeChange.getThem() ? AppThemeData.grey200 : AppThemeData.grey700,
+                    color: themeChange.getThem()
+                        ? AppThemeData.grey200
+                        : AppThemeData.grey700,
                   )),
               title: Text(
                 controller.isLogin.value ? "Login".tr : "Sign up".tr,
-                style: TextStyle(color: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800, fontFamily: AppThemeData.semiBold, fontSize: 16),
+                style: TextStyle(
+                    color: themeChange.getThem()
+                        ? AppThemeData.grey100
+                        : AppThemeData.grey800,
+                    fontFamily: AppThemeData.semiBold,
+                    fontSize: 16),
               ),
             ),
             body: Padding(
@@ -50,7 +62,9 @@ class LoginScreen extends StatelessWidget {
                     Container(
                       width: Responsive.width(100, context),
                       decoration: BoxDecoration(
-                        color: themeChange.getThem() ? AppThemeData.grey800 : AppThemeData.grey100,
+                        color: themeChange.getThem()
+                            ? AppThemeData.grey800
+                            : AppThemeData.grey100,
                         borderRadius: const BorderRadius.all(
                           Radius.circular(10),
                         ),
@@ -61,19 +75,43 @@ class LoginScreen extends StatelessWidget {
                           Expanded(
                             child: CountryCodePicker(
                               onChanged: (value) {
-                                controller.countryCodeController.value.text = value.dialCode.toString();
+                                controller.countryCodeController.value.text =
+                                    value.dialCode.toString();
                               },
-                              dialogTextStyle: TextStyle(color: themeChange.getThem() ? AppThemeData.grey50 : AppThemeData.grey900, fontWeight: FontWeight.w500, fontFamily: AppThemeData.medium),
-                              dialogBackgroundColor: themeChange.getThem() ? AppThemeData.grey800 : AppThemeData.grey100,
-                              initialSelection: controller.countryCodeController.value.text,
-                              comparator: (a, b) => b.name!.compareTo(a.name.toString()),
+                              dialogTextStyle: TextStyle(
+                                  color: themeChange.getThem()
+                                      ? AppThemeData.grey50
+                                      : AppThemeData.grey900,
+                                  fontWeight: FontWeight.w500,
+                                  fontFamily: AppThemeData.medium),
+                              dialogBackgroundColor: themeChange.getThem()
+                                  ? AppThemeData.grey800
+                                  : AppThemeData.grey100,
+                              initialSelection:
+                                  controller.countryCodeController.value.text,
+                              comparator: (a, b) =>
+                                  b.name!.compareTo(a.name.toString()),
                               alignLeft: true,
                               flagDecoration: const BoxDecoration(
-                                borderRadius: BorderRadius.all(Radius.circular(2)),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(2)),
                               ),
-                              textStyle: TextStyle(fontSize: 14, color: themeChange.getThem() ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.medium),
-                              searchDecoration: InputDecoration(iconColor: themeChange.getThem() ? AppThemeData.grey50 : AppThemeData.grey900),
-                              searchStyle: TextStyle(color: themeChange.getThem() ? AppThemeData.grey50 : AppThemeData.grey900, fontWeight: FontWeight.w500, fontFamily: AppThemeData.medium),
+                              textStyle: TextStyle(
+                                  fontSize: 14,
+                                  color: themeChange.getThem()
+                                      ? AppThemeData.grey50
+                                      : AppThemeData.grey900,
+                                  fontFamily: AppThemeData.medium),
+                              searchDecoration: InputDecoration(
+                                  iconColor: themeChange.getThem()
+                                      ? AppThemeData.grey50
+                                      : AppThemeData.grey900),
+                              searchStyle: TextStyle(
+                                  color: themeChange.getThem()
+                                      ? AppThemeData.grey50
+                                      : AppThemeData.grey900,
+                                  fontWeight: FontWeight.w500,
+                                  fontFamily: AppThemeData.medium),
                             ),
                           ),
                           const Padding(
@@ -97,7 +135,8 @@ class LoginScreen extends StatelessWidget {
                       textColor: AppThemeData.grey50,
                       onPress: () {
                         if (controller.phoneNumber.value.text.isEmpty) {
-                          ShowToastDialog.showToast("Please enter mobile number".tr);
+                          ShowToastDialog.showToast(
+                              "Please enter mobile number".tr);
                         } else {
                           controller.sendCode();
                         }
@@ -109,12 +148,15 @@ class LoginScreen extends StatelessWidget {
                         children: [
                           const Expanded(child: Divider(thickness: 1)),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 40),
                             child: Text(
                               "OR".tr,
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                color: themeChange.getThem() ? AppThemeData.grey300 : AppThemeData.grey600,
+                                color: themeChange.getThem()
+                                    ? AppThemeData.grey300
+                                    : AppThemeData.grey600,
                                 fontSize: 12,
                                 fontFamily: AppThemeData.medium,
                                 fontWeight: FontWeight.w500,
@@ -133,7 +175,9 @@ class LoginScreen extends StatelessWidget {
                         width: Responsive.width(100, context),
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: themeChange.getThem() ? AppThemeData.grey800 : AppThemeData.grey100,
+                          color: themeChange.getThem()
+                              ? AppThemeData.grey800
+                              : AppThemeData.grey100,
                           borderRadius: BorderRadius.circular(200),
                         ),
                         child: Row(
@@ -141,13 +185,16 @@ class LoginScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            SvgPicture.asset("assets/icons/ic_google.svg", height: 24, width: 24),
+                            SvgPicture.asset("assets/icons/ic_google.svg",
+                                height: 24, width: 24),
                             const SizedBox(width: 25),
                             Text(
                               'Continue with Google'.tr,
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                color: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800,
+                                color: themeChange.getThem()
+                                    ? AppThemeData.grey100
+                                    : AppThemeData.grey800,
                                 fontSize: 14,
                                 fontFamily: AppThemeData.semiBold,
                                 fontWeight: FontWeight.w500,
@@ -160,7 +207,7 @@ class LoginScreen extends StatelessWidget {
                     const SizedBox(
                       height: 10,
                     ),
-                    Platform.isIOS
+                    (!kIsWeb && Platform.isIOS)
                         ? InkWell(
                             onTap: () {
                               controller.loginWithApple();
@@ -169,7 +216,9 @@ class LoginScreen extends StatelessWidget {
                               width: Responsive.width(100, context),
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: themeChange.getThem() ? AppThemeData.grey800 : AppThemeData.grey100,
+                                color: themeChange.getThem()
+                                    ? AppThemeData.grey800
+                                    : AppThemeData.grey100,
                                 borderRadius: BorderRadius.circular(200),
                               ),
                               child: Row(
@@ -177,13 +226,16 @@ class LoginScreen extends StatelessWidget {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  SvgPicture.asset("assets/icons/ic_apple.svg", height: 24, width: 24),
+                                  SvgPicture.asset("assets/icons/ic_apple.svg",
+                                      height: 24, width: 24),
                                   const SizedBox(width: 12),
                                   Text(
                                     'Continue with apple'.tr,
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
-                                      color: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800,
+                                      color: themeChange.getThem()
+                                          ? AppThemeData.grey100
+                                          : AppThemeData.grey800,
                                       fontSize: 14,
                                       fontFamily: AppThemeData.semiBold,
                                       fontWeight: FontWeight.w500,
@@ -201,8 +253,15 @@ class LoginScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
-                            controller.isLogin.value == false ? 'Already a member? '.tr : 'Not a member yet? '.tr,
-                            style: TextStyle(color: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800, fontFamily: AppThemeData.medium, fontSize: 14),
+                            controller.isLogin.value == false
+                                ? 'Already a member? '.tr
+                                : 'Not a member yet? '.tr,
+                            style: TextStyle(
+                                color: themeChange.getThem()
+                                    ? AppThemeData.grey100
+                                    : AppThemeData.grey800,
+                                fontFamily: AppThemeData.medium,
+                                fontSize: 14),
                           ),
                           InkWell(
                             onTap: () {
@@ -213,8 +272,15 @@ class LoginScreen extends StatelessWidget {
                               }
                             },
                             child: Text(
-                              controller.isLogin.value == false ? 'Log in'.tr : 'Sign up'.tr,
-                              style: TextStyle(color: themeChange.getThem() ? AppThemeData.primary300 : AppThemeData.primary300, fontFamily: AppThemeData.medium, fontSize: 14),
+                              controller.isLogin.value == false
+                                  ? 'Log in'.tr
+                                  : 'Sign up'.tr,
+                              style: TextStyle(
+                                  color: themeChange.getThem()
+                                      ? AppThemeData.primary300
+                                      : AppThemeData.primary300,
+                                  fontFamily: AppThemeData.medium,
+                                  fontSize: 14),
                             ),
                           ),
                         ],
@@ -230,7 +296,8 @@ class LoginScreen extends StatelessWidget {
                                   TextSpan(
                                     children: [
                                       TextSpan(
-                                          text: 'By signing up, you accept our '.tr,
+                                          text: 'By signing up, you accept our '
+                                              .tr,
                                           style: const TextStyle(
                                             color: AppThemeData.grey600,
                                             fontSize: 12,
@@ -284,7 +351,7 @@ class LoginScreen extends StatelessWidget {
                                   height: 10,
                                 ),
                                 Text(
-                                    'This Information is collected by POOLMATE for the purpose of creating your account, managing your booking, using and improving our service and ensuring the security if our platform'
+                                    'This Information is collected by BOLA for the purpose of creating your account, managing your booking, using and improving our service and ensuring the security if our platform'
                                         .tr,
                                     style: const TextStyle(
                                       color: AppThemeData.grey600,

@@ -1,5 +1,6 @@
-import 'dart:io';
+import 'dart:io' show Platform;
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -79,10 +80,13 @@ class SelectPaymentMethodScreen extends StatelessWidget {
                               ? TextFieldWidget(
                                   hintText: 'Enter Amount'.tr,
                                   controller: controller.amountController.value,
-                                  textInputType: Platform.isIOS
-                                      ? const TextInputType.numberWithOptions(
-                                          signed: true, decimal: true)
-                                      : TextInputType.number,
+                                  textInputType: kIsWeb
+                                      ? TextInputType.number
+                                      : Platform.isIOS
+                                          ? const TextInputType
+                                              .numberWithOptions(
+                                              signed: true, decimal: true)
+                                          : TextInputType.number,
                                   inputFormatters: [
                                     FilteringTextInputFormatter.allow(
                                         RegExp(r'^\d+\.?\d{0,4}'))
@@ -118,7 +122,10 @@ class SelectPaymentMethodScreen extends StatelessWidget {
                                 controller.paymentModel.value.cash!.enable ==
                                     true &&
                                 (controller.type.value == "booking" ||
-                                    controller.type.value == "bookingSelect"),
+                                    controller.type.value == "bookingSelect") &&
+                                // Hide cash if driver prefers online payment
+                                !(controller.driverPaymentMethod.value ==
+                                    "Online"),
                             child: cardDecoration(
                                 controller,
                                 controller.paymentModel.value.cash!.name
@@ -130,7 +137,10 @@ class SelectPaymentMethodScreen extends StatelessWidget {
                             visible: controller.paymentModel.value.strip !=
                                     null &&
                                 controller.paymentModel.value.strip!.enable ==
-                                    true,
+                                    true &&
+                                // Hide online payment if driver prefers cash
+                                !(controller.driverPaymentMethod.value ==
+                                    "Cash"),
                             child: cardDecoration(
                                 controller,
                                 controller.paymentModel.value.strip!.name
@@ -142,7 +152,10 @@ class SelectPaymentMethodScreen extends StatelessWidget {
                             visible: controller.paymentModel.value.paypal !=
                                     null &&
                                 controller.paymentModel.value.paypal!.enable ==
-                                    true,
+                                    true &&
+                                // Hide online payment if driver prefers cash
+                                !(controller.driverPaymentMethod.value ==
+                                    "Cash"),
                             child: cardDecoration(
                                 controller,
                                 controller.paymentModel.value.paypal!.name
@@ -155,7 +168,10 @@ class SelectPaymentMethodScreen extends StatelessWidget {
                                     null &&
                                 controller
                                         .paymentModel.value.payStack!.enable ==
-                                    true,
+                                    true &&
+                                // Hide online payment if driver prefers cash
+                                !(controller.driverPaymentMethod.value ==
+                                    "Cash"),
                             child: cardDecoration(
                                 controller,
                                 controller.paymentModel.value.payStack!.name
@@ -294,9 +310,29 @@ class SelectPaymentMethodScreen extends StatelessWidget {
                 textColor: AppThemeData.grey50,
                 onPress: () async {
                   if (controller.type.value == "bookingSelect") {
-                    Get.back(result: {
-                      "paymentType": controller.selectedPaymentMethod.value
-                    });
+                    // Handle Cashfree payment for seat booking
+                    if (controller.selectedPaymentMethod.value ==
+                        (controller.paymentModel.value.cashfree?.name ??
+                            "Cashfree")) {
+                      // Get the amount from arguments
+                      dynamic argumentData = Get.arguments;
+                      String amount = argumentData?['amount'] ?? "0";
+
+                      if (amount.isEmpty || amount == "0") {
+                        ShowToastDialog.showToast(
+                            "Please enter a valid amount");
+                        return;
+                      }
+
+                      // Process Cashfree payment
+                      controller.cashfreePayment(
+                          amount: amount, context: context);
+                    } else {
+                      // For other payment methods, just return the selection
+                      Get.back(result: {
+                        "paymentType": controller.selectedPaymentMethod.value
+                      });
+                    }
                   } else if (controller.type.value == "booking") {
                     if (controller.selectedPaymentMethod.value ==
                         controller.paymentModel.value.strip!.name) {
@@ -418,6 +454,26 @@ class SelectPaymentMethodScreen extends StatelessWidget {
                           "Please select payment method".tr);
                     }
                   } else {
+                    // Check wallet balance and enforce minimum top-up for negative balances
+                    double currentBalance = double.parse(
+                        controller.userModel.value.walletAmount ?? "0");
+                    double topUpAmount = controller
+                            .amountController.value.text.isNotEmpty
+                        ? double.parse(controller.amountController.value.text)
+                        : 0;
+
+                    // If balance is -500 or less, user must top up enough to reach at least 0
+                    if (currentBalance <= -500) {
+                      double minimumRequired =
+                          currentBalance.abs(); // Amount needed to reach zero
+                      if (topUpAmount < minimumRequired) {
+                        ShowToastDialog.showToast(
+                            "Your balance is ${Constant.amountShow(amount: currentBalance.toString())}. Please top up at least ${Constant.amountShow(amount: minimumRequired.toStringAsFixed(2))} to bring your balance to zero or positive."
+                                .tr);
+                        return;
+                      }
+                    }
+
                     if (controller.amountController.value.text.isNotEmpty &&
                         double.parse(controller.amountController.value.text) >=
                             double.parse(

@@ -16,27 +16,38 @@ class TermsAndConditionScreen extends StatelessWidget {
     final themeChange = Provider.of<DarkThemeProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: themeChange.getThem() ? AppThemeData.grey900 : AppThemeData.grey50,
+        backgroundColor:
+            themeChange.getThem() ? AppThemeData.grey900 : AppThemeData.grey50,
         centerTitle: false,
         automaticallyImplyLeading: false,
         titleSpacing: 0,
         leading: InkWell(
-            onTap: () {
-              Get.back();
-            },
-              child: Icon(
-                  Icons.chevron_left_outlined,
-                  color: themeChange.getThem() ? AppThemeData.grey50 : AppThemeData.grey900,
-                ),),
+          onTap: () {
+            Get.back();
+          },
+          child: Icon(
+            Icons.chevron_left_outlined,
+            color: themeChange.getThem()
+                ? AppThemeData.grey50
+                : AppThemeData.grey900,
+          ),
+        ),
         title: Text(
           type == "privacy" ? "Privacy Policy".tr : "Terms & Conditions".tr,
-          style: TextStyle(color: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800, fontFamily: AppThemeData.bold, fontSize: 18),
+          style: TextStyle(
+              color: themeChange.getThem()
+                  ? AppThemeData.grey100
+                  : AppThemeData.grey800,
+              fontFamily: AppThemeData.bold,
+              fontSize: 18),
         ),
         elevation: 0,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(4.0),
           child: Container(
-            color: themeChange.getThem() ? AppThemeData.grey700 : AppThemeData.grey200,
+            color: themeChange.getThem()
+                ? AppThemeData.grey700
+                : AppThemeData.grey200,
             height: 4.0,
           ),
         ),
@@ -46,11 +57,38 @@ class TermsAndConditionScreen extends StatelessWidget {
           horizontal: 14,
           vertical: 10,
         ),
-        child: Html(
-          shrinkWrap: true,
-          data: type == "privacy" ? Constant.privacyPolicy : Constant.termsAndConditions,
+        child: SingleChildScrollView(
+          child: Html(
+            data: _sanitizeHtml(type == "privacy"
+                ? Constant.privacyPolicy
+                : Constant.termsAndConditions),
+            style: {
+              "*": Style(
+                fontFeatureSettings: null,
+              ),
+              "body": Style(
+                margin: Margins.zero,
+                padding: HtmlPaddings.zero,
+              ),
+              "p": Style(
+                margin: Margins.only(bottom: 10),
+              ),
+            },
+          ),
         ),
       ),
     );
+  }
+
+  // Sanitize HTML to remove problematic font-feature-settings
+  String _sanitizeHtml(String html) {
+    if (html.isEmpty) return html;
+
+    // Remove font-feature-settings from inline styles and CSS
+    String sanitized = html.replaceAll(
+        RegExp(r'font-feature-settings\s*:\s*[^;]+;?', caseSensitive: false),
+        '');
+
+    return sanitized;
   }
 }

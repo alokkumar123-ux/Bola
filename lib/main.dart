@@ -1,10 +1,11 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:io' show Platform;
 
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
@@ -23,30 +24,44 @@ import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  if (Platform.isIOS) {
+
+  if (kIsWeb) {
+    // Web-specific initialization
     await Firebase.initializeApp(
-      name: "PoolMate",
       options: DefaultFirebaseOptions.currentPlatform,
     );
+
+    // Skip Firebase App Check for web during development
+    // await FirebaseAppCheck.instance.activate(
+    //   webProvider: ReCaptchaV3Provider('recaptcha-v3-site-key'),
+    // );
   } else {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
+    if (Platform.isIOS) {
+      await Firebase.initializeApp(
+        name: "PoolMate",
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    } else {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
+
+    await FirebaseAppCheck.instance.activate(
+      androidProvider: AndroidProvider.playIntegrity,
+      appleProvider: AppleProvider.appAttest,
     );
   }
-
-  await FirebaseAppCheck.instance.activate(
-    webProvider: ReCaptchaV3Provider('recaptcha-v3-site-key'),
-    androidProvider: AndroidProvider.playIntegrity,
-    appleProvider: AppleProvider.appAttest,
-  );
   await Preferences.initPref();
 
-  // Initialize notification service
-  NotificationService notificationService = NotificationService();
-  await notificationService.initInfo();
+  if (!kIsWeb) {
+    // Initialize notification service only for mobile platforms
+    NotificationService notificationService = NotificationService();
+    await notificationService.initInfo();
 
-  // Set up background message handler
-  FirebaseMessaging.onBackgroundMessage(firebaseMessageBackgroundHandle);
+    // Set up background message handler
+    FirebaseMessaging.onBackgroundMessage(firebaseMessageBackgroundHandle);
+  }
 
   // Configure Cashfree credentials before any Aadhaar API usage
   AadhaarVerificationService.configure(

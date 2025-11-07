@@ -19,6 +19,7 @@ import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../themes/app_them_data.dart';
 import 'select_payment_method_screen.dart';
+import 'package:poolmate/app/dashboard_screen.dart';
 
 class WalletScreen extends StatelessWidget {
   const WalletScreen({super.key});
@@ -95,17 +96,17 @@ class WalletScreen extends StatelessWidget {
                                             const SelectPaymentMethodScreen(),
                                             arguments: {
                                               "type": "wallet"
-                                            })?.then(
-                                          (value) {
-                                            if (value != null) {
-                                              controller.amount.value =
-                                                  value['amount'];
-                                              controller.paymentType.value =
-                                                  value['paymentType'];
-                                              controller.walletTopUp();
-                                            }
-                                          },
-                                        );
+                                            })?.then((value) async {
+                                          if (value != null) {
+                                            controller.amount.value =
+                                                value['amount'];
+                                            controller.paymentType.value =
+                                                value['paymentType'];
+                                            await controller.walletTopUp();
+                                            // After successful top-up, navigate to dashboard
+                                            Get.offAll(const DashBoardScreen());
+                                          }
+                                        });
                                       },
                                     ),
                                   ),

@@ -1,4 +1,4 @@
-package com.poolmate
+package com.alok.poolmate
 
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.android.FlutterFragmentActivity

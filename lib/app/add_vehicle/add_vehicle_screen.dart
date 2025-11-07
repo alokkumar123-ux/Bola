@@ -17,9 +17,14 @@ import 'package:poolmate/utils/dark_theme_provider.dart';
 import 'package:poolmate/utils/network_image_widget.dart';
 import 'package:provider/provider.dart';
 
-class AddVehicleScreen extends StatelessWidget {
+class AddVehicleScreen extends StatefulWidget {
   const AddVehicleScreen({super.key});
 
+  @override
+  State<AddVehicleScreen> createState() => _AddVehicleScreenState();
+}
+
+class _AddVehicleScreenState extends State<AddVehicleScreen> {
   @override
   Widget build(BuildContext context) {
     final themeChange = Provider.of<DarkThemeProvider>(context);
@@ -94,12 +99,216 @@ class AddVehicleScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          TextFieldWidget(
-                            hintText: 'Enter Licence Vehicle number'.tr,
-                            controller:
-                                controller.licensePlatNumberController.value,
-                            title: 'Licence Vehicle number'.tr,
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextFieldWidget(
+                                  hintText:
+                                      'Enter Vehicle Registration Number'.tr,
+                                  controller: controller
+                                      .licensePlatNumberController.value,
+                                  title: 'Vehicle Registration Number'.tr,
+                                  enable: !controller.isRcVerified.value,
+                                ),
+                              ),
+                              const SizedBox(
+                                width: 10,
+                              ),
+                              Obx(() => controller.isRcVerified.value
+                                  ? Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: AppThemeData.success300,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.check_circle,
+                                            color: Colors.white,
+                                            size: 18,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            "Verified".tr,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  : TextButton(
+                                      onPressed: () async {
+                                        if (controller
+                                            .licensePlatNumberController
+                                            .value
+                                            .text
+                                            .isEmpty) {
+                                          ShowToastDialog.showToast(
+                                              "Please enter vehicle registration number"
+                                                  .tr);
+                                          return;
+                                        }
+
+                                        // Show loading while checking
+                                        ShowToastDialog.showLoader(
+                                            "Checking vehicle number...".tr);
+
+                                        // Check if vehicle number already exists
+                                        final vehicleExists = await controller
+                                            .checkVehicleNumberExists(controller
+                                                .licensePlatNumberController
+                                                .value
+                                                .text);
+
+                                        ShowToastDialog.closeLoader();
+
+                                        if (vehicleExists) {
+                                          ShowToastDialog.showToast(
+                                              "This vehicle number is already registered"
+                                                  .tr);
+                                          return;
+                                        }
+
+                                        // Call API to verify RC
+                                        ShowToastDialog.showLoader(
+                                            "Verifying RC...".tr);
+
+                                        final rcData = await controller
+                                            .verifyRcWithApi(controller
+                                                .licensePlatNumberController
+                                                .value
+                                                .text);
+
+                                        ShowToastDialog.closeLoader();
+
+                                        if (rcData != null) {
+                                          controller.isRcVerified.value = true;
+
+                                          // Show success message with RC details
+                                          String message =
+                                              "RC verified successfully".tr;
+                                          if (rcData['rc_expiry_date'] !=
+                                              null) {
+                                            message +=
+                                                "\nExpiry: ${rcData['rc_expiry_date']}";
+                                          }
+                                          if (rcData['rc_status'] != null) {
+                                            message +=
+                                                "\nStatus: ${rcData['rc_status']}";
+                                          }
+                                          ShowToastDialog.showToast(message);
+                                        }
+                                      },
+                                      child: Text("Verify".tr)))
+                            ],
                           ),
+                          Obx(() => !controller.isRcVerified.value
+                              ? Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.info_outline,
+                                        size: 14,
+                                        color: AppThemeData.warning300,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        "RC verification is required to save vehicle"
+                                            .tr,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: AppThemeData.warning300,
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : const SizedBox.shrink()),
+                          // Display RC Information when verified
+                          Obx(() => controller.isRcVerified.value == true
+                              ? Container(
+                                  margin: const EdgeInsets.only(bottom: 16),
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: themeChange.getThem()
+                                        ? AppThemeData.grey800
+                                        : AppThemeData.grey100,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: AppThemeData.success300,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.verified,
+                                            color: AppThemeData.success300,
+                                            size: 20,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            "RC Information".tr,
+                                            style: TextStyle(
+                                              fontFamily: AppThemeData.semiBold,
+                                              fontSize: 14,
+                                              color: themeChange.getThem()
+                                                  ? AppThemeData.grey100
+                                                  : AppThemeData.grey800,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 12),
+                                      _buildRcInfoRow(
+                                        "RC Status".tr,
+                                        controller.vehicleInformationModel.value
+                                                .rcStatus ??
+                                            "N/A",
+                                        themeChange,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      _buildRcInfoRow(
+                                        "RC Expiry Date".tr,
+                                        controller.vehicleInformationModel.value
+                                                .rcExpiryDate ??
+                                            "N/A",
+                                        themeChange,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      _buildRcInfoRow(
+                                        "Insurance Valid Upto".tr,
+                                        controller.vehicleInformationModel.value
+                                                .vehicleInsuranceUpto ??
+                                            "N/A",
+                                        themeChange,
+                                      ),
+                                      if (controller.vehicleInformationModel
+                                              .value.verifiedAt !=
+                                          null) ...[
+                                        const SizedBox(height: 8),
+                                        _buildRcInfoRow(
+                                          "Verified At".tr,
+                                          controller.vehicleInformationModel
+                                                  .value.verifiedAt ??
+                                              "N/A",
+                                          themeChange,
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                )
+                              : const SizedBox.shrink()),
                           Column(
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -750,57 +959,98 @@ class AddVehicleScreen extends StatelessWidget {
                           const SizedBox(
                             height: 16,
                           ),
-                          RoundedButtonFill(
-                            title: "Save".tr,
-                            color: AppThemeData.primary300,
-                            textColor: AppThemeData.grey50,
-                            onPress: () {
-                              if (controller.licensePlatNumberController.value
-                                  .text.isEmpty) {
-                                ShowToastDialog.showToast(
-                                    "Please enter vehicle number.".tr);
-                              } else if (controller
-                                      .selectedVehicleType.value.id ==
-                                  null) {
-                                ShowToastDialog.showToast(
-                                    "Select vehicle Type.".tr);
-                              } else if (controller
-                                      .selectedVehicleBrand.value.id ==
-                                  null) {
-                                ShowToastDialog.showToast(
-                                    "Select vehicle brand.".tr);
-                              } else if (controller
-                                      .selectedVehicleModel.value.id ==
-                                  null) {
-                                ShowToastDialog.showToast(
-                                    "Select vehicle model.".tr);
-                              } else if (controller
-                                  .selectedColor.value.isEmpty) {
-                                ShowToastDialog.showToast(
-                                    "Select vehicle colour.".tr);
-                              } else if (controller
-                                  .vehicleRegisterYearController
-                                  .value
-                                  .text
-                                  .isEmpty) {
-                                ShowToastDialog.showToast(
-                                    "Please enter vehicle registration year."
-                                        .tr);
-                              } else if (controller.selectedSeatCount.value ==
-                                  0) {
-                                ShowToastDialog.showToast(
-                                    "Please select seat count.".tr);
-                              } else {
-                                controller.setVehicleInformationData();
-                              }
-                            },
-                          ),
+                          Obx(() => RoundedButtonFill(
+                                title: "Save".tr,
+                                color: controller.isRcVerified.value
+                                    ? AppThemeData.primary300
+                                    : AppThemeData.grey400,
+                                textColor: AppThemeData.grey50,
+                                onPress: () {
+                                  // First check RC verification
+                                  if (!controller.isRcVerified.value) {
+                                    ShowToastDialog.showToast(
+                                        "Please verify the vehicle RC first."
+                                            .tr);
+                                    return;
+                                  }
+
+                                  if (controller.licensePlatNumberController
+                                      .value.text.isEmpty) {
+                                    ShowToastDialog.showToast(
+                                        "Please enter vehicle number.".tr);
+                                  } else if (controller
+                                          .selectedVehicleType.value.id ==
+                                      null) {
+                                    ShowToastDialog.showToast(
+                                        "Select vehicle Type.".tr);
+                                  } else if (controller
+                                          .selectedVehicleBrand.value.id ==
+                                      null) {
+                                    ShowToastDialog.showToast(
+                                        "Select vehicle brand.".tr);
+                                  } else if (controller
+                                          .selectedVehicleModel.value.id ==
+                                      null) {
+                                    ShowToastDialog.showToast(
+                                        "Select vehicle model.".tr);
+                                  } else if (controller
+                                      .selectedColor.value.isEmpty) {
+                                    ShowToastDialog.showToast(
+                                        "Select vehicle colour.".tr);
+                                  } else if (controller
+                                      .vehicleRegisterYearController
+                                      .value
+                                      .text
+                                      .isEmpty) {
+                                    ShowToastDialog.showToast(
+                                        "Please enter vehicle registration year."
+                                            .tr);
+                                  } else if (controller
+                                          .selectedSeatCount.value ==
+                                      0) {
+                                    ShowToastDialog.showToast(
+                                        "Please select seat count.".tr);
+                                  } else {
+                                    controller.setVehicleInformationData();
+                                  }
+                                },
+                              )),
                         ],
                       ),
                     ),
                   ),
           );
         });
+  }
+
+  // Helper method to build RC info rows
+  Widget _buildRcInfoRow(
+      String label, String value, DarkThemeProvider themeChange) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            color: themeChange.getThem()
+                ? AppThemeData.grey400
+                : AppThemeData.grey600,
+            fontFamily: AppThemeData.regular,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 13,
+            color: themeChange.getThem()
+                ? AppThemeData.grey100
+                : AppThemeData.grey900,
+            fontFamily: AppThemeData.semiBold,
+          ),
+        ),
+      ],
+    );
   }
 
   buildBottomSheet(BuildContext context, AddVehicleController controller) {

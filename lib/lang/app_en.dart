@@ -13,15 +13,16 @@ const Map<String, String> enUS = {
   "Privacy Policy": "Privacy Policy",
   "Terms and Conditions": "Terms and Conditions",
   "Delete Account": "Delete Account",
-  "This will permanently delete your account and all associated data. Are you sure?": "This will permanently delete your account and all associated data. Are you sure?",
+  "This will permanently delete your account and all associated data. Are you sure?":
+      "This will permanently delete your account and all associated data. Are you sure?",
   "Log out": "Log out",
   "Cancel": "Cancel",
   "Please wait": "Please wait",
   "Account deleted successfully": "Account deleted successfully",
   "Contact Administrator": "Contact Administrator",
   "Add Vehicle Information": "Add Vehicle Information",
-  "Enter Licence Vehicle number": "Enter Licence Vehicle number",
-  "Licence Vehicle number": "Licence Vehicle number",
+  "Enter Vehicle Registration Number": "Enter Vehicle Registration Number",
+  "Vehicle Registration Number": "Vehicle Registration Number",
   "What kind of vehicle is it?": "What kind of vehicle is it?",
   "Vehicle Brand": "Vehicle Brand",
   "What's your  vehicle brand?": "What's your  vehicle brand?",
@@ -63,17 +64,21 @@ const Map<String, String> enUS = {
   "Select Your Route": "Select Your Route",
   "Edit price per seat": "Edit price per seat",
   "View Map": "View Map",
-  "Add a stopover and find extra passengers on the way": "Add a stopover and find extra passengers on the way",
+  "Add a stopover and find extra passengers on the way":
+      "Add a stopover and find extra passengers on the way",
   "Add City": "Add City",
   "Finishing Sign up": "Finishing Sign up",
   "What’s your name?": "What’s your name?",
   "Enter your first name": "Enter your first name",
   "Enter your last name": "Enter your last name",
-  "Enter the same as on your government ID.": "Enter the same as on your government ID.",
+  "Enter the same as on your government ID.":
+      "Enter the same as on your government ID.",
+  "Name as per the AADHAR": "Name as per the AADHAR",
   "Enter phone number": "Enter phone number",
   "Enter your email address": "Enter your email address",
   "What’s your date of birth?": "What’s your date of birth?",
-  "Enter the same DOB  as on your government ID.": "Enter the same DOB  as on your government ID.",
+  "Enter the same DOB  as on your government ID.":
+      "Enter the same DOB  as on your government ID.",
   "How would you like to be addressed?": "How would you like to be addressed?",
   "Mr.": "Mr.",
   "Ms./Mrs.": "Ms./Mrs.",
@@ -119,15 +124,29 @@ const Map<String, String> enUS = {
   "Seats Available": "Seats Available",
   "Price for one seat": "Price for one seat",
   "Payment Method": "Payment Method",
+  "Preferred Payment Method": "Preferred Payment Method",
+  "Please select a payment method preference":
+      "Please select a payment method preference",
+  "Cash Only": "Cash Only",
+  "Online Only": "Online Only",
+  "This driver only accepts cash payments":
+      "This driver only accepts cash payments",
+  "Passengers will only see cash payment option":
+      "Passengers will only see cash payment option",
+  "Passengers will only see online payment options":
+      "Passengers will only see online payment options",
+  "Passengers can pay with any available payment method":
+      "Passengers can pay with any available payment method",
   "Confirm Ride": "Confirm Ride",
   "Seats not available": "Seats not available",
   "Please select payment method": "Please select payment method",
   "Booked!! Enjoy Your Ride": "Booked!! Enjoy Your Ride",
-  "Go to “my ride” section for details of your ride and\nmore options.": "Go to “my ride” section for details of your ride and\nmore options.",
+  "Go to “my ride” section for details of your ride and\nmore options.":
+      "Go to “my ride” section for details of your ride and\nmore options.",
   "Go to my ride": "Go to my ride",
   "Person": "Person",
   "Select date": "Select date",
-  "Search Cab": "Search Cab",
+  "Search Seat": "Search Seat",
   "Recent Searches": "Recent Searches",
   "View all": "View all",
   "Select Seats": "Select Seats",
@@ -168,12 +187,15 @@ const Map<String, String> enUS = {
   "Skip": "Skip",
   "Get Started": "Get Started",
   "Account Verification": "Account Verification",
-  "Verify your account and update the documents": "Verify your account and update the documents",
+  "Verify your account and update the documents":
+      "Verify your account and update the documents",
   "Bank Accounts": "Bank Accounts",
-  "Manage your transaction vie bank account details": "Manage your transaction vie bank account details",
+  "Manage your transaction vie bank account details":
+      "Manage your transaction vie bank account details",
   "Manage your traveling vehicle": "Manage your traveling vehicle",
   "Travel Preference": "Travel Preference",
-  "Discover Your Ideal Travel Destination Based on Personal Preferences": "Discover Your Ideal Travel Destination Based on Personal Preferences",
+  "Discover Your Ideal Travel Destination Based on Personal Preferences":
+      "Discover Your Ideal Travel Destination Based on Personal Preferences",
   "Language, mode change and more": "Language, mode change and more",
   "Reason": "Reason",
   "Select reason": "Select reason",
@@ -188,36 +210,51 @@ const Map<String, String> enUS = {
   "Review submit successfully": "Review submit successfully",
   "Terms & Conditions": "Terms & Conditions",
   "Plan Your Dream Trip": "Plan Your Dream Trip",
-  "Tell us what makes your wanderlust ignite and we'll find the perfect adventure for you.": "Tell us what makes your wanderlust ignite and we'll find the perfect adventure for you.",
+  "Tell us what makes your wanderlust ignite and we'll find the perfect adventure for you.":
+      "Tell us what makes your wanderlust ignite and we'll find the perfect adventure for you.",
   "Chattiness": "Chattiness",
   "Smoking": "Smoking",
   "Music": "Music",
   "Pets": "Pets",
   "Add photo": "Add photo",
   "Upload Document": "Upload Document",
-  "Please upload front side of document.": "Please upload front side of document.",
-  "Please upload back side of document.": "Please upload back side of document.",
+  "Please upload front side of document.":
+      "Please upload front side of document.",
+  "Please upload back side of document.":
+      "Please upload back side of document.",
   "Please enter document number": "Please enter document number",
   "Please Select": "Please Select",
   "Camera": "Camera",
   "Gallery": "Gallery",
   "Upload Required Documents": "Upload Required Documents",
-  "Complete your registration by uploading the following documents.": "Complete your registration by uploading the following documents.",
+  "Complete your registration by uploading the following documents.":
+      "Complete your registration by uploading the following documents.",
   "Select Payment Method": "Select Payment Method",
   "Enter Amount": "Enter Amount",
   "My Wallet": "My Wallet",
   "Wallet Amount Insufficient": "Wallet Amount Insufficient",
+  "Wallet Balance Low": "Wallet Balance Low",
+  "Your current wallet balance is {amount}":
+      "Your current wallet balance is {amount}",
+  "You need to maintain a minimum balance of {amount} to publish rides. Please top up your wallet to continue.":
+      "You need to maintain a minimum balance of {amount} to publish rides. Please top up your wallet to continue.",
+  "Top up Wallet": "Top up Wallet",
   "Total Balance": "Total Balance",
   "Top up": "Top up",
   "Withdrawal": "Withdrawal",
   "Transaction History": "Transaction History",
   "Transaction not found": "Transaction not found",
-  "Hold up! Complete your last ride before adding a new one": "Hold up! Complete your last ride before adding a new one",
+  "Hold up! Complete your last ride before adding a new one":
+      "Hold up! Complete your last ride before adding a new one",
   'Driver is not available': 'Driver is not available',
   'Help & Support': 'Help & Support',
-  'Manage user queries and resolve issues efficiently from the admin panel.': 'Manage user queries and resolve issues efficiently from the admin panel.',
+  'Manage user queries and resolve issues efficiently from the admin panel.':
+      'Manage user queries and resolve issues efficiently from the admin panel.',
   'Location Required': 'Location Required',
-  'Your SOS request is already submitted.': 'Your SOS request is already submitted.',
-  'Your SOS request has been submitted to admin.': 'Your SOS request has been submitted to admin.',
-  'Please enable GPS to use the SOS emergency feature.': 'Please enable GPS to use the SOS emergency feature.'
+  'Your SOS request is already submitted.':
+      'Your SOS request is already submitted.',
+  'Your SOS request has been submitted to admin.':
+      'Your SOS request has been submitted to admin.',
+  'Please enable GPS to use the SOS emergency feature.':
+      'Please enable GPS to use the SOS emergency feature.'
 };

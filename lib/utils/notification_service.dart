@@ -142,9 +142,15 @@ class NotificationService {
   }
 
   static getToken() async {
-    String? token = await FirebaseMessaging.instance.getToken();
-    log('Current FCM Token: $token');
-    return token!;
+    try {
+      String? token = await FirebaseMessaging.instance.getToken();
+      log('Current FCM Token: $token');
+      return token ?? '';
+    } catch (e) {
+      log('Failed to get FCM token: $e');
+      // Return empty string if token retrieval fails
+      return '';
+    }
   }
 
   // Debug method to test notification
