@@ -134,39 +134,42 @@ class PublishedDetailsScreen extends StatelessWidget {
                             controller.bookingModel.value.status !=
                                     Constant.placed
                                 ? const SizedBox()
-                                : InkWell(
-                                    onTap: () {
-                                      showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return CustomDialogBox(
-                                              title: "Cancel Ride".tr,
-                                              descriptions:
-                                                  "Are you sure want to cancel ride?"
-                                                      .tr,
-                                              positiveString: "OK".tr,
-                                              negativeString: "Cancel".tr,
-                                              positiveClick: () async {
-                                                Navigator.of(context)
-                                                    .pop(); // Close dialog first
-                                                await controller.cancelRide();
-                                              },
-                                              negativeClick: () {
-                                                Get.back();
-                                              },
-                                              img: SvgPicture.asset(
-                                                'assets/icons/ic_cancel.svg',
-                                                height: 40,
-                                                width: 40,
-                                              ),
-                                            );
-                                          });
-                                    },
-                                    child: const Icon(
-                                      Icons.cancel_outlined,
-                                      color: AppThemeData.warning300,
-                                    ),
-                                  )
+                                : controller.bookingUserList.isEmpty
+                                    ? const SizedBox()
+                                    : InkWell(
+                                        onTap: () {
+                                          showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return CustomDialogBox(
+                                                  title: "Cancel Ride".tr,
+                                                  descriptions:
+                                                      "Are you sure want to cancel ride?"
+                                                          .tr,
+                                                  positiveString: "OK".tr,
+                                                  negativeString: "Cancel".tr,
+                                                  positiveClick: () async {
+                                                    Navigator.of(context)
+                                                        .pop(); // Close dialog first
+                                                    await controller
+                                                        .cancelRide();
+                                                  },
+                                                  negativeClick: () {
+                                                    Get.back();
+                                                  },
+                                                  img: SvgPicture.asset(
+                                                    'assets/icons/ic_cancel.svg',
+                                                    height: 40,
+                                                    width: 40,
+                                                  ),
+                                                );
+                                              });
+                                        },
+                                        child: const Icon(
+                                          Icons.cancel_outlined,
+                                          color: AppThemeData.warning300,
+                                        ),
+                                      )
                           ],
                         ),
                         const SizedBox(
@@ -494,16 +497,26 @@ class PublishedDetailsScreen extends StatelessWidget {
                                               : "Arrived".tr,
                                       width: 18,
                                       height: 3.5,
-                                      color: cityModel.isArrived == true
+                                      color: (controller.bookingModel.value
+                                                      .status ==
+                                                  Constant.canceled) ||
+                                              (cityModel.isArrived == true)
                                           ? AppThemeData.grey300
                                           : AppThemeData.success400,
-                                      textColor: cityModel.isArrived == true
+                                      textColor: (controller.bookingModel.value
+                                                      .status ==
+                                                  Constant.canceled) ||
+                                              (cityModel.isArrived == true)
                                           ? AppThemeData.grey700
                                           : AppThemeData.grey50,
-                                      onPress: () async {
-                                        await controller.changeStatus(
-                                            cityModel, index);
-                                      },
+                                      onPress: (controller
+                                                  .bookingModel.value.status ==
+                                              Constant.canceled)
+                                          ? () {} // Disabled for cancelled bookings
+                                          : () async {
+                                              await controller.changeStatus(
+                                                  cityModel, index);
+                                            },
                                     ),
                                   ],
                                 ),
@@ -563,9 +576,14 @@ class PublishedDetailsScreen extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              Constant.amountShow(
-                                  amount: controller
-                                      .bookingModel.value.pricePerSeat),
+                              controller.bookingUserList.isEmpty
+                                  ? "0.00"
+                                  : Constant.amountShow(
+                                      amount: _calculateTotalAmount(
+                                          controller
+                                              .bookingModel.value.bookedSeat,
+                                          controller.bookingModel.value
+                                              .pricePerSeat)),
                               maxLines: 1,
                               style: TextStyle(
                                 color: themeChange.getThem()
@@ -1623,15 +1641,21 @@ class PublishedDetailsScreen extends StatelessWidget {
   }
 }
 
-// Convert stored seat indices CSV (e.g., "1,2") to labels CSV (e.g., "A1,A2")
+// Convert stored seat indices CSV (e.g., "1,2") to labels CSV (e.g., "A2,B1")
+// Excludes index 0 (A1 - driver seat)
 String _formatSeatLabelsCsv(String? csv) {
   if (csv == null || csv.trim().isEmpty) return '';
   final parts =
       csv.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
-  return parts.map((p) {
-    final idx = int.tryParse(p) ?? -1;
-    return _seatIndexToLabel(idx);
-  }).join(',');
+
+  // Filter out index 0 (A1 - driver seat) and convert to labels
+  final filteredLabels = parts
+      .map((p) => int.tryParse(p) ?? -1)
+      .where((idx) => idx != 0) // Exclude driver seat (A1)
+      .map((idx) => _seatIndexToLabel(idx))
+      .toList();
+
+  return filteredLabels.join(',');
 }
 
 String _seatIndexToLabel(int index) {
@@ -1640,4 +1664,24 @@ String _seatIndexToLabel(int index) {
     return labels[index];
   }
   return 'S$index';
+}
+
+// Calculate total amount: pricePerSeat × number of booked seats (excluding driver)
+String _calculateTotalAmount(String? bookedSeatsCsv, String? pricePerSeat) {
+  if (bookedSeatsCsv == null || bookedSeatsCsv.trim().isEmpty) return '0';
+  if (pricePerSeat == null || pricePerSeat.isEmpty) return '0';
+
+  final parts = bookedSeatsCsv
+      .split(',')
+      .map((s) => s.trim())
+      .where((s) => s.isNotEmpty)
+      .toList();
+
+  // Count all booked seats (passenger seats, driver seat not included in CSV)
+  final numberOfSeats = parts.length;
+
+  final pricePerSeatValue = double.tryParse(pricePerSeat) ?? 0;
+  final total = numberOfSeats * pricePerSeatValue;
+
+  return total.toString();
 }

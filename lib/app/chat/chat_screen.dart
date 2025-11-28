@@ -3,12 +3,15 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutterflow_paginate_firestore/paginate_firestore.dart';
 import 'package:get/get.dart';
 import 'package:poolmate/app/chat/model/chat_model.dart';
+import 'package:poolmate/app/review/review_screen.dart';
 import 'package:poolmate/constant/collection_name.dart';
 import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/constant/show_toast_dialog.dart';
 import 'package:poolmate/controller/chat_controller.dart';
+import 'package:poolmate/model/booking_model.dart';
 import 'package:poolmate/themes/app_them_data.dart';
 import 'package:poolmate/themes/responsive.dart';
+import 'package:poolmate/themes/round_button_fill.dart';
 import 'package:poolmate/utils/dark_theme_provider.dart';
 import 'package:poolmate/utils/fire_store_utils.dart';
 import 'package:poolmate/utils/network_image_widget.dart';
@@ -326,14 +329,93 @@ class ChatScreen extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 10),
-                        child: Text(
-                          chatModel.message.toString(),
-                          style: TextStyle(
-                              color: themeChange.getThem()
-                                  ? AppThemeData.grey100
-                                  : AppThemeData.grey800,
-                              fontFamily: AppThemeData.regular,
-                              fontSize: 14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              chatModel.message.toString(),
+                              style: TextStyle(
+                                  color: themeChange.getThem()
+                                      ? AppThemeData.grey100
+                                      : AppThemeData.grey800,
+                                  fontFamily: AppThemeData.regular,
+                                  fontSize: 14),
+                            ),
+                            // Show Review button for ride_cancelled messages
+                            if (chatModel.type == 'ride_cancelled')
+                              Padding(
+                                padding: const EdgeInsets.only(top: 10),
+                                child: RoundedButtonFill(
+                                  title: "Review Publisher".tr,
+                                  width: 35,
+                                  height: 4,
+                                  color: AppThemeData.primary300,
+                                  textColor: AppThemeData.grey50,
+                                  onPress: () async {
+                                    // Get controller to access sender and receiver info
+                                    final controller =
+                                        Get.find<ChatController>();
+
+                                    // Get booking ID from metadata
+                                    String? bookingId =
+                                        chatModel.metadata?['bookingId'];
+
+                                    if (bookingId == null) {
+                                      ShowToastDialog.showToast(
+                                          "Booking information not available"
+                                              .tr);
+                                      return;
+                                    }
+
+                                    // Show loading
+                                    ShowToastDialog.showLoader(
+                                        "Please wait".tr);
+
+                                    // Fetch the booking model
+                                    try {
+                                      final bookingDoc = await FireStoreUtils
+                                          .fireStore
+                                          .collection('booking')
+                                          .doc(bookingId)
+                                          .get();
+
+                                      ShowToastDialog.closeLoader();
+
+                                      if (!bookingDoc.exists) {
+                                        ShowToastDialog.showToast(
+                                            "Booking not found".tr);
+                                        return;
+                                      }
+
+                                      final bookingData = bookingDoc.data();
+                                      if (bookingData == null) {
+                                        ShowToastDialog.showToast(
+                                            "Booking data not available".tr);
+                                        return;
+                                      }
+
+                                      // Convert to BookingModel
+                                      BookingModel bookingModel =
+                                          BookingModel.fromJson(bookingData);
+
+                                      // Navigate to review screen with all required data
+                                      Get.to(() => const ReviewScreen(),
+                                          arguments: {
+                                            "bookingModel": bookingModel,
+                                            "senderUserModel": controller
+                                                .senderUserModel.value,
+                                            "reciverUserModel": controller
+                                                .receiverUserModel.value,
+                                          });
+                                    } catch (e) {
+                                      ShowToastDialog.closeLoader();
+                                      ShowToastDialog.showToast(
+                                          "Error loading booking: $e".tr);
+                                    }
+                                  },
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     ),

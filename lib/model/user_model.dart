@@ -22,6 +22,7 @@ class UserModel {
   Timestamp? createdAt;
   String? reviewCount;
   String? reviewSum;
+  List<String>? sosWhatsAppNumbers;
   UserModel({
     this.id,
     this.firstName,
@@ -43,6 +44,7 @@ class UserModel {
     this.reviewCount,
     this.aadharVerified,
     this.panVerified,
+    this.sosWhatsAppNumbers,
   });
 
   fullName() {
@@ -73,6 +75,9 @@ class UserModel {
         : null;
     reviewSum = json['reviewSum'] ?? '0.0';
     reviewCount = json['reviewCount'] ?? '0.0';
+    sosWhatsAppNumbers = json['sosWhatsAppNumbers'] != null
+        ? List<String>.from(json['sosWhatsAppNumbers'])
+        : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -100,6 +105,7 @@ class UserModel {
     data['bio'] = bio;
     data['reviewSum'] = reviewSum;
     data['reviewCount'] = reviewCount;
+    data['sosWhatsAppNumbers'] = sosWhatsAppNumbers;
     return data;
   }
 }

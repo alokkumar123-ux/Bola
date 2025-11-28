@@ -132,7 +132,6 @@ class AddYourRideScreen extends StatelessWidget {
                                                       result.geometry!.location
                                                           .toJson())),
                                             );
-                                            print("=====>");
                                             print(controller
                                                 .pickUpLocation.value);
                                             // controller.pickUpLocation.value = Location(lat: result.geometry!.location.lat, lng: result.geometry!.location.lng);

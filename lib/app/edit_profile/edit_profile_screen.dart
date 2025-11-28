@@ -451,6 +451,73 @@ class EditProfileScreen extends StatelessWidget {
                             ],
                           ),
                         ),
+                        PreferredSize(
+                          preferredSize: const Size.fromHeight(4.0),
+                          child: Container(
+                            color: themeChange.getThem()
+                                ? AppThemeData.grey700
+                                : AppThemeData.grey200,
+                            height: 4.0,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 10),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Information for SOS".tr,
+                                style: TextStyle(
+                                    color: themeChange.getThem()
+                                        ? AppThemeData.grey100
+                                        : AppThemeData.grey800,
+                                    fontFamily: AppThemeData.bold,
+                                    fontSize: 16),
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              Container(
+                                padding: const EdgeInsets.all(8.0),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                                child: Text(
+                                  "Why this needed? \nAt the time of the emergency, when you press SOS, your current location along with trip details will be shared to these numbers".tr,
+                                  style: TextStyle(
+                                      color: themeChange.getThem()
+                                          ? AppThemeData.grey100
+                                          : AppThemeData.grey800,
+                                      fontFamily: AppThemeData.bold,
+                                      fontSize: 16),
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              TextFieldWidget(
+                                hintText: 'SOS WhatsApp number 1'.tr,
+                                controller: controller
+                                    .sosWhatsAppNumberController1.value,
+                                title: 'SOS WhatsApp number 1'.tr,
+                                enable: true,
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              TextFieldWidget(
+                                hintText: 'SOS WhatsApp number 2'.tr,
+                                controller: controller
+                                    .sosWhatsAppNumberController2.value,
+                                title: 'SOS WhatsApp number 2'.tr,
+                                enable: true,
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),

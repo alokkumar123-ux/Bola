@@ -27,8 +27,19 @@ class NetworkImageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String sanitizedUrl = imageUrl.trim();
+
+    if (sanitizedUrl.isEmpty) {
+      return Image.asset(
+        Constant.userPlaceHolder,
+        fit: fit ?? BoxFit.fitWidth,
+        height: height ?? Responsive.height(8, context),
+        width: width ?? Responsive.width(15, context),
+      );
+    }
+
     return CachedNetworkImage(
-      imageUrl: imageUrl,
+      imageUrl: sanitizedUrl,
       fit: fit ?? BoxFit.cover,
       height: height ?? Responsive.height(8, context),
       width: width ?? Responsive.width(15, context),

@@ -42,11 +42,14 @@ class GlobalSettingController extends GetxController {
 
   NotificationService notificationService = NotificationService();
 
-  notificationInit() {
+  notificationInit() async {
     // Only initialize notification service without updating FCM token
     // FCM token should only be updated during login/signup
-    notificationService.initInfo().catchError((error) {
+    try {
+      await notificationService.initInfo();
+      log("Notification service initialized successfully");
+    } catch (error) {
       log("Failed to initialize notification service: $error");
-    });
+    }
   }
 }

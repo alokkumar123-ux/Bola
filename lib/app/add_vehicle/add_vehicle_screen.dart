@@ -218,7 +218,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        "RC verification is required to save vehicle"
+                                        "Mentioned registration number without any spaces or any symbols"
                                             .tr,
                                         style: TextStyle(
                                           fontSize: 12,
@@ -866,96 +866,96 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                           const SizedBox(
                             height: 16,
                           ),
-                          SizedBox(
-                            height: 100,
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0),
-                                    child: InkWell(
-                                      onTap: () {
-                                        buildBottomSheet(context, controller);
-                                      },
-                                      child: Container(
-                                        width: 100,
-                                        height: 100.0,
-                                        decoration: BoxDecoration(
-                                          color: themeChange.getThem()
-                                              ? AppThemeData.grey800
-                                              : AppThemeData.grey100,
-                                          borderRadius: BorderRadius.all(
-                                            Radius.circular(10),
-                                          ),
-                                        ),
-                                        child: Icon(Icons.add,
-                                            color: AppThemeData.primary300),
-                                      ),
-                                    ),
-                                  ),
-                                  ListView.builder(
-                                    itemCount: controller.images.length,
-                                    shrinkWrap: true,
-                                    scrollDirection: Axis.horizontal,
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    itemBuilder: (context, index) {
-                                      return Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 5),
-                                        child: Stack(
-                                          children: [
-                                            ClipRRect(
-                                              borderRadius:
-                                                  const BorderRadius.all(
-                                                      Radius.circular(10)),
-                                              child: controller.images[index]
-                                                          .runtimeType ==
-                                                      XFile
-                                                  ? Image.file(
-                                                      File(controller
-                                                          .images[index].path),
-                                                      fit: BoxFit.cover,
-                                                      width: 100,
-                                                      height: 100.0,
-                                                    )
-                                                  : NetworkImageWidget(
-                                                      imageUrl: controller
-                                                          .images[index],
-                                                      fit: BoxFit.cover,
-                                                      width: 100,
-                                                      height: 100.0,
-                                                    ),
-                                            ),
-                                            Positioned(
-                                              bottom: 0,
-                                              top: 0,
-                                              left: 0,
-                                              right: 0,
-                                              child: InkWell(
-                                                onTap: () {
-                                                  controller.images
-                                                      .removeAt(index);
-                                                },
-                                                child: const Icon(
-                                                  Icons.remove_circle,
-                                                  size: 30,
-                                                  color:
-                                                      AppThemeData.warning300,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                          // SizedBox(
+                          //   height: 100,
+                          //   child: SingleChildScrollView(
+                          //     scrollDirection: Axis.horizontal,
+                          //     child: Row(
+                          //       children: [
+                          //         Padding(
+                          //           padding: const EdgeInsets.symmetric(
+                          //               horizontal: 8.0),
+                          //           child: InkWell(
+                          //             onTap: () {
+                          //               buildBottomSheet(context, controller);
+                          //             },
+                          //             child: Container(
+                          //               width: 100,
+                          //               height: 100.0,
+                          //               decoration: BoxDecoration(
+                          //                 color: themeChange.getThem()
+                          //                     ? AppThemeData.grey800
+                          //                     : AppThemeData.grey100,
+                          //                 borderRadius: BorderRadius.all(
+                          //                   Radius.circular(10),
+                          //                 ),
+                          //               ),
+                          //               child: Icon(Icons.add,
+                          //                   color: AppThemeData.primary300),
+                          //             ),
+                          //           ),
+                          //         ),
+                          //         ListView.builder(
+                          //           itemCount: controller.images.length,
+                          //           shrinkWrap: true,
+                          //           scrollDirection: Axis.horizontal,
+                          //           physics:
+                          //               const NeverScrollableScrollPhysics(),
+                          //           itemBuilder: (context, index) {
+                          //             return Padding(
+                          //               padding: const EdgeInsets.symmetric(
+                          //                   horizontal: 5),
+                          //               child: Stack(
+                          //                 children: [
+                          //                   ClipRRect(
+                          //                     borderRadius:
+                          //                         const BorderRadius.all(
+                          //                             Radius.circular(10)),
+                          //                     child: controller.images[index]
+                          //                                 .runtimeType ==
+                          //                             XFile
+                          //                         ? Image.file(
+                          //                             File(controller
+                          //                                 .images[index].path),
+                          //                             fit: BoxFit.cover,
+                          //                             width: 100,
+                          //                             height: 100.0,
+                          //                           )
+                          //                         : NetworkImageWidget(
+                          //                             imageUrl: controller
+                          //                                 .images[index],
+                          //                             fit: BoxFit.cover,
+                          //                             width: 100,
+                          //                             height: 100.0,
+                          //                           ),
+                          //                   ),
+                          //                   Positioned(
+                          //                     bottom: 0,
+                          //                     top: 0,
+                          //                     left: 0,
+                          //                     right: 0,
+                          //                     child: InkWell(
+                          //                       onTap: () {
+                          //                         controller.images
+                          //                             .removeAt(index);
+                          //                       },
+                          //                       child: const Icon(
+                          //                         Icons.remove_circle,
+                          //                         size: 30,
+                          //                         color:
+                          //                             AppThemeData.warning300,
+                          //                       ),
+                          //                     ),
+                          //                   ),
+                          //                 ],
+                          //               ),
+                          //             );
+                          //           },
+                          //         ),
+                          //       ],
+                          //     ),
+                          //   ),
+                          // ),
                           const SizedBox(
                             height: 16,
                           ),

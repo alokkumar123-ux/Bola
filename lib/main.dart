@@ -18,8 +18,10 @@ import 'package:poolmate/services/aadhaar_verification_service.dart';
 import 'package:poolmate/services/localization_service.dart';
 import 'package:poolmate/themes/styles.dart';
 import 'package:poolmate/utils/dark_theme_provider.dart';
-import 'package:poolmate/utils/notification_service.dart';
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:poolmate/utils/preferences.dart';
+import 'package:poolmate/services/sos_audio_service.dart';
+import 'package:poolmate/utils/notification_service.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
@@ -55,12 +57,57 @@ void main() async {
   await Preferences.initPref();
 
   if (!kIsWeb) {
-    // Initialize notification service only for mobile platforms
-    NotificationService notificationService = NotificationService();
-    await notificationService.initInfo();
+    // Initialize Awesome Notifications for mobile platforms
+    await AwesomeNotifications().initialize(
+      null, // Use default app icon
+      [
+        NotificationChannel(
+          channelKey: 'default',
+          channelName: 'Default Notifications',
+          channelDescription: 'Default notification channel',
+          defaultColor: const Color(0xFF060606),
+          ledColor: Colors.white,
+          importance: NotificationImportance.High,
+          playSound: true,
+        ),
+        // This channel matches FCM's channel_id for regular notifications
+        NotificationChannel(
+          channelKey: 'high_importance_channel',
+          channelName: 'High Importance',
+          channelDescription: 'High importance notifications',
+          defaultColor: const Color(0xFF060606),
+          ledColor: Colors.white,
+          importance: NotificationImportance.High,
+          playSound: true,
+        ),
+        NotificationChannel(
+          channelGroupKey: 'sos_channel_group',
+          channelKey: 'sos_channel',
+          channelName: 'SOS Alerts',
+          channelDescription: 'Notification channel for SOS emergency alerts',
+          defaultColor: const Color(0xFFFF0000),
+          ledColor: Colors.red,
+          importance: NotificationImportance.Max,
+          criticalAlerts: true,
+          playSound: false, // suppress channel sound; we play alarm ourselves
+          enableVibration: true,
+        ),
+      ],
+      channelGroups: [
+        NotificationChannelGroup(
+          channelGroupKey: 'sos_channel_group',
+          channelGroupName: 'SOS Group',
+        ),
+      ],
+      debug: true,
+    );
 
-    // Set up background message handler
-    FirebaseMessaging.onBackgroundMessage(firebaseMessageBackgroundHandle);
+    // Request notification permissions if not already granted
+    AwesomeNotifications().isNotificationAllowed().then((isAllowed) {
+      if (!isAllowed) {
+        AwesomeNotifications().requestPermissionToSendNotifications();
+      }
+    });
   }
 
   // Configure Cashfree credentials before any Aadhaar API usage
@@ -76,6 +123,24 @@ void main() async {
   AadhaarVerificationService.debugPrintHeaders();
   // Optional: self-test logging
   // AadhaarVerificationService.testSignatureGeneration();
+
+  // Initialize SOS Audio Service
+  if (!kIsWeb) {
+    Get.put(SosAudioService(), permanent: true);
+
+    // Register Firebase background message handler BEFORE runApp
+    // This is critical for receiving messages when app is killed/background
+    FirebaseMessaging.onBackgroundMessage(firebaseMessageBackgroundHandle);
+
+    // Set up Awesome Notifications listeners for background/foreground
+    AwesomeNotifications().setListeners(
+      onActionReceivedMethod: awesomeOnActionReceivedMethod,
+      onNotificationCreatedMethod: awesomeOnNotificationCreatedMethod,
+      onNotificationDisplayedMethod: awesomeOnNotificationDisplayedMethod,
+      onDismissActionReceivedMethod: awesomeOnDismissActionReceivedMethod,
+    );
+  }
+
   runApp(const MyApp());
 }
 

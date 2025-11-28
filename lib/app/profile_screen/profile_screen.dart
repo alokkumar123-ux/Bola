@@ -19,6 +19,7 @@ import 'package:poolmate/themes/responsive.dart';
 import 'package:poolmate/utils/dark_theme_provider.dart';
 import 'package:poolmate/utils/network_image_widget.dart';
 import 'package:provider/provider.dart';
+import 'package:poolmate/utils/fire_store_utils.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -29,6 +30,36 @@ class ProfileScreen extends StatelessWidget {
     return GetX(
         init: ProfileController(),
         builder: (controller) {
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
+            // Always fetch latest user profile from Firebase
+            final user = await FireStoreUtils.getUserProfile(
+                FireStoreUtils.getCurrentUid());
+            final sosNumbers = user?.sosWhatsAppNumbers;
+            final hasValidNumber = sosNumbers != null &&
+                sosNumbers.any((n) => n.trim().isNotEmpty);
+            if (!hasValidNumber) {
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) {
+                  return AlertDialog(
+                    title: Text('SOS WhatsApp Number Required'),
+                    content: Text(
+                        'Please enter your SOS WhatsApp number(s) in your profile for safety.'),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          Get.to(const EditProfileScreen());
+                        },
+                        child: Text('Go to Edit Profile'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            }
+          });
           return Scaffold(
             backgroundColor: themeChange.getThem()
                 ? AppThemeData.grey800

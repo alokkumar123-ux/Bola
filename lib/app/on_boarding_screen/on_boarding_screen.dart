@@ -27,7 +27,11 @@ class OnBoardingScreen extends StatelessWidget {
               : AppThemeData.grey50,
           body: controller.isLoading.value
               ? Center(child: Constant.loader())
-              : Padding(
+              : controller.onBoardingList.isEmpty
+                  ? _EmptyOnboardingState(
+                      onRetry: () => controller.getOnBoardingData(),
+                    )
+                  : Padding(
                   padding: const EdgeInsets.symmetric(vertical: 20),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -36,15 +40,13 @@ class OnBoardingScreen extends StatelessWidget {
                       Padding(
                         padding: EdgeInsets.only(
                             top: Responsive.height(12, context)),
-                        child: NetworkImageWidget(
-                          imageUrl: controller
+                        child: _OnboardingImage(
+                          imagePath: controller
                               .onBoardingList[
                                   controller.selectedPageIndex.value]
-                              .image
-                              .toString(),
+                              .image,
                           width: Responsive.width(100, context),
                           height: Responsive.height(45, context),
-                          fit: BoxFit.cover,
                         ),
                       ),
                       Expanded(
@@ -190,6 +192,88 @@ class OnBoardingScreen extends StatelessWidget {
                 ),
         );
       },
+    );
+  }
+}
+
+class _OnboardingImage extends StatelessWidget {
+  final String? imagePath;
+  final double width;
+  final double height;
+
+  const _OnboardingImage(
+      {required this.imagePath, required this.width, required this.height});
+
+  @override
+  Widget build(BuildContext context) {
+    final path = imagePath ?? '';
+    final isNetwork = path.startsWith('http');
+
+    if (isNetwork) {
+      return NetworkImageWidget(
+        imageUrl: path,
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+      );
+    }
+
+    if (path.isNotEmpty) {
+      return Image.asset(
+        path,
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+      );
+    }
+
+    return Container(
+      width: width,
+      height: height,
+      alignment: Alignment.center,
+      child: const Icon(Icons.image_not_supported),
+    );
+  }
+}
+
+class _EmptyOnboardingState extends StatelessWidget {
+  final VoidCallback onRetry;
+
+  const _EmptyOnboardingState({required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 64, color: AppThemeData.grey500),
+            const SizedBox(height: 16),
+            const Text(
+              'Unable to load onboarding content.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: AppThemeData.grey800),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Please check your internet connection and try again.',
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            RoundedButtonFill(
+              title: 'Retry',
+              color: AppThemeData.primary300,
+              textColor: AppThemeData.grey50,
+              onPress: onRetry,
+            )
+          ],
+        ),
+      ),
     );
   }
 }

@@ -9,6 +9,7 @@ class ChatModel {
   String? mediaUrl;
   bool? seen;
   Timestamp? timestamp;
+  Map<String, dynamic>? metadata; // For storing additional data like bookingId
 
   ChatModel(
       {this.chatID,
@@ -18,7 +19,8 @@ class ChatModel {
       this.message,
       this.mediaUrl,
       this.seen,
-      this.timestamp});
+      this.timestamp,
+      this.metadata});
 
   ChatModel.fromJson(Map<String, dynamic> json) {
     chatID = json['chatID'];
@@ -28,6 +30,7 @@ class ChatModel {
     message = json['message'];
     mediaUrl = json['mediaUrl'];
     seen = json['seen'];
+    metadata = json['metadata'];
 
     // Handle both int (milliseconds) and Timestamp formats
     if (json['timestamp'] is int) {
@@ -47,6 +50,9 @@ class ChatModel {
     data['mediaUrl'] = mediaUrl;
     data['seen'] = seen;
     data['timestamp'] = timestamp;
+    if (metadata != null) {
+      data['metadata'] = metadata;
+    }
     return data;
   }
 }

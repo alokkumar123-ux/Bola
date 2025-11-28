@@ -109,6 +109,42 @@ class SendNotification {
 
       debugPrint("Using project ID: $projectId");
 
+      final notificationPayload = {
+        'message': {
+          'token': token,
+          'notification': {
+            'body': notificationModel.message ?? '',
+            'title': notificationModel.subject ?? ''
+          },
+          'data': payload,
+          'android': {
+            'notification': {
+              'channel_id': 'high_importance_channel',
+              'sound': 'default',
+            },
+            'priority': 'HIGH',
+          },
+          'apns': {
+            'headers': {
+              'apns-push-type': 'alert',
+              'apns-priority': '10',
+            },
+            'payload': {
+              'aps': {
+                'alert': {
+                  'title': notificationModel.subject ?? '',
+                  'body': notificationModel.message ?? '',
+                },
+                'sound': 'default',
+              },
+            },
+          },
+        }
+      };
+
+      debugPrint("------>"); 
+      debugPrint("$notificationModel");
+
       final response = await http.post(
         Uri.parse(
             'https://fcm.googleapis.com/v1/projects/$projectId/messages:send'),
@@ -116,21 +152,11 @@ class SendNotification {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $accessToken',
         },
-        body: jsonEncode(
-          <String, dynamic>{
-            'message': {
-              'token': token,
-              'notification': {
-                'body': notificationModel.message ?? '',
-                'title': notificationModel.subject ?? ''
-              },
-              'data': payload,
-            }
-          },
-        ),
+        body: jsonEncode(notificationPayload),
       );
 
       debugPrint("Notification Response=======>");
+      debugPrint("this is the token $token");
       debugPrint("Status Code: ${response.statusCode}");
       debugPrint("Response Body: ${response.body}");
 
@@ -175,6 +201,20 @@ class SendNotification {
 
       debugPrint("Using project ID: $projectId");
 
+      final bool isSosAlert = payload['type'] == 'sos_alert';
+      final String androidChannelId =
+          isSosAlert ? 'sos_channel' : 'high_importance_channel';
+      final String androidSound = isSosAlert ? 'sos_43210' : 'default';
+      final Map<String, dynamic> apnsSound = isSosAlert
+          ? {
+              'critical': 1,
+              'name': 'sos_43210.mp3',
+              'volume': 1.0,
+            }
+          : {
+              'name': 'default',
+            };
+
       final notificationPayload = {
         'message': {
           'token': token,
@@ -182,21 +222,32 @@ class SendNotification {
             'title': title,
             'body': body,
           },
-          'data': payload,
+          'data': {
+            ...payload,
+            // Ensure background handlers run on iOS
+            'content_available': 'true',
+          },
           'android': {
             'notification': {
-              'channel_id': 'high_importance_channel',
-              'sound': 'default',
+              'channel_id': androidChannelId,
+              'sound': androidSound,
             },
+            'priority': 'HIGH',
           },
           'apns': {
+            'headers': {
+              'apns-push-type': 'alert',
+              'apns-priority': '10',
+            },
             'payload': {
               'aps': {
                 'alert': {
                   'title': title,
                   'body': body,
                 },
-                'sound': 'default',
+                'sound': apnsSound,
+                'content-available': 1,
+                'category': isSosAlert ? 'sos_alert' : 'default',
               },
             },
           },

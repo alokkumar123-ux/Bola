@@ -35,42 +35,95 @@ class BookedDetailsController extends GetxController {
     dynamic argumentData = Get.arguments;
     if (argumentData != null) {
       bookingModel.value = argumentData['bookingModel'];
-      bookingUserModel.value = argumentData['bookingUserModel'];
+
+      // Check if bookingUserModel is provided and not null
+      if (argumentData['bookingUserModel'] != null) {
+        bookingUserModel.value = argumentData['bookingUserModel'];
+      }
+
+      // If bookingUserModel is null or incomplete, try to fetch it
+      if (argumentData['bookingUserModel'] == null ||
+          bookingUserModel.value.id == null) {
+        print(
+            "BookingUserModel is null or incomplete, fetching from Firebase...");
+
+        // Check if this is a booking created by current user (published ride)
+        if (bookingModel.value.createdBy == FireStoreUtils.getCurrentUid()) {
+          print(
+              "This is a published ride by current user, BookingUserModel not required");
+          // For published rides, we don't need BookingUserModel
+          // The screen should show the booking details without it
+        } else {
+          // This is a booking where current user is a passenger
+          await FireStoreUtils.getMyBookingUser(bookingModel.value)
+              .then((value) {
+            if (value != null) {
+              bookingUserModel.value = value;
+              print("Successfully fetched BookingUserModel");
+            } else {
+              print(
+                  "Failed to fetch BookingUserModel - it may not exist for this booking");
+            }
+          });
+        }
+      }
     }
     await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid())
         .then((value) {
-      userModel.value = value!;
+      if (value != null) {
+        userModel.value = value;
+      }
     });
-    FireStoreUtils.fireStore
-        .collection(CollectionName.booking)
-        .doc(bookingModel.value.id)
-        .snapshots()
-        .listen(
-      (event) {
-        bookingModel.value = BookingModel.fromJson(event.data()!);
-      },
-    );
+
+    // Only setup snapshot listener if booking ID exists
+    if (bookingModel.value.id != null) {
+      FireStoreUtils.fireStore
+          .collection(CollectionName.booking)
+          .doc(bookingModel.value.id)
+          .snapshots()
+          .listen(
+        (event) {
+          if (event.exists && event.data() != null) {
+            bookingModel.value = BookingModel.fromJson(event.data()!);
+          }
+        },
+      );
+    }
+
     await getUserData();
     await getReview();
     isLoading.value = false;
   }
 
   getReview() async {
-    await FireStoreUtils.getReview(
-            bookingId: bookingModel.value.id ?? "",
-            senderId: FireStoreUtils.getCurrentUid())
-        .then((value) {
-      if (value != null) {
-        reviewModel.value = value;
-      }
-    });
+    try {
+      await FireStoreUtils.getReview(
+              bookingId: bookingModel.value.id ?? "",
+              senderId: FireStoreUtils.getCurrentUid())
+          .then((value) {
+        if (value != null) {
+          reviewModel.value = value;
+        }
+      });
+    } catch (e) {
+      print("Error fetching review: $e");
+    }
   }
 
   getUserData() async {
-    await FireStoreUtils.getUserProfile(bookingModel.value.createdBy.toString())
-        .then((value) {
-      publisherUserModel.value = value!;
-    });
+    try {
+      await FireStoreUtils.getUserProfile(
+              bookingModel.value.createdBy.toString())
+          .then((value) {
+        if (value != null) {
+          publisherUserModel.value = value;
+        } else {
+          print("Publisher user not found");
+        }
+      });
+    } catch (e) {
+      print("Error fetching publisher user data: $e");
+    }
   }
 
   // Helper method to get the correct price per seat

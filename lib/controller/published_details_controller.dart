@@ -305,9 +305,11 @@ class PublishedDetailsController extends GetxController {
             "We apologize for any inconvenience caused. You can book another ride or contact support if needed.";
         // String chatMessage =
         //     "The driver has cancelled his trip. Please check apps.";
-        // Send message to chat room
+        // Send message to chat room with special type for ride cancellation
         try {
-          await _sendChatMessage(userModel!, chatMessage);
+          await _sendChatMessage(userModel!, chatMessage,
+              type: 'ride_cancelled',
+              metadata: {'bookingId': bookingModel.value.id});
           print("✅ Chat message sent to ${userModel!.fullName()}");
         } catch (chatError) {
           print("❌ Failed to send chat message: $chatError");
@@ -469,7 +471,8 @@ class PublishedDetailsController extends GetxController {
   }
 
   /// Send chat message to passenger about ride cancellation
-  _sendChatMessage(UserModel passengerUser, String message) async {
+  _sendChatMessage(UserModel passengerUser, String message,
+      {String type = 'text', Map<String, dynamic>? metadata}) async {
     try {
       // Create inbox models using existing InboxModel class
       InboxModel receiverInboxModel = InboxModel(
@@ -480,7 +483,7 @@ class PublishedDetailsController extends GetxController {
           seen: false,
           senderId: publisherUserModel.value.id.toString(),
           timestamp: Timestamp.now(),
-          type: 'text');
+          type: type);
 
       InboxModel senderInboxModel = InboxModel(
           archive: false,
@@ -490,7 +493,7 @@ class PublishedDetailsController extends GetxController {
           seen: true,
           senderId: publisherUserModel.value.id.toString(),
           timestamp: Timestamp.now(),
-          type: 'text');
+          type: type);
 
       // Update inbox for both users
       await FireStoreUtils.fireStore
@@ -509,14 +512,15 @@ class PublishedDetailsController extends GetxController {
 
       // Create chat message using existing ChatModel class
       ChatModel chatModel = ChatModel(
-          type: 'text',
+          type: type,
           timestamp: Timestamp.now(),
           senderId: publisherUserModel.value.id.toString(),
           seen: false,
           receiverId: passengerUser.id.toString(),
           mediaUrl: '',
           chatID: Constant.getUuid(),
-          message: message);
+          message: message,
+          metadata: metadata);
 
       // Save chat message to both user conversations
       await FireStoreUtils.fireStore

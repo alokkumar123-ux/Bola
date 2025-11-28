@@ -15,7 +15,10 @@ class BookingPaymentScreen extends StatelessWidget {
         return Scaffold(
           backgroundColor: AppThemeData.grey50,
           appBar: AppBar(
-            title: Text("Select Payment Method".tr),
+            title: Text(
+              "Select Payment Method".tr,
+              style: TextStyle(color: Colors.black),
+            ),
             backgroundColor: Colors.white,
             elevation: 0,
             leading: IconButton(
@@ -53,6 +56,7 @@ class BookingPaymentScreen extends StatelessWidget {
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
+                                color: Colors.black,
                               ),
                             ),
                             const SizedBox(height: 12),
@@ -62,13 +66,14 @@ class BookingPaymentScreen extends StatelessWidget {
                                 Text(
                                   "Number of Seats".tr,
                                   style: TextStyle(
-                                    color: Colors.grey.shade600,
+                                    color: Colors.black,
                                     fontSize: 14,
                                   ),
                                 ),
                                 Text(
                                   controller.numberOfSeats.value.toString(),
                                   style: const TextStyle(
+                                    color: Colors.black,
                                     fontWeight: FontWeight.w600,
                                     fontSize: 14,
                                   ),
@@ -82,7 +87,7 @@ class BookingPaymentScreen extends StatelessWidget {
                                 Text(
                                   "Price per Seat".tr,
                                   style: TextStyle(
-                                    color: Colors.grey.shade600,
+                                    color: Colors.black,
                                     fontSize: 14,
                                   ),
                                 ),
@@ -91,6 +96,7 @@ class BookingPaymentScreen extends StatelessWidget {
                                       amount: controller.pricePerSeat.value
                                           .toString()),
                                   style: const TextStyle(
+                                    color: Colors.black,
                                     fontWeight: FontWeight.w600,
                                     fontSize: 14,
                                   ),
@@ -106,6 +112,7 @@ class BookingPaymentScreen extends StatelessWidget {
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
+                                    color: Colors.black,
                                   ),
                                 ),
                                 Text(
@@ -115,7 +122,7 @@ class BookingPaymentScreen extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
-                                    color: AppThemeData.primary300,
+                                    color: Colors.black,
                                   ),
                                 ),
                               ],
@@ -129,6 +136,7 @@ class BookingPaymentScreen extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
+                          color: Colors.black,
                         ),
                       ),
                       const SizedBox(height: 12),

@@ -11,13 +11,9 @@ class WhatsAppService {
   static Future<bool> sendTemplateMessage({
     required String phoneNumber,
     required String templateName,
-    List<String>? components,
+    List<dynamic>? components,
   }) async {
     try {
-      debugPrint('=== SENDING WHATSAPP MESSAGE ===');
-      debugPrint('Phone: $phoneNumber');
-      debugPrint('Template: $templateName');
-      debugPrint('Components: $components');
 
       // Clean phone number (remove any non-digits and ensure proper format)
       String cleanPhone = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
@@ -50,10 +46,6 @@ class WhatsAppService {
         },
         body: jsonEncode(payload),
       );
-
-      debugPrint('=== WHATSAPP RESPONSE ===');
-      debugPrint('Status Code: ${response.statusCode}');
-      debugPrint('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
@@ -133,12 +125,22 @@ class WhatsAppService {
       components: rideDetails,
     );
   }
+    static Future<bool> sendsos({
+    required String phoneNumber,
+    List<String>? rideDetails,
+  }) async {
+    return await sendTemplateMessage(
+      phoneNumber: phoneNumber,
+      templateName: 'sosalert',
+      components: rideDetails,
+    );
+  }
 
   /// Send to multiple recipients (for driver cancellation to all passengers)
   static Future<List<bool>> sendToMultipleRecipients({
     required List<String> phoneNumbers,
     required String templateName,
-    List<String>? components,
+    List<dynamic>? components,
   }) async {
     List<bool> results = [];
 

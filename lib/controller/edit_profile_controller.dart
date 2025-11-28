@@ -17,9 +17,14 @@ class EditProfileController extends GetxController {
   Rx<TextEditingController> lastNameController = TextEditingController().obs;
   Rx<TextEditingController> emailController = TextEditingController().obs;
   Rx<TextEditingController> phoneNumberController = TextEditingController().obs;
+  Rx<TextEditingController> sosWhatsAppNumberController1 =
+      TextEditingController().obs;
+  Rx<TextEditingController> sosWhatsAppNumberController2 =
+      TextEditingController().obs;
   Rx<TextEditingController> dateOfBirthController = TextEditingController().obs;
   Rx<TextEditingController> bioController = TextEditingController().obs;
-  Rx<TextEditingController> countryCodeController = TextEditingController(text: "+91").obs;
+  Rx<TextEditingController> countryCodeController =
+      TextEditingController(text: "+91").obs;
   RxString preAddressOfName = "Mr.".obs;
 
   @override
@@ -29,16 +34,35 @@ class EditProfileController extends GetxController {
   }
 
   getData() async {
-    await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid()).then((value) {
+    await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid())
+        .then((value) {
       if (value != null) {
         userModel.value = value;
         firstNameController.value.text = userModel.value.firstName.toString();
         lastNameController.value.text = userModel.value.lastName.toString();
         emailController.value.text = userModel.value.email.toString();
-        phoneNumberController.value.text = userModel.value.phoneNumber.toString();
-        dateOfBirthController.value.text = userModel.value.dateOfBirth.toString();
+        phoneNumberController.value.text =
+            userModel.value.phoneNumber.toString();
+        // Initialize SOS WhatsApp number controllers
+        if (userModel.value.sosWhatsAppNumbers != null &&
+            userModel.value.sosWhatsAppNumbers!.isNotEmpty) {
+          sosWhatsAppNumberController1.value.text =
+              userModel.value.sosWhatsAppNumbers!.length > 0
+                  ? userModel.value.sosWhatsAppNumbers![0]
+                  : "";
+          sosWhatsAppNumberController2.value.text =
+              userModel.value.sosWhatsAppNumbers!.length > 1
+                  ? userModel.value.sosWhatsAppNumbers![1]
+                  : "";
+        } else {
+          sosWhatsAppNumberController1.value.text = "";
+          sosWhatsAppNumberController2.value.text = "";
+        }
+        dateOfBirthController.value.text =
+            userModel.value.dateOfBirth.toString();
         bioController.value.text = userModel.value.bio.toString();
-        countryCodeController.value.text = userModel.value.countryCode.toString();
+        countryCodeController.value.text =
+            userModel.value.countryCode.toString();
         profileImage.value = userModel.value.profilePic.toString();
         preAddressOfName.value = userModel.value.gender.toString();
       }
@@ -49,7 +73,8 @@ class EditProfileController extends GetxController {
 
   saveData() async {
     ShowToastDialog.showLoader("Please wait...");
-    if (Constant().hasValidUrl(profileImage.value) == false && profileImage.value.isNotEmpty) {
+    if (Constant().hasValidUrl(profileImage.value) == false &&
+        profileImage.value.isNotEmpty) {
       profileImage.value = await Constant.uploadUserImageToFireStorage(
         File(profileImage.value),
         "profileImage/${FireStoreUtils.getCurrentUid()}",
@@ -63,6 +88,11 @@ class EditProfileController extends GetxController {
     userModel.value.bio = bioController.value.text;
     userModel.value.profilePic = profileImage.value;
     userModel.value.gender = preAddressOfName.value;
+    // Save SOS WhatsApp numbers
+    userModel.value.sosWhatsAppNumbers = [
+      sosWhatsAppNumberController1.value.text,
+      sosWhatsAppNumberController2.value.text
+    ].where((number) => number.isNotEmpty).toList();
 
     await FireStoreUtils.updateUser(userModel.value).then((value) {
       ShowToastDialog.closeLoader();

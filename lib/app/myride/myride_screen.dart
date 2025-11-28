@@ -1043,20 +1043,44 @@ class MyRideScreen extends StatelessWidget {
                                   BookingModel bookingModel =
                                       controller.cancelledBooking[index];
                                   return InkWell(
-                                    // onTap: () {
-                                    //   // For cancelled bookings, navigate to details
-                                    //   // BookedUserModel data will be fetched in the details screen if needed
-                                    //   Get.to(const BookedDetailsScreen(),
-                                    //           arguments: {
-                                    //         "bookingModel": bookingModel,
-                                    //         "bookingUserModel": null // Details screen can handle this
-                                    //       })!
-                                    //       .then(
-                                    //     (value) {
-                                    //       controller.getBookedRight();
-                                    //     },
-                                    //   );
-                                    // },
+                                    onTap: () async {
+                                      // Check if this is a published ride (created by current user) or a booked ride
+                                      bool isPublishedRide =
+                                          bookingModel.createdBy ==
+                                              FireStoreUtils.getCurrentUid();
+
+                                      if (isPublishedRide) {
+                                        // Navigate to PublishedDetailsScreen for driver's cancelled rides
+                                        Get.to(const PublishedDetailsScreen(),
+                                                arguments: {
+                                              "bookingModel": bookingModel
+                                            })!
+                                            .then(
+                                          (value) {
+                                            if (value == true) {
+                                              controller.getBookedRight();
+                                            }
+                                          },
+                                        );
+                                      } else {
+                                        // Fetch booking user data for passenger's cancelled bookings
+                                        BookedUserModel? bookingUserModel =
+                                            await FireStoreUtils
+                                                .getMyBookingUser(bookingModel);
+
+                                        Get.to(const BookedDetailsScreen(),
+                                                arguments: {
+                                              "bookingModel": bookingModel,
+                                              "bookingUserModel":
+                                                  bookingUserModel
+                                            })!
+                                            .then(
+                                          (value) {
+                                            controller.getBookedRight();
+                                          },
+                                        );
+                                      }
+                                    },
                                     // Use publishes-style visual for Cancelled
                                     child: _buildPublishesStyleCard(
                                       bookingModel,
@@ -1096,35 +1120,51 @@ class MyRideScreen extends StatelessWidget {
                                               return Text(
                                                   snapshot.error.toString());
                                             } else {
+                                              BookedUserModel?
+                                                  bookingUserModel =
+                                                  snapshot.data;
+
                                               // For completed bookings, always use publishes-style card
                                               return InkWell(
-                                                // onTap: () {
-                                                //   Get.to(const BookedDetailsScreen(),
-                                                //           arguments: {
-                                                //         "bookingModel":
-                                                //             bookingModel,
-                                                //         "bookingUserModel":
-                                                //             bookingUserModel ??
-                                                //                 BookedUserModel(
-                                                //                   id: FireStoreUtils
-                                                //                       .getCurrentUid(),
-                                                //                   stopOver:
-                                                //                       StopOverModel(
-                                                //                     startAddress:
-                                                //                         "Unknown Start",
-                                                //                     endAddress:
-                                                //                         "Unknown End",
-                                                //                     price: "0",
-                                                //                   ),
-                                                //                 )
-                                                //       })!
-                                                //       .then(
-                                                //     (value) {
-                                                //       controller
-                                                //           .getBookedRight();
-                                                //     },
-                                                //   );
-                                                // },
+                                                onTap: () {
+                                                  // Check if this is a published ride (created by current user) or a booked ride
+                                                  bool isPublishedRide =
+                                                      bookingModel.createdBy ==
+                                                          FireStoreUtils
+                                                              .getCurrentUid();
+
+                                                  if (isPublishedRide) {
+                                                    // Navigate to PublishedDetailsScreen for driver's completed rides
+                                                    Get.to(const PublishedDetailsScreen(),
+                                                            arguments: {
+                                                          "bookingModel":
+                                                              bookingModel
+                                                        })!
+                                                        .then(
+                                                      (value) {
+                                                        if (value == true) {
+                                                          controller
+                                                              .getBookedRight();
+                                                        }
+                                                      },
+                                                    );
+                                                  } else {
+                                                    // Navigate to BookedDetailsScreen for passenger's completed rides
+                                                    Get.to(const BookedDetailsScreen(),
+                                                            arguments: {
+                                                          "bookingModel":
+                                                              bookingModel,
+                                                          "bookingUserModel":
+                                                              bookingUserModel
+                                                        })!
+                                                        .then(
+                                                      (value) {
+                                                        controller
+                                                            .getBookedRight();
+                                                      },
+                                                    );
+                                                  }
+                                                },
                                                 // Use publishes-style visual for Completed
                                                 child: _buildPublishesStyleCard(
                                                   bookingModel,

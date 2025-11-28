@@ -46,6 +46,8 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
 
   // Payment method selection
   String _selectedPaymentMethod = ''; // Empty initially, user must select
+  bool _isPaymentCompleted =
+      false; // Track if payment was successfully completed
 
   // Firebase listener for real-time updates
   StreamSubscription<DocumentSnapshot>? _bookingListener;
@@ -530,7 +532,7 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Additional Requirements',
+          'Additional Information',
           style: TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.bold,
@@ -1200,6 +1202,7 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
         ElevatedButton(
           onPressed: _selectedSeatIndices.isEmpty ||
                   _selectedPaymentMethod.isEmpty ||
+                  !_isPaymentCompleted ||
                   _isProcessingBooking
               ? null
               : _processBooking,
@@ -1279,6 +1282,30 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
                           ),
                         ),
                       ],
+                      if (_selectedPaymentMethod.isNotEmpty &&
+                          !_isPaymentCompleted) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          "Payment not completed yet",
+                          style: TextStyle(
+                            color: Colors.red.shade600,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                      if (_selectedPaymentMethod.isNotEmpty &&
+                          _isPaymentCompleted) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          "Payment completed successfully",
+                          style: TextStyle(
+                            color: Colors.green.shade600,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -1305,6 +1332,8 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
         // Driver prefers cash, only allow cash
         setState(() {
           _selectedPaymentMethod = "Cash";
+          _isPaymentCompleted =
+              true; // Cash payment doesn't require upfront completion
         });
         ShowToastDialog.showToast("This driver only accepts cash payments");
         return;
@@ -1328,6 +1357,7 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
           if (value != null) {
             setState(() {
               _selectedPaymentMethod = value['paymentType'];
+              _isPaymentCompleted = value['paymentSuccess'] == true;
             });
 
             // If payment was successful, proceed with booking automatically
@@ -1359,6 +1389,7 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
       if (value != null) {
         setState(() {
           _selectedPaymentMethod = value['paymentType'];
+          _isPaymentCompleted = value['paymentSuccess'] == true;
         });
 
         // If payment was successful, proceed with booking automatically

@@ -432,7 +432,8 @@ class PassengerDetailsScreen extends StatelessWidget {
                                     ),
                                   ),
                                   Text(
-                                    "x ${controller.bookingUserModel.value.bookedSeat.toString()}",
+                                    _formatSeatLabelsCsv(controller
+                                        .bookingUserModel.value.bookedSeat),
                                     maxLines: 1,
                                     style: TextStyle(
                                       color: themeChange.getThem()
@@ -689,53 +690,41 @@ class PassengerDetailsScreen extends StatelessWidget {
                                     const EdgeInsets.symmetric(horizontal: 16),
                                 child: Column(
                                   children: [
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            "Admin commission".tr,
-                                            style: TextStyle(
-                                              color: themeChange.getThem()
-                                                  ? AppThemeData.grey50
-                                                  : AppThemeData.grey900,
-                                              fontSize: 16,
-                                              overflow: TextOverflow.ellipsis,
-                                              fontFamily: AppThemeData.bold,
-                                            ),
-                                          ),
-                                        ),
-                                        Row(
-                                          children: [
-                                            Text(
-                                              "(-${Constant.amountShow(amount: Constant.calculateAdminCommission(amount: controller.bookingUserModel.value.subTotal.toString(), adminCommission: controller.bookingUserModel.value.adminCommission).toString())})",
-                                              style: TextStyle(
-                                                color: themeChange.getThem()
-                                                    ? AppThemeData.warning300
-                                                    : AppThemeData.warning300,
-                                                fontSize: 16,
-                                                overflow: TextOverflow.ellipsis,
-                                                fontFamily: AppThemeData.bold,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
+                                    // Row(
+                                    //   children: [
+                                    //     Expanded(
+                                    //       child: Text(
+                                    //         "Admin commission".tr,
+                                    //         style: TextStyle(
+                                    //           color: themeChange.getThem()
+                                    //               ? AppThemeData.grey50
+                                    //               : AppThemeData.grey900,
+                                    //           fontSize: 16,
+                                    //           overflow: TextOverflow.ellipsis,
+                                    //           fontFamily: AppThemeData.bold,
+                                    //         ),
+                                    //       ),
+                                    //     ),
+                                    //     Row(
+                                    //       children: [
+                                    //         Text(
+                                    //           "(-${Constant.amountShow(amount: Constant.calculateAdminCommission(amount: controller.bookingUserModel.value.subTotal.toString(), adminCommission: controller.bookingUserModel.value.adminCommission).toString())})",
+                                    //           style: TextStyle(
+                                    //             color: themeChange.getThem()
+                                    //                 ? AppThemeData.warning300
+                                    //                 : AppThemeData.warning300,
+                                    //             fontSize: 16,
+                                    //             overflow: TextOverflow.ellipsis,
+                                    //             fontFamily: AppThemeData.bold,
+                                    //           ),
+                                    //         ),
+                                    //       ],
+                                    //     ),
+                                    //   ],
+                                    // ),
                                     const SizedBox(
                                       height: 10,
                                     ),
-                                    Text(
-                                      "Note : Admin commission will be debited from your wallet balance. \n Admin commission will apply on Ride Amount."
-                                          .tr,
-                                      maxLines: 6,
-                                      style: TextStyle(
-                                        color: themeChange.getThem()
-                                            ? AppThemeData.warning300
-                                            : AppThemeData.warning300,
-                                        overflow: TextOverflow.ellipsis,
-                                        fontFamily: AppThemeData.bold,
-                                      ),
-                                    )
                                   ],
                                 ),
                               ),
@@ -747,5 +736,21 @@ class PassengerDetailsScreen extends StatelessWidget {
                   ),
           );
         });
+  }
+
+  String _formatSeatLabelsCsv(String? csv) {
+    if (csv == null || csv.trim().isEmpty) return '';
+    final parts =
+        csv.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+    return parts.map((p) {
+      final idx = int.tryParse(p) ?? -1;
+      return _seatIndexToLabel(idx);
+    }).join(',');
+  }
+
+  String _seatIndexToLabel(int index) {
+    const labels = ['A1', 'A2', 'B1', 'B2', 'B3', 'C1', 'C2', 'C3'];
+    if (index >= 0 && index < labels.length) return labels[index];
+    return 'S$index';
   }
 }

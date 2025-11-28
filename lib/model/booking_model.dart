@@ -12,7 +12,7 @@ class BookingModel {
   String? id;
   String? status;
   String? createdBy;
-  List<SeatBooking>? seatBookings; // New field for managing seat bookings
+  List<SeatBooking>? seatBookings;
   String? totalSeat;
   String? bookedSeat;
   List<int>? tempSeatSelection;

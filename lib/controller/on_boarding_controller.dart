@@ -19,34 +19,39 @@ class OnBoardingController extends GetxController {
   RxList<OnBoardingModel> onBoardingList = <OnBoardingModel>[].obs;
 
   getOnBoardingData() async {
-    await FireStoreUtils.getOnBoardingList().then((value) {
-      onBoardingList.value = value;
-    });
-
-    // onBoardingList.add(OnBoardingModel(
-    //   title: "Welcome to JourneyMate",
-    //   description: "Your Trusted Companion for Hassle-Free Travel",
-    //   id: "xs",
-    //   image: "assets/images/onboarding_1.png",
-    // ));
-    // onBoardingList.add(OnBoardingModel(
-    //   title: "Discover Ride sharing",
-    //   description: "Find or Offer Rides to Your Destination",
-    //   id: "xs",
-    //   image: "assets/images/onboarding_2.png",
-    // ));
-    // onBoardingList.add(OnBoardingModel(
-    //   title: "Connect with Fellow Travelers",
-    //   description: "Share Your Journey, Share the Fun",
-    //   id: "xs",
-    //   image: "assets/images/onboarding_3.png",
-    // ));
-    isLoading.value = false;
-
-    // await FireStoreUtils.getOnBoardingList().then((value) {
-    //   onBoardingList.value = value;
-    //   isLoading.value = false;
-    // });
-    update();
+    try {
+      final value = await FireStoreUtils.getOnBoardingList();
+      if (value.isNotEmpty) {
+        onBoardingList.assignAll(value);
+      } else {
+        onBoardingList.assignAll(_defaultSlides);
+      }
+    } catch (e) {
+      onBoardingList.assignAll(_defaultSlides);
+    } finally {
+      isLoading.value = false;
+      update();
+    }
   }
+
+  List<OnBoardingModel> get _defaultSlides => [
+        OnBoardingModel(
+          title: "Welcome to JourneyMate",
+          description: "Your Trusted Companion for Hassle-Free Travel",
+          id: "slide_1",
+          image: "assets/images/onboarding_1.png",
+        ),
+        OnBoardingModel(
+          title: "Discover Ride sharing",
+          description: "Find or Offer Rides to Your Destination",
+          id: "slide_2",
+          image: "assets/images/onboarding_2.png",
+        ),
+        OnBoardingModel(
+          title: "Connect with Fellow Travelers",
+          description: "Share Your Journey, Share the Fun",
+          id: "slide_3",
+          image: "assets/images/onboarding_3.png",
+        ),
+      ];
 }

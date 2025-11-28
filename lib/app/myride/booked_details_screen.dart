@@ -22,6 +22,9 @@ import 'package:poolmate/utils/fire_store_utils.dart';
 import 'package:poolmate/utils/network_image_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:timelines_plus/timelines_plus.dart';
+import 'package:poolmate/services/whatsapp_service.dart';
+import 'package:poolmate/constant/send_notification.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class BookedDetailsScreen extends StatelessWidget {
   const BookedDetailsScreen({super.key});
@@ -1359,6 +1362,7 @@ class BookedDetailsScreen extends StatelessWidget {
                                                   textColor:
                                                       AppThemeData.grey50,
                                                   onPress: () async {
+                                                    // ...existing SOS logic below...
                                                     ShowToastDialog.showLoader(
                                                         "Please wait".tr);
                                                     loc.LocationData? position =
@@ -1422,10 +1426,165 @@ class BookedDetailsScreen extends StatelessWidget {
                                                             "Initiated";
                                                         await FireStoreUtils
                                                             .setSOS(sosModel);
+                                                        // Send WhatsApp SOS message to all user's SOS numbers
+                                                        final sosNumbers =
+                                                            controller
+                                                                    .userModel
+                                                                    .value
+                                                                    .sosWhatsAppNumbers ??
+                                                                [];
+                                                        final locationText =
+                                                            "https://maps.google.com/?q=${position.latitude},${position.longitude}";
+                                                        final passengerName =
+                                                            "${controller.userModel.value.firstName ?? ''} ${controller.userModel.value.lastName ?? ''}"
+                                                                .trim();
+                                                        final startLocation =
+                                                            controller
+                                                                    .bookingModel
+                                                                    .value
+                                                                    .pickUpAddress ??
+                                                                "";
+                                                        final endLocation =
+                                                            controller
+                                                                    .bookingModel
+                                                                    .value
+                                                                    .dropAddress ??
+                                                                "";
+                                                        final rideDate = controller
+                                                                    .bookingModel
+                                                                    .value
+                                                                    .departureDateTime !=
+                                                                null
+                                                            ? Constant.timestampToDate(
+                                                                controller
+                                                                    .bookingModel
+                                                                    .value
+                                                                    .departureDateTime!)
+                                                            : "";
+                                                        final rideTime = controller
+                                                                    .bookingModel
+                                                                    .value
+                                                                    .departureDateTime !=
+                                                                null
+                                                            ? Constant.timestampToTime(
+                                                                controller
+                                                                    .bookingModel
+                                                                    .value
+                                                                    .departureDateTime!)
+                                                            : "";
+                                                        final vehicleNumber = controller
+                                                                .bookingModel
+                                                                .value
+                                                                .vehicleInformation
+                                                                ?.licensePlatNumber ??
+                                                            "";
+                                                        print(sosNumbers);
+                                                        await WhatsAppService
+                                                            .sendToMultipleRecipients(
+                                                                phoneNumbers:
+                                                                    sosNumbers,
+                                                                templateName:
+                                                                    "sos_alerttt",
+                                                                components: [
+                                                              {
+                                                                "type": "body",
+                                                                "parameters": [
+                                                                  {
+                                                                    "type":
+                                                                        "text",
+                                                                    "text":
+                                                                        passengerName
+                                                                  },
+                                                                  {
+                                                                    "type":
+                                                                        "text",
+                                                                    "text":
+                                                                        startLocation
+                                                                  },
+                                                                  {
+                                                                    "type":
+                                                                        "text",
+                                                                    "text":
+                                                                        endLocation
+                                                                  },
+                                                                  {
+                                                                    "type":
+                                                                        "text",
+                                                                    "text":
+                                                                        rideDate
+                                                                  },
+                                                                  {
+                                                                    "type":
+                                                                        "text",
+                                                                    "text":
+                                                                        rideTime
+                                                                  },
+                                                                  {
+                                                                    "type":
+                                                                        "text",
+                                                                    "text":
+                                                                        locationText
+                                                                  },
+                                                                  {
+                                                                    "type":
+                                                                        "text",
+                                                                    "text":
+                                                                        vehicleNumber
+                                                                  }
+                                                                ]
+                                                              }
+                                                            ]);
+                                                        print(
+                                                            "SOS messages sent to $sosNumbers");
+                                                        // Send push notification to driver with custom sound
+                                                        final driverFcmToken =
+                                                            controller
+                                                                .publisherUserModel
+                                                                .value
+                                                                .fcmToken;
+                                                        if (driverFcmToken !=
+                                                                null &&
+                                                            driverFcmToken
+                                                                .isNotEmpty) {
+                                                          await SendNotification
+                                                              .sendChatNotification(
+                                                            token:
+                                                                driverFcmToken,
+                                                            title: "SOS Alert!",
+                                                            body:
+                                                                "Passenger triggered SOS. Tap to respond.",
+                                                            payload: {
+                                                              "type":
+                                                                  "sos_alert",
+                                                              "sound":
+                                                                  "sos_43210.mp3",
+                                                              "bookingId":
+                                                                  controller
+                                                                          .bookingModel
+                                                                          .value
+                                                                          .id ??
+                                                                      "",
+                                                              "location":
+                                                                  locationText
+                                                            },
+                                                          );
+                                                        }
                                                         ShowToastDialog
                                                             .closeLoader();
+                                                        final Uri launchUri =
+                                                            Uri(
+                                                                scheme: 'tel',
+                                                                path: '100');
+                                                        if (await canLaunchUrl(
+                                                            launchUri)) {
+                                                          await launchUrl(
+                                                              launchUri);
+                                                        } else {
+                                                          print(
+                                                              'Could not launch dialer');
+                                                        }
                                                         ShowToastDialog.showToast(
-                                                            "Your SOS request has been submitted to admin."
+                                                            "Your SOS request has been submitted to admin, sent to your emergency contacts, and driver alerted."
                                                                 .tr);
                                                       }
                                                     });
