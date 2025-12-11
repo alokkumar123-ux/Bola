@@ -29,9 +29,9 @@ class OnBoardingController extends GetxController {
     } catch (e) {
       onBoardingList.assignAll(_defaultSlides);
     } finally {
-      isLoading.value = false;
-      update();
-    }
+    isLoading.value = false;
+    update();
+  }
   }
 
   List<OnBoardingModel> get _defaultSlides => [

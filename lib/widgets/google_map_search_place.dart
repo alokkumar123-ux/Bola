@@ -138,7 +138,7 @@ class GoogleMapSearchPlacesApiState extends State<GoogleMapSearchPlacesApi> {
     // On mobile, use HTTP API
     try {
       String request =
-          'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$input&key=AIzaSyAq4ZSdCq-JcLI1yrIm4dM1kTgkBWoYSDI';
+          'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$input&key=${Constant.mapAPIKey}';
       var response = await http.get(Uri.parse(request));
       if (response.statusCode == 200) {
         setState(() {

@@ -87,165 +87,167 @@ class ChatScreen extends StatelessWidget {
               ],
             ),
           ),
-          body: controller.isLoading.value
-              ? Center(child: Constant.loader())
-              : Column(
-                  children: [
-                    Expanded(
-                      child: PaginateFirestore(
-                        scrollDirection: Axis.vertical,
-                        query: FireStoreUtils.fireStore
-                            .collection(CollectionName.chat)
-                            .doc(controller.senderUserModel.value.id)
-                            .collection(controller.receiverUserModel.value.id
-                                .toString())
-                            .orderBy("timestamp", descending: true),
-                        itemBuilderType: PaginateBuilderType.listView,
-                        isLive: true,
-                        physics: const BouncingScrollPhysics(
-                            parent: AlwaysScrollableScrollPhysics()),
-                        shrinkWrap: true,
-                        reverse: true,
-                        onEmpty: Constant.showEmptyView(
-                            message: "No conversion found".tr,
-                            isDarkMode: themeChange.getThem()),
-                        onError: (error) {
-                          return ErrorWidget(error);
-                        },
-                        itemBuilder: (context, documentSnapshots, index) {
-                          ChatModel chatModel = ChatModel.fromJson(
-                              documentSnapshots[index].data()
-                                  as Map<String, dynamic>);
-                          return Container(
-                              padding: const EdgeInsets.only(
-                                  left: 14, right: 14, top: 06, bottom: 06),
-                              child: chatBubbles(
-                                  context,
-                                  chatModel.senderId ==
-                                          controller.senderUserModel.value.id
-                                      ? true
-                                      : false,
-                                  chatModel,
-                                  themeChange));
-                        },
-                      ),
-                    ),
-                    Container(
-                      color: themeChange.getThem()
-                          ? AppThemeData.grey900
-                          : AppThemeData.grey50,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 16),
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: TextFormField(
-                                keyboardType: TextInputType.text,
-                                textCapitalization:
-                                    TextCapitalization.sentences,
-                                controller: controller
-                                    .messageTextEditorController.value,
-                                textAlign: TextAlign.start,
-                                maxLines: 1,
-                                textInputAction: TextInputAction.done,
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: themeChange.getThem()
-                                        ? AppThemeData.grey300
-                                        : AppThemeData.grey600,
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: AppThemeData.medium),
-                                decoration: InputDecoration(
-                                    errorStyle:
-                                        const TextStyle(color: Colors.red),
-                                    isDense: true,
-                                    filled: true,
-                                    enabled: true,
-                                    fillColor: themeChange.getThem()
-                                        ? AppThemeData.grey800
-                                        : AppThemeData.grey100,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        vertical: 16, horizontal: 10),
-                                    disabledBorder: OutlineInputBorder(
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(10)),
-                                      borderSide: BorderSide(
-                                          color: themeChange.getThem()
-                                              ? AppThemeData.grey800
-                                              : AppThemeData.grey100,
-                                          width: 1),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(10)),
-                                      borderSide: BorderSide(
-                                          color: themeChange.getThem()
-                                              ? AppThemeData.primary300
-                                              : AppThemeData.primary300,
-                                          width: 1),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(10)),
-                                      borderSide: BorderSide(
-                                          color: themeChange.getThem()
-                                              ? AppThemeData.grey800
-                                              : AppThemeData.grey100,
-                                          width: 1),
-                                    ),
-                                    errorBorder: OutlineInputBorder(
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(10)),
-                                      borderSide: BorderSide(
-                                          color: themeChange.getThem()
-                                              ? AppThemeData.grey800
-                                              : AppThemeData.grey100,
-                                          width: 1),
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(10)),
-                                      borderSide: BorderSide(
-                                          color: themeChange.getThem()
-                                              ? AppThemeData.grey800
-                                              : AppThemeData.grey100,
-                                          width: 1),
-                                    ),
-                                    hintText: "Type Message".tr,
-                                    hintStyle: TextStyle(
-                                        fontSize: 14,
-                                        color: themeChange.getThem()
-                                            ? AppThemeData.grey600
-                                            : AppThemeData.grey700,
-                                        fontWeight: FontWeight.w500,
-                                        fontFamily: AppThemeData.medium)),
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 10,
-                            ),
-                            InkWell(
-                                onTap: () {
-                                  if (controller.messageTextEditorController
-                                      .value.text.isNotEmpty) {
-                                    controller.sendMessage(controller
-                                        .messageTextEditorController.value.text
-                                        .trim());
-                                  } else {
-                                    ShowToastDialog.showToast(
-                                        "Please enter message".tr);
-                                  }
-                                },
-                                child: SvgPicture.asset(
-                                    "assets/icons/ic_chat_send.svg"))
-                          ],
+          body: SafeArea(
+            child: controller.isLoading.value
+                ? Center(child: Constant.loader())
+                : Column(
+                    children: [
+                      Expanded(
+                        child: PaginateFirestore(
+                          scrollDirection: Axis.vertical,
+                          query: FireStoreUtils.fireStore
+                              .collection(CollectionName.chat)
+                              .doc(controller.senderUserModel.value.id)
+                              .collection(controller.receiverUserModel.value.id
+                                  .toString())
+                              .orderBy("timestamp", descending: true),
+                          itemBuilderType: PaginateBuilderType.listView,
+                          isLive: true,
+                          physics: const BouncingScrollPhysics(
+                              parent: AlwaysScrollableScrollPhysics()),
+                          shrinkWrap: true,
+                          reverse: true,
+                          onEmpty: Constant.showEmptyView(
+                              message: "No conversion found".tr,
+                              isDarkMode: themeChange.getThem()),
+                          onError: (error) {
+                            return ErrorWidget(error);
+                          },
+                          itemBuilder: (context, documentSnapshots, index) {
+                            ChatModel chatModel = ChatModel.fromJson(
+                                documentSnapshots[index].data()
+                                    as Map<String, dynamic>);
+                            return Container(
+                                padding: const EdgeInsets.only(
+                                    left: 14, right: 14, top: 06, bottom: 06),
+                                child: chatBubbles(
+                                    context,
+                                    chatModel.senderId ==
+                                            controller.senderUserModel.value.id
+                                        ? true
+                                        : false,
+                                    chatModel,
+                                    themeChange));
+                          },
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                      Container(
+                        color: themeChange.getThem()
+                            ? AppThemeData.grey900
+                            : AppThemeData.grey50,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 16),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  keyboardType: TextInputType.text,
+                                  textCapitalization:
+                                      TextCapitalization.sentences,
+                                  controller: controller
+                                      .messageTextEditorController.value,
+                                  textAlign: TextAlign.start,
+                                  maxLines: 1,
+                                  textInputAction: TextInputAction.done,
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      color: themeChange.getThem()
+                                          ? AppThemeData.grey300
+                                          : AppThemeData.grey600,
+                                      fontWeight: FontWeight.w500,
+                                      fontFamily: AppThemeData.medium),
+                                  decoration: InputDecoration(
+                                      errorStyle:
+                                          const TextStyle(color: Colors.red),
+                                      isDense: true,
+                                      filled: true,
+                                      enabled: true,
+                                      fillColor: themeChange.getThem()
+                                          ? AppThemeData.grey800
+                                          : AppThemeData.grey100,
+                                      contentPadding: const EdgeInsets.symmetric(
+                                          vertical: 16, horizontal: 10),
+                                      disabledBorder: OutlineInputBorder(
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(10)),
+                                        borderSide: BorderSide(
+                                            color: themeChange.getThem()
+                                                ? AppThemeData.grey800
+                                                : AppThemeData.grey100,
+                                            width: 1),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(10)),
+                                        borderSide: BorderSide(
+                                            color: themeChange.getThem()
+                                                ? AppThemeData.primary300
+                                                : AppThemeData.primary300,
+                                            width: 1),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(10)),
+                                        borderSide: BorderSide(
+                                            color: themeChange.getThem()
+                                                ? AppThemeData.grey800
+                                                : AppThemeData.grey100,
+                                            width: 1),
+                                      ),
+                                      errorBorder: OutlineInputBorder(
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(10)),
+                                        borderSide: BorderSide(
+                                            color: themeChange.getThem()
+                                                ? AppThemeData.grey800
+                                                : AppThemeData.grey100,
+                                            width: 1),
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(10)),
+                                        borderSide: BorderSide(
+                                            color: themeChange.getThem()
+                                                ? AppThemeData.grey800
+                                                : AppThemeData.grey100,
+                                            width: 1),
+                                      ),
+                                      hintText: "Type Message".tr,
+                                      hintStyle: TextStyle(
+                                          fontSize: 14,
+                                          color: themeChange.getThem()
+                                              ? AppThemeData.grey600
+                                              : AppThemeData.grey700,
+                                          fontWeight: FontWeight.w500,
+                                          fontFamily: AppThemeData.medium)),
+                                ),
+                              ),
+                              const SizedBox(
+                                width: 10,
+                              ),
+                              InkWell(
+                                  onTap: () {
+                                    if (controller.messageTextEditorController
+                                        .value.text.isNotEmpty) {
+                                      controller.sendMessage(controller
+                                          .messageTextEditorController.value.text
+                                          .trim());
+                                    } else {
+                                      ShowToastDialog.showToast(
+                                          "Please enter message".tr);
+                                    }
+                                  },
+                                  child: SvgPicture.asset(
+                                      "assets/icons/ic_chat_send.svg"))
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
         );
       },
     );

@@ -82,178 +82,180 @@ class HelpSupportScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              body: Padding(
-                padding: const EdgeInsets.only(left: 8.0, right: 8, bottom: 8),
-                child: Column(
-                  children: <Widget>[
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () {
-                          FocusScope.of(context).unfocus();
-                        },
-                        child: PaginateFirestore(
-                          scrollDirection: Axis.vertical,
-                          query: FireStoreUtils.fireStore
-                              .collection(CollectionName.adminChat)
-                              .doc(FireStoreUtils.getCurrentUid())
-                              .collection("thread")
-                              .orderBy('createdAt', descending: true),
-                          itemBuilderType: PaginateBuilderType.listView,
-                          isLive: true,
-                          physics: const BouncingScrollPhysics(
-                              parent: AlwaysScrollableScrollPhysics()),
-                          shrinkWrap: true,
-                          reverse: true,
-                          onEmpty: Constant.showEmptyView(
-                              message: "No conversion found".tr,
-                              isDarkMode: themeChange.getThem()),
-                          onError: (error) {
-                            return ErrorWidget(error);
+              body: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8.0, right: 8, bottom: 8),
+                  child: Column(
+                    children: <Widget>[
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            FocusScope.of(context).unfocus();
                           },
-                          itemBuilder: (context, documentSnapshots, index) {
-                            ConversationAdminModel inboxModel =
-                                ConversationAdminModel.fromJson(
-                                    documentSnapshots[index].data()
-                                        as Map<String, dynamic>);
-                            return chatItemView(
-                                isMe: inboxModel.senderId ==
-                                    FireStoreUtils.getCurrentUid(),
-                                data: inboxModel,
-                                context: context,
-                                controller: controller);
-                          },
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: SizedBox(
-                        height: 50,
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 10),
-                          child: TextField(
-                            style: TextStyle(
-                                color: themeChange.getThem()
-                                    ? AppThemeData.primary50
-                                    : AppThemeData.secondary600,
-                                fontFamily: AppThemeData.medium,
-                                fontSize: 14),
-                            textInputAction: TextInputAction.send,
-                            keyboardType: TextInputType.text,
-                            textCapitalization: TextCapitalization.sentences,
-                            controller: controller.messageController.value,
-                            decoration: InputDecoration(
-                              contentPadding: const EdgeInsets.only(left: 10),
-                              filled: true,
-                              fillColor: themeChange.getThem()
-                                  ? AppThemeData.grey900
-                                  : AppThemeData.grey100,
-                              disabledBorder: OutlineInputBorder(
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(10)),
-                                borderSide: BorderSide(
-                                    color: themeChange.getThem()
-                                        ? AppThemeData.grey900
-                                        : AppThemeData.grey100,
-                                    width: 1),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(10)),
-                                borderSide: BorderSide(
-                                    color: themeChange.getThem()
-                                        ? AppThemeData.primary300
-                                        : AppThemeData.primary300,
-                                    width: 1),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(10)),
-                                borderSide: BorderSide(
-                                    color: themeChange.getThem()
-                                        ? AppThemeData.grey900
-                                        : AppThemeData.grey100,
-                                    width: 1),
-                              ),
-                              errorBorder: OutlineInputBorder(
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(10)),
-                                borderSide: BorderSide(
-                                    color: themeChange.getThem()
-                                        ? AppThemeData.grey900
-                                        : AppThemeData.grey100,
-                                    width: 1),
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(10)),
-                                borderSide: BorderSide(
-                                    color: themeChange.getThem()
-                                        ? AppThemeData.grey900
-                                        : AppThemeData.grey100,
-                                    width: 1),
-                              ),
-                              suffixIcon: IconButton(
-                                onPressed: () async {
-                                  if (controller.messageController.value.text
-                                      .isNotEmpty) {
-                                    controller.sendMessage(
-                                        message: controller
-                                            .messageController.value.text,
-                                        url: null,
-                                        videoThumbnail: '',
-                                        messageType: 'text',
-                                        controller: controller);
-                                    controller.messageController.value.clear();
-                                  } else {
-                                    ShowToastDialog.showToast(
-                                        "Please enter text".tr);
-                                  }
-                                },
-                                icon: Icon(Icons.send_rounded,
-                                    color: themeChange.getThem()
-                                        ? AppThemeData.grey500
-                                        : AppThemeData.grey800),
-                              ),
-                              prefixIcon: IconButton(
-                                onPressed: () async {
-                                  _onCameraClick(
-                                      themeChange: themeChange,
-                                      controller: controller,
-                                      context: context);
-                                },
-                                icon: Icon(Icons.camera_alt,
-                                    color: themeChange.getThem()
-                                        ? AppThemeData.grey500
-                                        : AppThemeData.grey800),
-                              ),
-                              hintText: 'Start typing ...'.tr,
-                              hintStyle: TextStyle(
-                                  color: themeChange.getThem()
-                                      ? AppThemeData.grey50
-                                      : AppThemeData.grey700,
-                                  fontFamily: AppThemeData.medium,
-                                  fontSize: 14),
-                            ),
-                            onSubmitted: (value) async {
-                              if (controller
-                                  .messageController.value.text.isNotEmpty) {
-                                controller.sendMessage(
-                                    message:
-                                        controller.messageController.value.text,
-                                    url: null,
-                                    videoThumbnail: '',
-                                    messageType: 'text',
-                                    controller: controller);
-                                // Timer(const Duration(milliseconds: 500), () => _controller.jumpTo(_controller.position.maxScrollExtent));
-                                controller.messageController.value.clear();
-                              }
+                          child: PaginateFirestore(
+                            scrollDirection: Axis.vertical,
+                            query: FireStoreUtils.fireStore
+                                .collection(CollectionName.adminChat)
+                                .doc(FireStoreUtils.getCurrentUid())
+                                .collection("thread")
+                                .orderBy('createdAt', descending: true),
+                            itemBuilderType: PaginateBuilderType.listView,
+                            isLive: true,
+                            physics: const BouncingScrollPhysics(
+                                parent: AlwaysScrollableScrollPhysics()),
+                            shrinkWrap: true,
+                            reverse: true,
+                            onEmpty: Constant.showEmptyView(
+                                message: "No conversion found".tr,
+                                isDarkMode: themeChange.getThem()),
+                            onError: (error) {
+                              return ErrorWidget(error);
+                            },
+                            itemBuilder: (context, documentSnapshots, index) {
+                              ConversationAdminModel inboxModel =
+                                  ConversationAdminModel.fromJson(
+                                      documentSnapshots[index].data()
+                                          as Map<String, dynamic>);
+                              return chatItemView(
+                                  isMe: inboxModel.senderId ==
+                                      FireStoreUtils.getCurrentUid(),
+                                  data: inboxModel,
+                                  context: context,
+                                  controller: controller);
                             },
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: SizedBox(
+                          height: 50,
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 10),
+                            child: TextField(
+                              style: TextStyle(
+                                  color: themeChange.getThem()
+                                      ? AppThemeData.primary50
+                                      : AppThemeData.secondary600,
+                                  fontFamily: AppThemeData.medium,
+                                  fontSize: 14),
+                              textInputAction: TextInputAction.send,
+                              keyboardType: TextInputType.text,
+                              textCapitalization: TextCapitalization.sentences,
+                              controller: controller.messageController.value,
+                              decoration: InputDecoration(
+                                contentPadding: const EdgeInsets.only(left: 10),
+                                filled: true,
+                                fillColor: themeChange.getThem()
+                                    ? AppThemeData.grey900
+                                    : AppThemeData.grey100,
+                                disabledBorder: OutlineInputBorder(
+                                  borderRadius:
+                                      const BorderRadius.all(Radius.circular(10)),
+                                  borderSide: BorderSide(
+                                      color: themeChange.getThem()
+                                          ? AppThemeData.grey900
+                                          : AppThemeData.grey100,
+                                      width: 1),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius:
+                                      const BorderRadius.all(Radius.circular(10)),
+                                  borderSide: BorderSide(
+                                      color: themeChange.getThem()
+                                          ? AppThemeData.primary300
+                                          : AppThemeData.primary300,
+                                      width: 1),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius:
+                                      const BorderRadius.all(Radius.circular(10)),
+                                  borderSide: BorderSide(
+                                      color: themeChange.getThem()
+                                          ? AppThemeData.grey900
+                                          : AppThemeData.grey100,
+                                      width: 1),
+                                ),
+                                errorBorder: OutlineInputBorder(
+                                  borderRadius:
+                                      const BorderRadius.all(Radius.circular(10)),
+                                  borderSide: BorderSide(
+                                      color: themeChange.getThem()
+                                          ? AppThemeData.grey900
+                                          : AppThemeData.grey100,
+                                      width: 1),
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius:
+                                      const BorderRadius.all(Radius.circular(10)),
+                                  borderSide: BorderSide(
+                                      color: themeChange.getThem()
+                                          ? AppThemeData.grey900
+                                          : AppThemeData.grey100,
+                                      width: 1),
+                                ),
+                                suffixIcon: IconButton(
+                                  onPressed: () async {
+                                    if (controller.messageController.value.text
+                                        .isNotEmpty) {
+                                      controller.sendMessage(
+                                          message: controller
+                                              .messageController.value.text,
+                                          url: null,
+                                          videoThumbnail: '',
+                                          messageType: 'text',
+                                          controller: controller);
+                                      controller.messageController.value.clear();
+                                    } else {
+                                      ShowToastDialog.showToast(
+                                          "Please enter text".tr);
+                                    }
+                                  },
+                                  icon: Icon(Icons.send_rounded,
+                                      color: themeChange.getThem()
+                                          ? AppThemeData.grey500
+                                          : AppThemeData.grey800),
+                                ),
+                                prefixIcon: IconButton(
+                                  onPressed: () async {
+                                    _onCameraClick(
+                                        themeChange: themeChange,
+                                        controller: controller,
+                                        context: context);
+                                  },
+                                  icon: Icon(Icons.camera_alt,
+                                      color: themeChange.getThem()
+                                          ? AppThemeData.grey500
+                                          : AppThemeData.grey800),
+                                ),
+                                hintText: 'Start typing ...'.tr,
+                                hintStyle: TextStyle(
+                                    color: themeChange.getThem()
+                                        ? AppThemeData.grey50
+                                        : AppThemeData.grey700,
+                                    fontFamily: AppThemeData.medium,
+                                    fontSize: 14),
+                              ),
+                              onSubmitted: (value) async {
+                                if (controller
+                                    .messageController.value.text.isNotEmpty) {
+                                  controller.sendMessage(
+                                      message:
+                                          controller.messageController.value.text,
+                                      url: null,
+                                      videoThumbnail: '',
+                                      messageType: 'text',
+                                      controller: controller);
+                                  // Timer(const Duration(milliseconds: 500), () => _controller.jumpTo(_controller.position.maxScrollExtent));
+                                  controller.messageController.value.clear();
+                                }
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );

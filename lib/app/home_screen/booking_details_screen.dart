@@ -68,337 +68,278 @@ class BookingDetailsScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              body: controller.isLoading.value
-                  ? Center(child: Constant.loader())
-                  : SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                Text(
-                                  "Trip info".tr,
-                                  maxLines: 1,
-                                  style: TextStyle(
-                                    color: themeChange.getThem()
-                                        ? AppThemeData.grey100
-                                        : AppThemeData.grey800,
-                                    fontSize: 16,
-                                    overflow: TextOverflow.ellipsis,
-                                    fontFamily: AppThemeData.bold,
+              body: SafeArea(
+                child: controller.isLoading.value
+                    ? Center(child: Constant.loader())
+                    : SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(
+                                    height: 10,
                                   ),
-                                ),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 4),
-                                  child: Row(
-                                    children: [
-                                      SvgPicture.asset(
-                                        "assets/icons/ic_calender.svg",
-                                        height: 20,
-                                        width: 20,
-                                        colorFilter: ColorFilter.mode(
-                                            themeChange.getThem()
+                                  Text(
+                                    "Trip info".tr,
+                                    maxLines: 1,
+                                    style: TextStyle(
+                                      color: themeChange.getThem()
+                                          ? AppThemeData.grey100
+                                          : AppThemeData.grey800,
+                                      fontSize: 16,
+                                      overflow: TextOverflow.ellipsis,
+                                      fontFamily: AppThemeData.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 4),
+                                    child: Row(
+                                      children: [
+                                        SvgPicture.asset(
+                                          "assets/icons/ic_calender.svg",
+                                          height: 20,
+                                          width: 20,
+                                          colorFilter: ColorFilter.mode(
+                                              themeChange.getThem()
+                                                  ? AppThemeData.grey200
+                                                  : AppThemeData.grey700,
+                                              BlendMode.srcIn),
+                                        ),
+                                        const SizedBox(
+                                          width: 10,
+                                        ),
+                                        Text(
+                                          Constant.timestampToDateTime(controller
+                                              .bookingModel
+                                              .value
+                                              .departureDateTime!),
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            color: themeChange.getThem()
                                                 ? AppThemeData.grey200
                                                 : AppThemeData.grey700,
-                                            BlendMode.srcIn),
-                                      ),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                      Text(
-                                        Constant.timestampToDateTime(controller
-                                            .bookingModel
-                                            .value
-                                            .departureDateTime!),
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          color: themeChange.getThem()
-                                              ? AppThemeData.grey200
-                                              : AppThemeData.grey700,
-                                          fontSize: 16,
-                                          overflow: TextOverflow.ellipsis,
-                                          fontFamily: AppThemeData.medium,
+                                            fontSize: 16,
+                                            overflow: TextOverflow.ellipsis,
+                                            fontFamily: AppThemeData.medium,
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 4),
-                                  child: Row(
-                                    children: [
-                                      SvgPicture.asset(
-                                        "assets/icons/ic_time.svg",
-                                        height: 20,
-                                        width: 20,
-                                        colorFilter: ColorFilter.mode(
-                                            themeChange.getThem()
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 4),
+                                    child: Row(
+                                      children: [
+                                        SvgPicture.asset(
+                                          "assets/icons/ic_time.svg",
+                                          height: 20,
+                                          width: 20,
+                                          colorFilter: ColorFilter.mode(
+                                              themeChange.getThem()
+                                                  ? AppThemeData.grey200
+                                                  : AppThemeData.grey700,
+                                              BlendMode.srcIn),
+                                        ),
+                                        const SizedBox(
+                                          width: 10,
+                                        ),
+                                        Text(
+                                          controller
+                                              .stopOverModel.value.duration!.text
+                                              .toString(),
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            color: themeChange.getThem()
                                                 ? AppThemeData.grey200
                                                 : AppThemeData.grey700,
-                                            BlendMode.srcIn),
-                                      ),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                      Text(
-                                        controller
-                                            .stopOverModel.value.duration!.text
-                                            .toString(),
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          color: themeChange.getThem()
-                                              ? AppThemeData.grey200
-                                              : AppThemeData.grey700,
-                                          fontSize: 16,
-                                          overflow: TextOverflow.ellipsis,
-                                          fontFamily: AppThemeData.medium,
+                                            fontSize: 16,
+                                            overflow: TextOverflow.ellipsis,
+                                            fontFamily: AppThemeData.medium,
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 4),
-                                  child: Row(
-                                    children: [
-                                      SvgPicture.asset(
-                                        "assets/icons/ic_distance.svg",
-                                        height: 20,
-                                        width: 20,
-                                        colorFilter: ColorFilter.mode(
-                                            themeChange.getThem()
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 4),
+                                    child: Row(
+                                      children: [
+                                        SvgPicture.asset(
+                                          "assets/icons/ic_distance.svg",
+                                          height: 20,
+                                          width: 20,
+                                          colorFilter: ColorFilter.mode(
+                                              themeChange.getThem()
+                                                  ? AppThemeData.grey200
+                                                  : AppThemeData.grey700,
+                                              BlendMode.srcIn),
+                                        ),
+                                        const SizedBox(
+                                          width: 10,
+                                        ),
+                                        Text(
+                                          "${Constant.distanceCalculate(controller.stopOverModel.value.distance!.value.toString())} ${Constant.distanceType}",
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            color: themeChange.getThem()
                                                 ? AppThemeData.grey200
                                                 : AppThemeData.grey700,
-                                            BlendMode.srcIn),
-                                      ),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                      Text(
-                                        "${Constant.distanceCalculate(controller.stopOverModel.value.distance!.value.toString())} ${Constant.distanceType}",
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          color: themeChange.getThem()
-                                              ? AppThemeData.grey200
-                                              : AppThemeData.grey700,
-                                          fontSize: 16,
-                                          overflow: TextOverflow.ellipsis,
-                                          fontFamily: AppThemeData.medium,
+                                            fontSize: 16,
+                                            overflow: TextOverflow.ellipsis,
+                                            fontFamily: AppThemeData.medium,
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 4),
-                                  child: Row(
-                                    children: [
-                                      SvgPicture.asset(
-                                        "assets/icons/ic_luggage.svg",
-                                        height: 20,
-                                        width: 20,
-                                        colorFilter: ColorFilter.mode(
-                                            themeChange.getThem()
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 4),
+                                    child: Row(
+                                      children: [
+                                        SvgPicture.asset(
+                                          "assets/icons/ic_luggage.svg",
+                                          height: 20,
+                                          width: 20,
+                                          colorFilter: ColorFilter.mode(
+                                              themeChange.getThem()
+                                                  ? AppThemeData.grey200
+                                                  : AppThemeData.grey700,
+                                              BlendMode.srcIn),
+                                        ),
+                                        const SizedBox(
+                                          width: 10,
+                                        ),
+                                        Text(
+                                          "${controller.bookingModel.value.luggageAllowed!.toString()} luggage",
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            color: themeChange.getThem()
                                                 ? AppThemeData.grey200
                                                 : AppThemeData.grey700,
-                                            BlendMode.srcIn),
-                                      ),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                      Text(
-                                        "${controller.bookingModel.value.luggageAllowed!.toString()} luggage",
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          color: themeChange.getThem()
-                                              ? AppThemeData.grey200
-                                              : AppThemeData.grey700,
-                                          fontSize: 16,
-                                          overflow: TextOverflow.ellipsis,
-                                          fontFamily: AppThemeData.medium,
+                                            fontSize: 16,
+                                            overflow: TextOverflow.ellipsis,
+                                            fontFamily: AppThemeData.medium,
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                controller.bookingModel.value
-                                            .twoPassengerMaxInBack ==
-                                        false
-                                    ? const SizedBox()
-                                    : Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 4),
-                                        child: Row(
-                                          children: [
-                                            SvgPicture.asset(
-                                              "assets/icons/ic_back_two.svg",
-                                              height: 20,
-                                              width: 20,
-                                            ),
-                                            const SizedBox(
-                                              width: 10,
-                                            ),
-                                            Text(
-                                              "2 Passengers Max in Back Seat",
-                                              maxLines: 1,
-                                              style: TextStyle(
-                                                color: themeChange.getThem()
-                                                    ? AppThemeData.grey200
-                                                    : AppThemeData.grey700,
-                                                fontSize: 16,
-                                                overflow: TextOverflow.ellipsis,
-                                                fontFamily: AppThemeData.medium,
+                                  controller.bookingModel.value
+                                              .twoPassengerMaxInBack ==
+                                          false
+                                      ? const SizedBox()
+                                      : Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 4),
+                                          child: Row(
+                                            children: [
+                                              SvgPicture.asset(
+                                                "assets/icons/ic_back_two.svg",
+                                                height: 20,
+                                                width: 20,
                                               ),
-                                            ),
-                                          ],
+                                              const SizedBox(
+                                                width: 10,
+                                              ),
+                                              Text(
+                                                "2 Passengers Max in Back Seat",
+                                                maxLines: 1,
+                                                style: TextStyle(
+                                                  color: themeChange.getThem()
+                                                      ? AppThemeData.grey200
+                                                      : AppThemeData.grey700,
+                                                  fontSize: 16,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  fontFamily: AppThemeData.medium,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 5),
-                                  child: Divider(),
-                                ),
-                                Timeline.tileBuilder(
-                                  shrinkWrap: true,
-                                  padding: EdgeInsets.zero,
-                                  theme: TimelineThemeData(
-                                    nodePosition: 0,
+                                  const Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 5),
+                                    child: Divider(),
                                   ),
-                                  builder: TimelineTileBuilder.connected(
-                                    contentsAlign: ContentsAlign.basic,
-                                    indicatorBuilder: (context, index) {
-                                      return Container(
-                                        width: 8,
-                                        height: 8,
-                                        decoration: ShapeDecoration(
-                                          color: index == 0
-                                              ? AppThemeData.warning50
-                                              : AppThemeData.success100,
-                                          shape: const OvalBorder(),
-                                          shadows: [
-                                            BoxShadow(
-                                              color: index == 0
-                                                  ? AppThemeData.warning200
-                                                  : AppThemeData.success400,
-                                              blurRadius: 0,
-                                              offset: const Offset(0, 0),
-                                              spreadRadius: 2,
-                                            )
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                    connectorBuilder:
-                                        (context, index, connectorType) {
-                                      return const DashedLineConnector(
-                                        color: AppThemeData.grey300,
-                                        gap: 2,
-                                      );
-                                    },
-                                    contentsBuilder: (context, index) {
-                                      return Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 14, vertical: 14),
-                                        child: index == 0
-                                            ? Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                      controller
-                                                              .stopOverModel
-                                                              .value
-                                                              .startAddress
-                                                              ?.split(',')
-                                                              .first ??
-                                                          'Location',
-                                                      style: TextStyle(
-                                                          color: themeChange
-                                                                  .getThem()
-                                                              ? AppThemeData
-                                                                  .grey100
-                                                              : AppThemeData
-                                                                  .grey800,
-                                                          fontFamily:
-                                                              AppThemeData.bold,
-                                                          fontSize: 18)),
-                                                  Text(
-                                                    controller.stopOverModel
-                                                        .value.startAddress
-                                                        .toString(),
-                                                    maxLines: 2,
-                                                    style: TextStyle(
-                                                        color: themeChange
-                                                                .getThem()
-                                                            ? AppThemeData
-                                                                .grey100
-                                                            : AppThemeData
-                                                                .grey800,
-                                                        fontFamily: AppThemeData
-                                                            .regular,
-                                                        fontSize: 14),
-                                                  ),
-                                                  const SizedBox(
-                                                    height: 5,
-                                                  ),
-                                                  Row(
-                                                    children: [
-                                                      SvgPicture.asset(
-                                                        "assets/icons/ic_walk.svg",
-                                                        colorFilter:
-                                                            const ColorFilter
-                                                                .mode(
-                                                                AppThemeData
-                                                                    .secondary300,
-                                                                BlendMode
-                                                                    .srcIn),
-                                                      ),
-                                                      const SizedBox(
-                                                        width: 10,
-                                                      ),
-                                                      Text(
-                                                        "${Constant.calculateDistance(Location(lat: controller.stopOverModel.value.startLocation!.lat, lng: controller.stopOverModel.value.startLocation!.lng), controller.homeController.pickUpLocation.value).toStringAsFixed(2)} ${Constant.distanceType} from your pickup location",
-                                                        maxLines: 1,
-                                                        style: TextStyle(
-                                                          color: themeChange
-                                                                  .getThem()
-                                                              ? AppThemeData
-                                                                  .grey200
-                                                              : AppThemeData
-                                                                  .grey700,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          fontFamily:
-                                                              AppThemeData
-                                                                  .regular,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  )
-                                                ],
+                                  Timeline.tileBuilder(
+                                    shrinkWrap: true,
+                                    padding: EdgeInsets.zero,
+                                    theme: TimelineThemeData(
+                                      nodePosition: 0,
+                                    ),
+                                    builder: TimelineTileBuilder.connected(
+                                      contentsAlign: ContentsAlign.basic,
+                                      indicatorBuilder: (context, index) {
+                                        return Container(
+                                          width: 8,
+                                          height: 8,
+                                          decoration: ShapeDecoration(
+                                            color: index == 0
+                                                ? AppThemeData.warning50
+                                                : AppThemeData.success100,
+                                            shape: const OvalBorder(),
+                                            shadows: [
+                                              BoxShadow(
+                                                color: index == 0
+                                                    ? AppThemeData.warning200
+                                                    : AppThemeData.success400,
+                                                blurRadius: 0,
+                                                offset: const Offset(0, 0),
+                                                spreadRadius: 2,
                                               )
-                                            : Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                      connectorBuilder:
+                                          (context, index, connectorType) {
+                                        return const DashedLineConnector(
+                                          color: AppThemeData.grey300,
+                                          gap: 2,
+                                        );
+                                      },
+                                      contentsBuilder: (context, index) {
+                                        return Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 14, vertical: 14),
+                                          child: index == 0
+                                              ? Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                        controller
+                                                                .stopOverModel
+                                                                .value
+                                                                .startAddress
+                                                                ?.split(',')
+                                                                .first ??
+                                                            'Location',
+                                                        style: TextStyle(
+                                                            color: themeChange
+                                                                    .getThem()
+                                                                ? AppThemeData
+                                                                    .grey100
+                                                                : AppThemeData
+                                                                    .grey800,
+                                                            fontFamily:
+                                                                AppThemeData.bold,
+                                                            fontSize: 18)),
+                                                    Text(
                                                       controller.stopOverModel
-                                                              .value.endAddress
-                                                              ?.split(',')
-                                                              .first ??
-                                                          'Location',
+                                                          .value.startAddress
+                                                          .toString(),
+                                                      maxLines: 2,
                                                       style: TextStyle(
                                                           color: themeChange
                                                                   .getThem()
@@ -406,94 +347,189 @@ class BookingDetailsScreen extends StatelessWidget {
                                                                   .grey100
                                                               : AppThemeData
                                                                   .grey800,
-                                                          fontFamily:
-                                                              AppThemeData.bold,
-                                                          fontSize: 18)),
-                                                  Text(
-                                                    controller.stopOverModel
-                                                        .value.endAddress
-                                                        .toString(),
-                                                    maxLines: 2,
-                                                    style: TextStyle(
-                                                        color: themeChange
-                                                                .getThem()
-                                                            ? AppThemeData
-                                                                .grey100
-                                                            : AppThemeData
-                                                                .grey800,
-                                                        fontFamily: AppThemeData
-                                                            .regular,
-                                                        fontSize: 14),
-                                                  ),
-                                                  const SizedBox(
-                                                    height: 5,
-                                                  ),
-                                                  Row(
-                                                    children: [
-                                                      SvgPicture.asset(
-                                                        "assets/icons/ic_walk.svg",
-                                                        colorFilter:
-                                                            const ColorFilter
-                                                                .mode(
+                                                          fontFamily: AppThemeData
+                                                              .regular,
+                                                          fontSize: 14),
+                                                    ),
+                                                    const SizedBox(
+                                                      height: 5,
+                                                    ),
+                                                    Row(
+                                                      children: [
+                                                        SvgPicture.asset(
+                                                          "assets/icons/ic_walk.svg",
+                                                          colorFilter:
+                                                              const ColorFilter
+                                                                  .mode(
+                                                                  AppThemeData
+                                                                      .secondary300,
+                                                                  BlendMode
+                                                                      .srcIn),
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 10,
+                                                        ),
+                                                        Text(
+                                                          "${Constant.calculateDistance(Location(lat: controller.stopOverModel.value.startLocation!.lat, lng: controller.stopOverModel.value.startLocation!.lng), controller.homeController.pickUpLocation.value).toStringAsFixed(2)} ${Constant.distanceType} from your pickup location",
+                                                          maxLines: 1,
+                                                          style: TextStyle(
+                                                            color: themeChange
+                                                                    .getThem()
+                                                                ? AppThemeData
+                                                                    .grey200
+                                                                : AppThemeData
+                                                                    .grey700,
+                                                            overflow: TextOverflow
+                                                                .ellipsis,
+                                                            fontFamily:
                                                                 AppThemeData
-                                                                    .success400,
-                                                                BlendMode
-                                                                    .srcIn),
-                                                      ),
-                                                      const SizedBox(
-                                                        width: 10,
-                                                      ),
-                                                      Text(
-                                                        "${Constant.calculateDistance(Location(lat: controller.stopOverModel.value.endLocation!.lat, lng: controller.stopOverModel.value.endLocation!.lng), controller.homeController.dropLocation.value).toStringAsFixed(2)} ${Constant.distanceType} from your drop location",
-                                                        maxLines: 1,
+                                                                    .regular,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    )
+                                                  ],
+                                                )
+                                              : Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                        controller.stopOverModel
+                                                                .value.endAddress
+                                                                ?.split(',')
+                                                                .first ??
+                                                            'Location',
                                                         style: TextStyle(
+                                                            color: themeChange
+                                                                    .getThem()
+                                                                ? AppThemeData
+                                                                    .grey100
+                                                                : AppThemeData
+                                                                    .grey800,
+                                                            fontFamily:
+                                                                AppThemeData.bold,
+                                                            fontSize: 18)),
+                                                    Text(
+                                                      controller.stopOverModel
+                                                          .value.endAddress
+                                                          .toString(),
+                                                      maxLines: 2,
+                                                      style: TextStyle(
                                                           color: themeChange
                                                                   .getThem()
                                                               ? AppThemeData
-                                                                  .grey200
+                                                                  .grey100
                                                               : AppThemeData
-                                                                  .grey700,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          fontFamily:
-                                                              AppThemeData
-                                                                  .regular,
+                                                                  .grey800,
+                                                          fontFamily: AppThemeData
+                                                              .regular,
+                                                          fontSize: 14),
+                                                    ),
+                                                    const SizedBox(
+                                                      height: 5,
+                                                    ),
+                                                    Row(
+                                                      children: [
+                                                        SvgPicture.asset(
+                                                          "assets/icons/ic_walk.svg",
+                                                          colorFilter:
+                                                              const ColorFilter
+                                                                  .mode(
+                                                                  AppThemeData
+                                                                      .success400,
+                                                                  BlendMode
+                                                                      .srcIn),
                                                         ),
-                                                      ),
-                                                    ],
-                                                  )
-                                                ],
-                                              ),
-                                      );
-                                    },
-                                    itemCount: 2,
+                                                        const SizedBox(
+                                                          width: 10,
+                                                        ),
+                                                        Text(
+                                                          "${Constant.calculateDistance(Location(lat: controller.stopOverModel.value.endLocation!.lat, lng: controller.stopOverModel.value.endLocation!.lng), controller.homeController.dropLocation.value).toStringAsFixed(2)} ${Constant.distanceType} from your drop location",
+                                                          maxLines: 1,
+                                                          style: TextStyle(
+                                                            color: themeChange
+                                                                    .getThem()
+                                                                ? AppThemeData
+                                                                    .grey200
+                                                                : AppThemeData
+                                                                    .grey700,
+                                                            overflow: TextOverflow
+                                                                .ellipsis,
+                                                            fontFamily:
+                                                                AppThemeData
+                                                                    .regular,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    )
+                                                  ],
+                                                ),
+                                        );
+                                      },
+                                      itemCount: 2,
+                                    ),
                                   ),
-                                ),
-                                InkWell(
-                                  onTap: () {
-                                    Get.to(const RouteViewScreen(), arguments: {
-                                      "bookingModel":
-                                          controller.bookingModel.value
-                                    });
-                                  },
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                  InkWell(
+                                    onTap: () {
+                                      Get.to(const RouteViewScreen(), arguments: {
+                                        "bookingModel":
+                                            controller.bookingModel.value
+                                      });
+                                    },
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        Icon(
+                                          Icons.map_outlined,
+                                          color: AppThemeData.primary300,
+                                        ),
+                                        const SizedBox(
+                                          width: 10,
+                                        ),
+                                        Text(
+                                          "View Route".tr,
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            color: themeChange.getThem()
+                                                ? AppThemeData.primary300
+                                                : AppThemeData.primary300,
+                                            fontSize: 16,
+                                            overflow: TextOverflow.ellipsis,
+                                            fontFamily: AppThemeData.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 5),
+                                    child: Divider(),
+                                  ),
+                                  Row(
                                     children: [
-                                      Icon(
-                                        Icons.map_outlined,
-                                        color: AppThemeData.primary300,
-                                      ),
-                                      const SizedBox(
-                                        width: 10,
+                                      Expanded(
+                                        child: Text(
+                                          "Seats Available".tr,
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            color: themeChange.getThem()
+                                                ? AppThemeData.grey200
+                                                : AppThemeData.grey700,
+                                            fontSize: 16,
+                                            overflow: TextOverflow.ellipsis,
+                                            fontFamily: AppThemeData.medium,
+                                          ),
+                                        ),
                                       ),
                                       Text(
-                                        "View Route".tr,
+                                        "${int.parse(controller.bookingModel.value.totalSeat.toString()) - int.parse(controller.bookingModel.value.bookedSeat.toString())}",
                                         maxLines: 1,
                                         style: TextStyle(
                                           color: themeChange.getThem()
-                                              ? AppThemeData.primary300
-                                              : AppThemeData.primary300,
+                                              ? AppThemeData.grey100
+                                              : AppThemeData.grey800,
                                           fontSize: 16,
                                           overflow: TextOverflow.ellipsis,
                                           fontFamily: AppThemeData.bold,
@@ -501,515 +537,481 @@ class BookingDetailsScreen extends StatelessWidget {
                                       ),
                                     ],
                                   ),
-                                ),
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 5),
-                                  child: Divider(),
-                                ),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        "Seats Available".tr,
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          color: themeChange.getThem()
-                                              ? AppThemeData.grey200
-                                              : AppThemeData.grey700,
-                                          fontSize: 16,
-                                          overflow: TextOverflow.ellipsis,
-                                          fontFamily: AppThemeData.medium,
-                                        ),
-                                      ),
-                                    ),
-                                    Text(
-                                      "${int.parse(controller.bookingModel.value.totalSeat.toString()) - int.parse(controller.bookingModel.value.bookedSeat.toString())}",
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                        color: themeChange.getThem()
-                                            ? AppThemeData.grey100
-                                            : AppThemeData.grey800,
-                                        fontSize: 16,
-                                        overflow: TextOverflow.ellipsis,
-                                        fontFamily: AppThemeData.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(
-                                  height: 5,
-                                ),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        "Price for one seat".tr,
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          color: themeChange.getThem()
-                                              ? AppThemeData.grey200
-                                              : AppThemeData.grey700,
-                                          fontSize: 16,
-                                          overflow: TextOverflow.ellipsis,
-                                          fontFamily: AppThemeData.medium,
-                                        ),
-                                      ),
-                                    ),
-                                    Text(
-                                      Constant.amountShow(
-                                          amount: controller
-                                              .getCorrectPricePerSeat()
-                                              .toString()),
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                        color: themeChange.getThem()
-                                            ? AppThemeData.grey100
-                                            : AppThemeData.grey800,
-                                        fontSize: 16,
-                                        overflow: TextOverflow.ellipsis,
-                                        fontFamily: AppThemeData.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 20),
-                            child: PreferredSize(
-                              preferredSize: const Size.fromHeight(4.0),
-                              child: Container(
-                                color: themeChange.getThem()
-                                    ? AppThemeData.grey800
-                                    : AppThemeData.grey100,
-                                height: 8.0,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 5),
-                            child: Row(
-                              children: [
-                                Stack(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(60),
-                                      child: NetworkImageWidget(
-                                        imageUrl: controller
-                                            .publisherUserModel.value.profilePic
-                                            .toString(),
-                                        height: Responsive.width(14, context),
-                                        width: Responsive.width(14, context),
-                                      ),
-                                    ),
-                                    Positioned(
-                                        bottom: 0,
-                                        right: 0,
-                                        child: SvgPicture.asset(
-                                            "assets/icons/ic_verify.svg",
-                                            height: 24,
-                                            width: 24))
-                                  ],
-                                ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                  const SizedBox(
+                                    height: 5,
+                                  ),
+                                  Row(
                                     children: [
-                                      Text(
-                                        controller.publisherUserModel.value
-                                            .fullName()
-                                            .toString(),
-                                        style: TextStyle(
-                                            color: themeChange.getThem()
-                                                ? AppThemeData.grey100
-                                                : AppThemeData.grey800,
-                                            fontFamily: AppThemeData.bold,
-                                            fontSize: 16),
-                                      ),
-                                      Row(
-                                        children: [
-                                          Text(
-                                            Constant.calculateReview(
-                                                reviewCount: controller
-                                                    .publisherUserModel
-                                                    .value
-                                                    .reviewCount,
-                                                reviewSum: controller
-                                                    .publisherUserModel
-                                                    .value
-                                                    .reviewSum),
-                                            style: TextStyle(
-                                                color: themeChange.getThem()
-                                                    ? AppThemeData.grey200
-                                                    : AppThemeData.grey700,
-                                                fontFamily: AppThemeData.medium,
-                                                fontSize: 14),
-                                          ),
-                                          const SizedBox(
-                                            width: 5,
-                                          ),
-                                          Icon(
-                                            Icons.star,
-                                            size: 14,
+                                      Expanded(
+                                        child: Text(
+                                          "Price for one seat".tr,
+                                          maxLines: 1,
+                                          style: TextStyle(
                                             color: themeChange.getThem()
                                                 ? AppThemeData.grey200
                                                 : AppThemeData.grey700,
+                                            fontSize: 16,
+                                            overflow: TextOverflow.ellipsis,
+                                            fontFamily: AppThemeData.medium,
                                           ),
-                                          const SizedBox(
-                                            width: 5,
-                                          ),
-                                          Text(
-                                            "•",
-                                            style: TextStyle(
-                                                color: themeChange.getThem()
-                                                    ? AppThemeData.grey500
-                                                    : AppThemeData.grey500,
-                                                fontFamily: AppThemeData.medium,
-                                                fontSize: 14),
-                                          ),
-                                          const SizedBox(
-                                            width: 5,
-                                          ),
-                                          InkWell(
-                                            onTap: () {
-                                              Get.to(const RatingViewScreen(),
-                                                  arguments: {
-                                                    "receiverUserId": controller
-                                                        .publisherUserModel
-                                                        .value
-                                                        .id
-                                                  });
-                                            },
-                                            child: Text(
-                                              "${double.parse(controller.publisherUserModel.value.reviewCount ?? "0").toStringAsFixed(0)} Ratings",
-                                              style: TextStyle(
-                                                  decoration:
-                                                      TextDecoration.underline,
-                                                  decorationColor:
-                                                      AppThemeData.primary300,
-                                                  color: themeChange.getThem()
-                                                      ? AppThemeData.primary300
-                                                      : AppThemeData.primary300,
-                                                  fontFamily:
-                                                      AppThemeData.medium,
-                                                  fontSize: 14),
-                                            ),
-                                          ),
-                                        ],
+                                        ),
+                                      ),
+                                      Text(
+                                        Constant.amountShow(
+                                            amount: controller
+                                                .getCorrectPricePerSeat()
+                                                .toString()),
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          color: themeChange.getThem()
+                                              ? AppThemeData.grey100
+                                              : AppThemeData.grey800,
+                                          fontSize: 16,
+                                          overflow: TextOverflow.ellipsis,
+                                          fontFamily: AppThemeData.bold,
+                                        ),
                                       ),
                                     ],
                                   ),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              child: PreferredSize(
+                                preferredSize: const Size.fromHeight(4.0),
+                                child: Container(
+                                  color: themeChange.getThem()
+                                      ? AppThemeData.grey800
+                                      : AppThemeData.grey100,
+                                  height: 8.0,
                                 ),
-                                const SizedBox(
-                                  width: 5,
-                                ),
-                                InkWell(
-                                  onTap: () async {
-                                    await Constant.makePhoneCall(
-                                        "${controller.publisherUserModel.value.countryCode.toString()} ${controller.publisherUserModel.value.phoneNumber.toString()}");
-                                  },
-                                  child: SvgPicture.asset(
-                                    "assets/icons/ic_call.svg",
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 5),
+                              child: Row(
+                                children: [
+                                  Stack(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(60),
+                                        child: NetworkImageWidget(
+                                          imageUrl: controller
+                                              .publisherUserModel.value.profilePic
+                                              .toString(),
+                                          height: Responsive.width(14, context),
+                                          width: Responsive.width(14, context),
+                                        ),
+                                      ),
+                                      Positioned(
+                                          bottom: 0,
+                                          right: 0,
+                                          child: SvgPicture.asset(
+                                              "assets/icons/ic_verify.svg",
+                                              height: 24,
+                                              width: 24))
+                                    ],
                                   ),
-                                ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                InkWell(
-                                  onTap: () {
-                                    Get.to(const ChatScreen(), arguments: {
-                                      "receiverModel":
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
                                           controller.publisherUserModel.value
-                                    });
-                                  },
-                                  child: SvgPicture.asset(
-                                    "assets/icons/ic_chat.svg",
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 10),
-                            child: Row(
-                              children: [
-                                SvgPicture.asset(
-                                  "assets/icons/ic_car.svg",
-                                  colorFilter: ColorFilter.mode(
-                                      themeChange.getThem()
-                                          ? AppThemeData.grey300
-                                          : AppThemeData.grey600,
-                                      BlendMode.srcIn),
-                                ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                Text(
-                                  "${controller.bookingModel.value.vehicleInformation!.vehicleBrand!.name} ${controller.bookingModel.value.vehicleInformation!.vehicleModel!.name} (${controller.bookingModel.value.vehicleInformation!.licensePlatNumber})",
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: themeChange.getThem()
-                                        ? AppThemeData.grey200
-                                        : AppThemeData.grey700,
-                                    fontFamily: AppThemeData.medium,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          controller.bookingModel.value.travelPreference == null
-                              ? const SizedBox()
-                              : Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Padding(
-                                      padding:
-                                          EdgeInsets.symmetric(vertical: 5),
-                                      child: Divider(),
+                                              .fullName()
+                                              .toString(),
+                                          style: TextStyle(
+                                              color: themeChange.getThem()
+                                                  ? AppThemeData.grey100
+                                                  : AppThemeData.grey800,
+                                              fontFamily: AppThemeData.bold,
+                                              fontSize: 16),
+                                        ),
+                                        Row(
+                                          children: [
+                                            Text(
+                                              Constant.calculateReview(
+                                                  reviewCount: controller
+                                                      .publisherUserModel
+                                                      .value
+                                                      .reviewCount,
+                                                  reviewSum: controller
+                                                      .publisherUserModel
+                                                      .value
+                                                      .reviewSum),
+                                              style: TextStyle(
+                                                  color: themeChange.getThem()
+                                                      ? AppThemeData.grey200
+                                                      : AppThemeData.grey700,
+                                                  fontFamily: AppThemeData.medium,
+                                                  fontSize: 14),
+                                            ),
+                                            const SizedBox(
+                                              width: 5,
+                                            ),
+                                            Icon(
+                                              Icons.star,
+                                              size: 14,
+                                              color: themeChange.getThem()
+                                                  ? AppThemeData.grey200
+                                                  : AppThemeData.grey700,
+                                            ),
+                                            const SizedBox(
+                                              width: 5,
+                                            ),
+                                            Text(
+                                              "•",
+                                              style: TextStyle(
+                                                  color: themeChange.getThem()
+                                                      ? AppThemeData.grey500
+                                                      : AppThemeData.grey500,
+                                                  fontFamily: AppThemeData.medium,
+                                                  fontSize: 14),
+                                            ),
+                                            const SizedBox(
+                                              width: 5,
+                                            ),
+                                            InkWell(
+                                              onTap: () {
+                                                Get.to(const RatingViewScreen(),
+                                                    arguments: {
+                                                      "receiverUserId": controller
+                                                          .publisherUserModel
+                                                          .value
+                                                          .id
+                                                    });
+                                              },
+                                              child: Text(
+                                                "${double.parse(controller.publisherUserModel.value.reviewCount ?? "0").toStringAsFixed(0)} Ratings",
+                                                style: TextStyle(
+                                                    decoration:
+                                                        TextDecoration.underline,
+                                                    decorationColor:
+                                                        AppThemeData.primary300,
+                                                    color: themeChange.getThem()
+                                                        ? AppThemeData.primary300
+                                                        : AppThemeData.primary300,
+                                                    fontFamily:
+                                                        AppThemeData.medium,
+                                                    fontSize: 14),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
                                     ),
-                                    controller
-                                                    .bookingModel
-                                                    .value
-                                                    .travelPreference!
-                                                    .chattiness ==
-                                                null ||
-                                            controller
-                                                .bookingModel
-                                                .value
-                                                .travelPreference!
-                                                .chattiness!
-                                                .isEmpty
-                                        ? const SizedBox()
-                                        : Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16, vertical: 5),
-                                            child: Row(
-                                              children: [
-                                                controller
-                                                            .bookingModel
-                                                            .value
-                                                            .travelPreference!
-                                                            .chattiness ==
-                                                        "I’m the quite type"
-                                                    ? SvgPicture.asset(
-                                                        "assets/icons/ic_love_chat.svg")
-                                                    : SvgPicture.asset(
-                                                        "assets/icons/ic_quites.svg"),
-                                                const SizedBox(
-                                                  width: 10,
-                                                ),
-                                                Expanded(
-                                                    child: Text(
-                                                  controller
+                                  ),
+                                  const SizedBox(
+                                    width: 5,
+                                  ),
+                                  InkWell(
+                                    onTap: () async {
+                                      await Constant.makePhoneCall(
+                                          "${controller.publisherUserModel.value.countryCode.toString()} ${controller.publisherUserModel.value.phoneNumber.toString()}");
+                                    },
+                                    child: SvgPicture.asset(
+                                      "assets/icons/ic_call.svg",
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  InkWell(
+                                    onTap: () {
+                                      Get.to(const ChatScreen(), arguments: {
+                                        "receiverModel":
+                                            controller.publisherUserModel.value
+                                      });
+                                    },
+                                    child: SvgPicture.asset(
+                                      "assets/icons/ic_chat.svg",
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 10),
+                              child: Row(
+                                children: [
+                                  SvgPicture.asset(
+                                    "assets/icons/ic_car.svg",
+                                    colorFilter: ColorFilter.mode(
+                                        themeChange.getThem()
+                                            ? AppThemeData.grey300
+                                            : AppThemeData.grey600,
+                                        BlendMode.srcIn),
+                                  ),
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  Text(
+                                    "${controller.bookingModel.value.vehicleInformation!.vehicleBrand!.name} ${controller.bookingModel.value.vehicleInformation!.vehicleModel!.name} (${controller.bookingModel.value.vehicleInformation!.licensePlatNumber})",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: themeChange.getThem()
+                                          ? AppThemeData.grey200
+                                          : AppThemeData.grey700,
+                                      fontFamily: AppThemeData.medium,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            controller.bookingModel.value.travelPreference == null
+                                ? const SizedBox()
+                                : Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Padding(
+                                        padding:
+                                            EdgeInsets.symmetric(vertical: 5),
+                                        child: Divider(),
+                                      ),
+                                      controller
                                                       .bookingModel
                                                       .value
                                                       .travelPreference!
-                                                      .chattiness
-                                                      .toString(),
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    color: themeChange.getThem()
-                                                        ? AppThemeData.grey50
-                                                        : AppThemeData.grey900,
-                                                    fontFamily:
-                                                        AppThemeData.medium,
+                                                      .chattiness ==
+                                                  null ||
+                                              controller
+                                                  .bookingModel
+                                                  .value
+                                                  .travelPreference!
+                                                  .chattiness!
+                                                  .isEmpty
+                                          ? const SizedBox()
+                                          : Padding(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 16, vertical: 5),
+                                              child: Row(
+                                                children: [
+                                                  controller
+                                                              .bookingModel
+                                                              .value
+                                                              .travelPreference!
+                                                              .chattiness ==
+                                                          "I’m the quite type"
+                                                      ? SvgPicture.asset(
+                                                          "assets/icons/ic_love_chat.svg")
+                                                      : SvgPicture.asset(
+                                                          "assets/icons/ic_quites.svg"),
+                                                  const SizedBox(
+                                                    width: 10,
                                                   ),
-                                                )),
-                                              ],
+                                                  Expanded(
+                                                      child: Text(
+                                                    controller
+                                                        .bookingModel
+                                                        .value
+                                                        .travelPreference!
+                                                        .chattiness
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      color: themeChange.getThem()
+                                                          ? AppThemeData.grey50
+                                                          : AppThemeData.grey900,
+                                                      fontFamily:
+                                                          AppThemeData.medium,
+                                                    ),
+                                                  )),
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                    controller
-                                                    .bookingModel
-                                                    .value
-                                                    .travelPreference!
-                                                    .smoking ==
-                                                null ||
-                                            controller
-                                                .bookingModel
-                                                .value
-                                                .travelPreference!
-                                                .smoking!
-                                                .isEmpty
-                                        ? const SizedBox()
-                                        : Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16, vertical: 5),
-                                            child: Row(
-                                              children: [
-                                                controller
-                                                            .bookingModel
-                                                            .value
-                                                            .travelPreference!
-                                                            .chattiness ==
-                                                        "No smoking, Please"
-                                                    ? SvgPicture.asset(
-                                                        "assets/icons/ic_no_smoking.svg")
-                                                    : SvgPicture.asset(
-                                                        "assets/icons/ic_smoking.svg"),
-                                                const SizedBox(
-                                                  width: 10,
-                                                ),
-                                                Expanded(
-                                                    child: Text(
-                                                  controller.bookingModel.value
-                                                      .travelPreference!.smoking
-                                                      .toString(),
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    color: themeChange.getThem()
-                                                        ? AppThemeData.grey50
-                                                        : AppThemeData.grey900,
-                                                    fontFamily:
-                                                        AppThemeData.medium,
+                                      controller
+                                                      .bookingModel
+                                                      .value
+                                                      .travelPreference!
+                                                      .smoking ==
+                                                  null ||
+                                              controller
+                                                  .bookingModel
+                                                  .value
+                                                  .travelPreference!
+                                                  .smoking!
+                                                  .isEmpty
+                                          ? const SizedBox()
+                                          : Padding(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 16, vertical: 5),
+                                              child: Row(
+                                                children: [
+                                                  controller
+                                                              .bookingModel
+                                                              .value
+                                                              .travelPreference!
+                                                              .chattiness ==
+                                                          "No smoking, Please"
+                                                      ? SvgPicture.asset(
+                                                          "assets/icons/ic_no_smoking.svg")
+                                                      : SvgPicture.asset(
+                                                          "assets/icons/ic_smoking.svg"),
+                                                  const SizedBox(
+                                                    width: 10,
                                                   ),
-                                                )),
-                                              ],
+                                                  Expanded(
+                                                      child: Text(
+                                                    controller.bookingModel.value
+                                                        .travelPreference!.smoking
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      color: themeChange.getThem()
+                                                          ? AppThemeData.grey50
+                                                          : AppThemeData.grey900,
+                                                      fontFamily:
+                                                          AppThemeData.medium,
+                                                    ),
+                                                  )),
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                    controller.bookingModel.value
-                                                    .travelPreference!.music ==
-                                                null ||
-                                            controller
-                                                .bookingModel
-                                                .value
-                                                .travelPreference!
-                                                .music!
-                                                .isEmpty
-                                        ? const SizedBox()
-                                        : Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16, vertical: 5),
-                                            child: Row(
-                                              children: [
-                                                controller
-                                                            .bookingModel
-                                                            .value
-                                                            .travelPreference!
-                                                            .music ==
-                                                        "Silence is golden"
-                                                    ? SvgPicture.asset(
-                                                        "assets/icons/ic_no_music.svg")
-                                                    : SvgPicture.asset(
-                                                        "assets/icons/ic_music.svg"),
-                                                const SizedBox(
-                                                  width: 10,
-                                                ),
-                                                Expanded(
-                                                    child: Text(
-                                                  controller.bookingModel.value
-                                                      .travelPreference!.music
-                                                      .toString(),
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    color: themeChange.getThem()
-                                                        ? AppThemeData.grey50
-                                                        : AppThemeData.grey900,
-                                                    fontFamily:
-                                                        AppThemeData.medium,
+                                      controller.bookingModel.value
+                                                      .travelPreference!.music ==
+                                                  null ||
+                                              controller
+                                                  .bookingModel
+                                                  .value
+                                                  .travelPreference!
+                                                  .music!
+                                                  .isEmpty
+                                          ? const SizedBox()
+                                          : Padding(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 16, vertical: 5),
+                                              child: Row(
+                                                children: [
+                                                  controller
+                                                              .bookingModel
+                                                              .value
+                                                              .travelPreference!
+                                                              .music ==
+                                                          "Silence is golden"
+                                                      ? SvgPicture.asset(
+                                                          "assets/icons/ic_no_music.svg")
+                                                      : SvgPicture.asset(
+                                                          "assets/icons/ic_music.svg"),
+                                                  const SizedBox(
+                                                    width: 10,
                                                   ),
-                                                )),
-                                              ],
+                                                  Expanded(
+                                                      child: Text(
+                                                    controller.bookingModel.value
+                                                        .travelPreference!.music
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      color: themeChange.getThem()
+                                                          ? AppThemeData.grey50
+                                                          : AppThemeData.grey900,
+                                                      fontFamily:
+                                                          AppThemeData.medium,
+                                                    ),
+                                                  )),
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                    controller.bookingModel.value
-                                                    .travelPreference!.pets ==
-                                                null ||
-                                            controller.bookingModel.value
-                                                .travelPreference!.pets!.isEmpty
-                                        ? const SizedBox()
-                                        : Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16, vertical: 5),
-                                            child: Row(
-                                              children: [
-                                                SvgPicture.asset(
-                                                    "assets/icons/pet.svg"),
-                                                const SizedBox(
-                                                  width: 10,
-                                                ),
-                                                Expanded(
-                                                    child: Text(
-                                                  controller.bookingModel.value
-                                                      .travelPreference!.pets
-                                                      .toString(),
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    color: themeChange.getThem()
-                                                        ? AppThemeData.grey50
-                                                        : AppThemeData.grey900,
-                                                    fontFamily:
-                                                        AppThemeData.medium,
+                                      controller.bookingModel.value
+                                                      .travelPreference!.pets ==
+                                                  null ||
+                                              controller.bookingModel.value
+                                                  .travelPreference!.pets!.isEmpty
+                                          ? const SizedBox()
+                                          : Padding(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 16, vertical: 5),
+                                              child: Row(
+                                                children: [
+                                                  SvgPicture.asset(
+                                                      "assets/icons/pet.svg"),
+                                                  const SizedBox(
+                                                    width: 10,
                                                   ),
-                                                )),
-                                              ],
+                                                  Expanded(
+                                                      child: Text(
+                                                    controller.bookingModel.value
+                                                        .travelPreference!.pets
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      color: themeChange.getThem()
+                                                          ? AppThemeData.grey50
+                                                          : AppThemeData.grey900,
+                                                      fontFamily:
+                                                          AppThemeData.medium,
+                                                    ),
+                                                  )),
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                  ],
-                                ),
-                          if (controller.bookingModel.value.vehicleInformation!
-                                  .vehicleImages ==
-                              null)
-                            const SizedBox()
-                          else
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              child: SizedBox(
-                                height: 100,
-                                child: ListView.builder(
-                                  itemCount: controller
-                                      .bookingModel
-                                      .value
-                                      .vehicleInformation!
-                                      .vehicleImages!
-                                      .length,
-                                  shrinkWrap: true,
-                                  scrollDirection: Axis.horizontal,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemBuilder: (context, index) {
-                                    return InkWell(
-                                      onTap: () {
-                                        Get.to(ImageViewScreen(
-                                          imageUrl: controller
-                                              .bookingModel
-                                              .value
-                                              .vehicleInformation!
-                                              .vehicleImages![index],
-                                        ));
-                                      },
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 5),
-                                        child: ClipRRect(
-                                          borderRadius: const BorderRadius.all(
-                                              Radius.circular(10)),
-                                          child: NetworkImageWidget(
+                                    ],
+                                  ),
+                            if (controller.bookingModel.value.vehicleInformation!
+                                    .vehicleImages ==
+                                null)
+                              const SizedBox()
+                            else
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
+                                child: SizedBox(
+                                  height: 100,
+                                  child: ListView.builder(
+                                    itemCount: controller
+                                        .bookingModel
+                                        .value
+                                        .vehicleInformation!
+                                        .vehicleImages!
+                                        .length,
+                                    shrinkWrap: true,
+                                    scrollDirection: Axis.horizontal,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    itemBuilder: (context, index) {
+                                      return InkWell(
+                                        onTap: () {
+                                          Get.to(ImageViewScreen(
                                             imageUrl: controller
                                                 .bookingModel
                                                 .value
                                                 .vehicleInformation!
                                                 .vehicleImages![index],
-                                            fit: BoxFit.cover,
-                                            width: 100,
-                                            height: 100.0,
+                                          ));
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 5),
+                                          child: ClipRRect(
+                                            borderRadius: const BorderRadius.all(
+                                                Radius.circular(10)),
+                                            child: NetworkImageWidget(
+                                              imageUrl: controller
+                                                  .bookingModel
+                                                  .value
+                                                  .vehicleInformation!
+                                                  .vehicleImages![index],
+                                              fit: BoxFit.cover,
+                                              width: 100,
+                                              height: 100.0,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    );
-                                  },
+                                      );
+                                    },
+                                  ),
                                 ),
                               ),
-                            ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
+              ),
               bottomNavigationBar: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [

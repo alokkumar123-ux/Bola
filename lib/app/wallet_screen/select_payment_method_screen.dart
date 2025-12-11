@@ -117,23 +117,6 @@ class SelectPaymentMethodScreen extends StatelessWidget {
                                 "assets/images/ic_wallet_image.png"),
                           ),
                           Visibility(
-                            visible: controller.paymentModel.value.cash !=
-                                    null &&
-                                controller.paymentModel.value.cash!.enable ==
-                                    true &&
-                                (controller.type.value == "booking" ||
-                                    controller.type.value == "bookingSelect") &&
-                                // Hide cash if driver prefers online payment
-                                !(controller.driverPaymentMethod.value ==
-                                    "Online"),
-                            child: cardDecoration(
-                                controller,
-                                controller.paymentModel.value.cash!.name
-                                    .toString(),
-                                themeChange,
-                                "assets/icons/ic_cash.png"),
-                          ),
-                          Visibility(
                             visible: controller.paymentModel.value.strip !=
                                     null &&
                                 controller.paymentModel.value.strip!.enable ==
@@ -410,10 +393,6 @@ class SelectPaymentMethodScreen extends StatelessWidget {
                         }
                       });
                     } else if (controller.selectedPaymentMethod.value ==
-                        controller.paymentModel.value.cash!.name) {
-                      ShowToastDialog.showToast("Payment successfully");
-                      controller.walletTopUp();
-                    } else if (controller.selectedPaymentMethod.value ==
                         controller.paymentModel.value.wallet!.name) {
                       if (double.parse(controller.userModel.value.walletAmount
                               .toString()) >=
@@ -618,17 +597,7 @@ class SelectPaymentMethodScreen extends StatelessWidget {
                           ),
                         ],
                       )
-                    : value == controller.paymentModel.value.cash!.name
-                        ? Text(
-                            "Cash",
-                            style: TextStyle(
-                                color: themeChange.getThem()
-                                    ? AppThemeData.grey100
-                                    : AppThemeData.grey800,
-                                fontFamily: AppThemeData.semiBold,
-                                fontSize: 16),
-                          )
-                        : const SizedBox(),
+                    : const SizedBox(),
                 const SizedBox(
                   width: 10,
                 ),

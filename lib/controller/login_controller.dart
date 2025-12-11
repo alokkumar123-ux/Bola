@@ -12,6 +12,7 @@ import 'package:poolmate/app/dashboard_screen.dart';
 import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/constant/show_toast_dialog.dart';
 import 'package:poolmate/model/user_model.dart';
+import 'package:poolmate/services/whatsapp_auth_service.dart';
 import 'package:poolmate/utils/fire_store_utils.dart';
 import 'package:poolmate/utils/notification_service.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -32,36 +33,54 @@ class LoginController extends GetxController {
     super.onInit();
   }
 
+  /// Send OTP via WhatsApp Authentication
   sendCode() async {
     ShowToastDialog.showLoader("please wait...".tr);
-    await FirebaseAuth.instance
-        .verifyPhoneNumber(
-            phoneNumber:
-                countryCodeController.value.text + phoneNumber.value.text,
-            verificationCompleted: (PhoneAuthCredential credential) {},
-            verificationFailed: (FirebaseAuthException e) {
-              debugPrint("FirebaseAuthException--->${e.message}");
-              ShowToastDialog.closeLoader();
-              if (e.code == 'invalid-phone-number') {
-                ShowToastDialog.showToast("invalid_phone_number".tr);
-              } else {
-                ShowToastDialog.showToast(e.message);
-              }
-            },
-            codeSent: (String verificationId, int? resendToken) {
-              ShowToastDialog.closeLoader();
-              Get.to(const OtpScreen(), arguments: {
-                "countryCode": countryCodeController.value.text,
-                "phoneNumber": phoneNumber.value.text,
-                "verificationId": verificationId,
-              });
-            },
-            codeAutoRetrievalTimeout: (String verificationId) {})
-        .catchError((error) {
-      debugPrint("catchError--->$error");
+
+    // Check if user exists in Firebase before sending OTP
+    bool userExists = await FireStoreUtils.userExistByPhoneNumber(
+      countryCodeController.value.text,
+      phoneNumber.value.text,
+    );
+
+    // If isLogin is true (user wants to login) but user doesn't exist, show error
+    if (isLogin.value && !userExists) {
       ShowToastDialog.closeLoader();
-      ShowToastDialog.showToast("multiple_time_request".tr);
-    });
+      ShowToastDialog.showToast("Account not found. Please sign up first.".tr);
+      return;
+    }
+
+    // If isLogin is false (user wants to sign up) but user already exists, show error
+    if (!isLogin.value && userExists) {
+      ShowToastDialog.closeLoader();
+      ShowToastDialog.showToast(
+          "Account already exists. Please login instead.".tr);
+      return;
+    }
+
+    // Generate OTP
+    String otp = WhatsAppAuthService.generateOTP();
+
+    // Send OTP via WhatsApp
+    final result = await WhatsAppAuthService.sendOTP(
+      countryCode: countryCodeController.value.text,
+      phoneNumber: phoneNumber.value.text,
+      otp: otp,
+    );
+
+    ShowToastDialog.closeLoader();
+
+    if (result['success'] == true) {
+      // Navigate to OTP screen with the generated OTP for local verification
+      Get.to(const OtpScreen(), arguments: {
+        "countryCode": countryCodeController.value.text,
+        "phoneNumber": phoneNumber.value.text,
+        "otp": otp, // Pass OTP for local verification
+        "isLogin": isLogin.value, // Pass login/signup state
+      });
+    } else {
+      ShowToastDialog.showToast(result['message'] ?? "Failed to send OTP".tr);
+    }
   }
 
   loginWithGoogle() async {
@@ -90,6 +109,9 @@ class LoginController extends GetxController {
                   await FireStoreUtils.getUserProfile(value.user!.uid);
               if (userModel != null) {
                 if (userModel.isActive == true) {
+                  // Save user ID to local storage
+                  await FireStoreUtils.setCurrentUid(userModel.id!);
+
                   // Update FCM token for existing user on login with error handling
                   try {
                     String fcmToken = await NotificationService.getToken();
@@ -160,6 +182,9 @@ class LoginController extends GetxController {
                   await FireStoreUtils.getUserProfile(userCredential.user!.uid);
               if (userModel != null) {
                 if (userModel.isActive == true) {
+                  // Save user ID to local storage
+                  await FireStoreUtils.setCurrentUid(userModel.id!);
+
                   // Update FCM token for existing user on Apple login with error handling
                   try {
                     String fcmToken = await NotificationService.getToken();

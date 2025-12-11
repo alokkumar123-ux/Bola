@@ -89,9 +89,11 @@ class InformationController extends GetxController {
     userModelData.gender = preAddressOfName.value;
     userModelData.dateOfBirth = dateOfBirthController.value.text;
 
-    await FireStoreUtils.updateUser(userModelData).then((value) {
+    await FireStoreUtils.updateUser(userModelData).then((value) async {
       ShowToastDialog.closeLoader();
       if (value == true) {
+        // Save user ID to local storage for session
+        await FireStoreUtils.setCurrentUid(userModelData.id!);
         Get.offAll(const DashBoardScreen());
       }
     });

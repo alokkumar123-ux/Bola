@@ -26,170 +26,163 @@ class BookingPaymentScreen extends StatelessWidget {
               onPressed: () => Get.back(),
             ),
           ),
-          body: controller.isLoading.value
-              ? Constant.loader()
-              : Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 16),
-                      // Payment Summary Card
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Payment Summary".tr,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black,
+          body: SafeArea(
+            child: controller.isLoading.value
+                ? Constant.loader()
+                : Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 16),
+                        // Payment Summary Card
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
                               ),
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  "Number of Seats".tr,
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 14,
-                                  ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Payment Summary".tr,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black,
                                 ),
-                                Text(
-                                  controller.numberOfSeats.value.toString(),
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "Number of Seats".tr,
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 14,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  "Price per Seat".tr,
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 14,
+                                  Text(
+                                    controller.numberOfSeats.value.toString(),
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                    ),
                                   ),
-                                ),
-                                Text(
-                                  Constant.amountShow(
-                                      amount: controller.pricePerSeat.value
-                                          .toString()),
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "Price per Seat".tr,
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 14,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const Divider(height: 24),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  "Total Amount".tr,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
+                                  Text(
+                                    Constant.amountShow(
+                                        amount: controller.pricePerSeat.value
+                                            .toString()),
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                    ),
                                   ),
-                                ),
-                                Text(
-                                  Constant.amountShow(
-                                      amount: controller.totalAmount.value
-                                          .toString()),
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
+                                ],
+                              ),
+                              const Divider(height: 24),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "Total Amount".tr,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
+                                  Text(
+                                    Constant.amountShow(
+                                        amount: controller.totalAmount.value
+                                            .toString()),
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        "Select Payment Method".tr,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black,
+                        const SizedBox(height: 24),
+                        Text(
+                          "Select Payment Method".tr,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      // Payment Methods List
-                      Expanded(
-                        child: ListView(
-                          children: [
-                            // Cash Payment Option
-                            _buildPaymentOption(
-                              context: context,
-                              controller: controller,
-                              title: "Cash",
-                              icon: Icons.money,
-                              paymentMethod: "Cash",
-                            ),
-
-                            // Wallet Payment Option
-                            _buildPaymentOption(
-                              context: context,
-                              controller: controller,
-                              title: "Wallet",
-                              icon: Icons.account_balance_wallet,
-                              paymentMethod: "Wallet",
-                              subtitle: controller.walletBalance.value <
-                                      controller.totalAmount.value
-                                  ? "Insufficient Balance: ${Constant.amountShow(amount: controller.walletBalance.value.toString())}"
-                                  : "Balance: ${Constant.amountShow(amount: controller.walletBalance.value.toString())}",
-                              isDisabled: controller.walletBalance.value <
-                                  controller.totalAmount.value,
-                            ),
-
-                            // Cashfree Payment Option
-                            if (controller
-                                    .paymentModel.value.cashfree?.enable ==
-                                true)
+                        const SizedBox(height: 12),
+                        // Payment Methods List
+                        Expanded(
+                          child: ListView(
+                            children: [
+                              // Wallet Payment Option
                               _buildPaymentOption(
                                 context: context,
                                 controller: controller,
-                                title: controller
-                                        .paymentModel.value.cashfree?.name ??
-                                    "Cashfree",
-                                icon: Icons.payment,
-                                paymentMethod: "Cashfree",
+                                title: "Wallet",
+                                icon: Icons.account_balance_wallet,
+                                paymentMethod: "Wallet",
+                                subtitle: controller.walletBalance.value <
+                                        controller.totalAmount.value
+                                    ? "Insufficient Balance: ${Constant.amountShow(amount: controller.walletBalance.value.toString())}"
+                                    : "Balance: ${Constant.amountShow(amount: controller.walletBalance.value.toString())}",
+                                isDisabled: controller.walletBalance.value <
+                                    controller.totalAmount.value,
                               ),
-
-                            // Add more payment methods as needed
-                            // You can add Stripe, PayPal, etc. here
-                          ],
+            
+                              // Cashfree Payment Option
+                              if (controller
+                                      .paymentModel.value.cashfree?.enable ==
+                                  true)
+                                _buildPaymentOption(
+                                  context: context,
+                                  controller: controller,
+                                  title: controller
+                                          .paymentModel.value.cashfree?.name ??
+                                      "Cashfree",
+                                  icon: Icons.payment,
+                                  paymentMethod: "Cashfree",
+                                ),
+            
+                              // Add more payment methods as needed
+                              // You can add Stripe, PayPal, etc. here
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
+          ),
           bottomNavigationBar: Padding(
             padding: const EdgeInsets.all(16),
             child: ElevatedButton(
@@ -330,8 +323,6 @@ class BookingPaymentScreen extends StatelessWidget {
         Constant.amountShow(amount: controller.totalAmount.value.toString());
 
     switch (controller.selectedPaymentMethod.value) {
-      case "Cash":
-        return "Confirm Cash Payment - $amount";
       case "Wallet":
         if (controller.walletBalance.value < controller.totalAmount.value) {
           return "Insufficient Balance";

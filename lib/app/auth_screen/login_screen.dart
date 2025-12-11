@@ -125,13 +125,13 @@ class LoginScreen extends StatelessWidget {
                       height: 10,
                     ),
                     TextFieldWidget(
-                      hintText: 'Enter phone number'.tr,
+                      hintText: 'Enter whatsapp number'.tr,
                       controller: controller.phoneNumber.value,
                       textInputType: TextInputType.number,
                     ),
                     RoundedButtonFill(
                       title: "Next".tr,
-                      color: AppThemeData.primary300,
+                      color: Colors.black,
                       textColor: AppThemeData.grey50,
                       onPress: () {
                         if (controller.phoneNumber.value.text.isEmpty) {

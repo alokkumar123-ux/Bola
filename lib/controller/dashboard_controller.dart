@@ -31,18 +31,29 @@ class DashboardScreenController extends GetxController {
   Rx<UserModel> senderUserModel = UserModel().obs;
 
   getData() async {
+    final currentUid = FireStoreUtils.getCurrentUid();
     // Don't update FCM token on dashboard load - only during login/signup
-    
+    if (currentUid.isEmpty) {
+      // No user logged in, redirect to get started screen
+      Get.offAll(const GetStartedScreen());
+      return;
+    }
+
     FireStoreUtils.fireStore
         .collection(CollectionName.users)
-        .doc(FireStoreUtils.getCurrentUid())
+        .doc(currentUid)
         .snapshots()
         .listen(
       (event) async {
         if (event.exists) {
           senderUserModel.value = UserModel.fromJson(event.data()!);
           if (senderUserModel.value.isActive == false) {
-            await FirebaseAuth.instance.signOut();
+            // Clear local user ID
+            await FireStoreUtils.clearCurrentUid();
+            // Sign out from Firebase if signed in
+            if (FirebaseAuth.instance.currentUser != null) {
+              await FirebaseAuth.instance.signOut();
+            }
             Get.offAll(const GetStartedScreen());
           }
         }
@@ -51,16 +62,17 @@ class DashboardScreenController extends GetxController {
 
     FireStoreUtils.fireStore
         .collection(CollectionName.chat)
-        .doc(senderUserModel.value.id)
+        .doc(currentUid)
         .collection("inbox")
         .where("seen", isEqualTo: false)
         .orderBy("timestamp", descending: true)
         .snapshots()
         .listen(
       (event) {
-        print("======>");
-        print(event.docs.length);
         count.value = event.docs.length.toString();
+      },
+      onError: (e) {
+        count.value = "0";
       },
     );
   }

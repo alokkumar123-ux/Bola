@@ -5,6 +5,7 @@ class Preferences {
   static const themKey = "themKey";
   static const isFinishOnBoardingKey = "isFinishOnBoardingKey";
   static const isClickOnNotification = "isClickOnNotification";
+  static const currentUserIdKey = "currentUserIdKey";
 
   static late SharedPreferences pref;
 

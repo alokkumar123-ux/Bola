@@ -37,7 +37,7 @@ class Constant {
   static const String googleLoginType = "google";
   static const String appleLoginType = "apple";
 
-  static String mapAPIKey = "AIzaSyAq4ZSdCq-JcLI1yrIm4dM1kTgkBWoYSDI";
+  static String mapAPIKey = "AIzaSyDAIpqyeb9GfM3YiztaLTDLcajOelWyqR8";
   static String distanceType = "";
 
   static String senderId = '';
@@ -231,6 +231,8 @@ class Constant {
   }
 
   static const userPlaceHolder = 'assets/images/user_placeholder.png';
+  static const getStartedImage =
+      'assets/images/ic_logo.png';
 
   static const chattiness = [
     'I love to chat',

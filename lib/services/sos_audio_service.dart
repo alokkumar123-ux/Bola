@@ -11,6 +11,7 @@ class SosAudioService extends GetxService {
   final AudioPlayer _audioPlayer = AudioPlayer();
   RxBool isPlaying = false.obs;
   Timer? _loopTimer;
+  Timer? _autoStopTimer;
 
   @override
   void onInit() {
@@ -77,6 +78,13 @@ class SosAudioService extends GetxService {
 
     // Start a timer to keep restarting audio (backup mechanism)
     _startLoopTimer();
+
+    // Start a timer to auto-stop after 5 minutes (300 seconds)
+    _autoStopTimer?.cancel();
+    _autoStopTimer = Timer(const Duration(minutes: 5), () async {
+      log('Auto-stop timer reached 5 minutes, stopping SOS audio');
+      await stopPlaying();
+    });
 
     await _playAudio();
   }
@@ -154,6 +162,10 @@ class SosAudioService extends GetxService {
     _loopTimer?.cancel();
     _loopTimer = null;
 
+    // Stop the auto-stop timer
+    _autoStopTimer?.cancel();
+    _autoStopTimer = null;
+
     // Set flag to false to prevent restarts
     isPlaying.value = false;
 
@@ -168,6 +180,7 @@ class SosAudioService extends GetxService {
   @override
   void onClose() {
     _loopTimer?.cancel();
+    _autoStopTimer?.cancel();
     _audioPlayer.dispose();
     super.onClose();
   }

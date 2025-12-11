@@ -7,7 +7,6 @@ class PaymentModel {
   RazorpayModel? razorpay;
   Paytm? paytm;
   Payfast? payfast;
-  Wallet? cash;
   Paypal? paypal;
   Xendit? xendit;
   OrangePay? orangePay;
@@ -24,7 +23,6 @@ class PaymentModel {
       this.razorpay,
       this.paytm,
       this.payfast,
-      this.cash,
       this.paypal,
       this.xendit,
       this.orangePay,
@@ -47,7 +45,6 @@ class PaymentModel {
     paytm = json['paytm'] != null ? Paytm.fromJson(json['paytm']) : null;
     payfast =
         json['payfast'] != null ? Payfast.fromJson(json['payfast']) : null;
-    cash = json['cash'] != null ? Wallet.fromJson(json['cash']) : null;
     paypal = json['paypal'] != null ? Paypal.fromJson(json['paypal']) : null;
     xendit = json['xendit'] != null ? Xendit.fromJson(json['xendit']) : null;
     orangePay = json['orangePay'] != null
@@ -84,9 +81,6 @@ class PaymentModel {
     }
     if (payfast != null) {
       data['payfast'] = payfast!.toJson();
-    }
-    if (cash != null) {
-      data['cash'] = cash!.toJson();
     }
     if (paypal != null) {
       data['paypal'] = paypal!.toJson();

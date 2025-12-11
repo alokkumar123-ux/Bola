@@ -16,12 +16,15 @@ class GetStartedScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeChange = Provider.of<DarkThemeProvider>(context);
     return Scaffold(
-      backgroundColor: themeChange.getThem() ? AppThemeData.grey900 : AppThemeData.grey50,
+      backgroundColor:
+          themeChange.getThem() ? AppThemeData.grey900 : AppThemeData.grey50,
       body: Column(
         children: [
           NetworkImageWidget(
             filterQuality: FilterQuality.high,
-            imageUrl: themeChange.getThem() ? Constant.appBannerImageDark : Constant.appBannerImageLight,
+            imageUrl: themeChange.getThem()
+                ? Constant.appBannerImageDark
+                : Constant.appBannerImageLight,
             fit: BoxFit.fill,
             width: Responsive.width(100, context),
             height: Responsive.height(50, context),
@@ -37,7 +40,9 @@ class GetStartedScreen extends StatelessWidget {
                     "Welcome to \n Bola".tr,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: themeChange.getThem() ? AppThemeData.grey50 : AppThemeData.grey900,
+                      color: themeChange.getThem()
+                          ? AppThemeData.grey50
+                          : AppThemeData.grey900,
                       fontSize: 28,
                       fontFamily: AppThemeData.bold,
                     ),
@@ -61,10 +66,12 @@ class GetStartedScreen extends StatelessWidget {
                   RoundedButtonFill(
                     title: "Sign up".tr,
                     width: Responsive.width(14, context),
-                    color: AppThemeData.primary300,
+                    color: Colors.black,
                     textColor: AppThemeData.grey50,
                     onPress: () {
-                      Get.to(const LoginScreen(), arguments: {"isLogin": false}, transition: Transition.downToUp);
+                      Get.to(const LoginScreen(),
+                          arguments: {"isLogin": false},
+                          transition: Transition.downToUp);
                     },
                   ),
                   const SizedBox(
@@ -76,7 +83,9 @@ class GetStartedScreen extends StatelessWidget {
                     color: AppThemeData.grey200,
                     textColor: AppThemeData.grey800,
                     onPress: () {
-                      Get.to(const LoginScreen(), arguments: {"isLogin": true}, transition: Transition.downToUp);
+                      Get.to(const LoginScreen(),
+                          arguments: {"isLogin": true},
+                          transition: Transition.downToUp);
                     },
                   ),
                 ],

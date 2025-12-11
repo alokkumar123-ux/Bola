@@ -16,19 +16,29 @@ class DashBoardScreen extends StatelessWidget {
         init: DashboardScreenController(),
         builder: (controller) {
           return Scaffold(
-            backgroundColor: themeChange.getThem() ? AppThemeData.grey800 : AppThemeData.grey100,
+            backgroundColor: themeChange.getThem()
+                ? AppThemeData.grey800
+                : AppThemeData.grey100,
             body: controller.pageList[controller.selectedIndex.value],
             bottomNavigationBar: BottomNavigationBar(
               type: BottomNavigationBarType.fixed,
               showUnselectedLabels: true,
               showSelectedLabels: true,
               selectedFontSize: 12,
-              selectedLabelStyle: const TextStyle(fontFamily: AppThemeData.bold),
-              unselectedLabelStyle: const TextStyle(fontFamily: AppThemeData.bold),
+              selectedLabelStyle:
+                  const TextStyle(fontFamily: AppThemeData.bold),
+              unselectedLabelStyle:
+                  const TextStyle(fontFamily: AppThemeData.bold),
               currentIndex: controller.selectedIndex.value,
-              backgroundColor: themeChange.getThem() ? AppThemeData.grey900 : AppThemeData.grey50,
-              selectedItemColor: themeChange.getThem() ? AppThemeData.primary300 : AppThemeData.primary300,
-              unselectedItemColor: themeChange.getThem() ? AppThemeData.grey300 : AppThemeData.grey600,
+              backgroundColor: themeChange.getThem()
+                  ? AppThemeData.grey900
+                  : AppThemeData.grey50,
+              selectedItemColor: themeChange.getThem()
+                  ? AppThemeData.primary300
+                  : AppThemeData.primary300,
+              unselectedItemColor: themeChange.getThem()
+                  ? AppThemeData.grey300
+                  : AppThemeData.grey600,
               onTap: (int index) {
                 controller.selectedIndex.value = index;
               },
@@ -74,39 +84,79 @@ class DashBoardScreen extends StatelessWidget {
         });
   }
 
-  BottomNavigationBarItem navigationBarItem(themeChange, {required int index, required String label, required String assetIcon, required DashboardScreenController controller}) {
+  BottomNavigationBarItem navigationBarItem(themeChange,
+      {required int index,
+      required String label,
+      required String assetIcon,
+      required DashboardScreenController controller}) {
+    // Cap the unread count for display (e.g., 99+)
+    final int unread = int.tryParse(controller.count.value) ?? 0;
+    final int unreadble = unread - 1;
+    final String unreadLabel = unreadble > 99 ? "99+" : unreadble.toString();
     return BottomNavigationBarItem(
       icon: Padding(
         padding: const EdgeInsets.symmetric(vertical: 5),
-        child: Stack(
-          children: [
-            SvgPicture.asset(
-              assetIcon,
-              height: 22,
-              width: 22,
-              color: controller.selectedIndex.value == index
-                  ? themeChange.getThem()
-                      ? AppThemeData.primary300
-                      : AppThemeData.primary300
-                  : themeChange.getThem()
-                      ? AppThemeData.grey300
-                      : AppThemeData.grey600,
-            ),
-            index == 3 && int.parse(controller.count.value) != 0
-                ? Positioned(
-                    right: 0,
-                    child: SizedBox(
-                      width: 12,
-                      height: 12,
-                      child: ClipOval(
-                        child: Container(
-                          decoration: BoxDecoration(color: AppThemeData.primary300),
-                        ),
-                      ),
-                    ),
-                  )
-                : const SizedBox(),
-          ],
+        child: SizedBox(
+          width: 40,
+          height: 30,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned(
+                left: 9,
+                top: 4,
+                child: SvgPicture.asset(
+                  assetIcon,
+                  height: 22,
+                  width: 22,
+                  color: controller.selectedIndex.value == index
+                      ? themeChange.getThem()
+                          ? AppThemeData.primary300
+                          : AppThemeData.primary300
+                      : themeChange.getThem()
+                          ? AppThemeData.grey300
+                          : AppThemeData.grey600,
+                ),
+              ),
+              index == 3 && unread > 0
+                  ? unreadble > 0
+                      ? Positioned(
+                          top: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 5, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppThemeData.primary300,
+                              borderRadius: BorderRadius.circular(12),
+                              border:
+                                  Border.all(color: Colors.white, width: 1.2),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.18),
+                                  blurRadius: 5,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
+                            ),
+                            constraints: const BoxConstraints(
+                                minWidth: 18, minHeight: 18),
+                            child: Center(
+                              child: Text(
+                                unreadLabel,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontFamily: AppThemeData.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      : SizedBox()
+                  : const SizedBox(),
+            ],
+          ),
         ),
       ),
       label: label,

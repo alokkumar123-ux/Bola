@@ -15,9 +15,12 @@ import 'package:poolmate/model/booking_model.dart';
 import 'package:poolmate/model/map/city_list_model.dart';
 import 'package:poolmate/model/map/direction_api_model.dart';
 import 'package:poolmate/model/map/geometry.dart';
+import 'package:poolmate/model/ride_alert_model.dart';
 import 'package:poolmate/model/stop_over_model.dart';
 import 'package:poolmate/model/user_model.dart';
 import 'package:poolmate/model/vehicle_information_model.dart';
+import 'package:poolmate/constant/send_notification.dart';
+import 'package:poolmate/firebase_options.dart';
 import 'package:poolmate/services/whatsapp_service.dart';
 import '../themes/app_them_data.dart';
 import '../utils/fire_store_utils.dart';
@@ -373,7 +376,7 @@ class AddYourRideController extends GetxController {
     bookingModel.selectedSeats =
         selectedSeats.map((seat) => seat.toString()).toList();
 
-    await FireStoreUtils.setBooking(bookingModel).then((value) {
+    await FireStoreUtils.setBooking(bookingModel).then((value) async {
       ShowToastDialog.closeLoader();
 
       // Send WhatsApp notification to driver about ride published
@@ -383,6 +386,9 @@ class AddYourRideController extends GetxController {
           phoneNumber: userModel.value.phoneNumber!,
         );
       }
+
+      // Send FCM notifications to users with matching ride alerts
+      _sendRideAlertNotifications(bookingModel);
 
       final dashboardController = Get.put(DashboardScreenController());
       Get.offAll(
@@ -496,6 +502,154 @@ class AddYourRideController extends GetxController {
     } catch (e) {
       print('Error getting duration: $e');
       return Duration();
+    }
+  }
+
+  /// Send FCM notifications to users with matching ride alerts
+  Future<void> _sendRideAlertNotifications(BookingModel booking) async {
+    try {
+      print('🔔 Checking for matching ride alerts...');
+
+      // Get the departure date from the booking
+      if (booking.departureDateTime == null) {
+        print('⚠️ Booking has no departure date');
+        return;
+      }
+
+      DateTime bookingDate = booking.departureDateTime!.toDate();
+      print('📅 Booking departure: $bookingDate');
+      print('📍 Route: ${booking.pickUpAddress} → ${booking.dropAddress}');
+
+      // Get matching alerts from Firestore
+      List<RideAlertModel> matchingAlerts =
+          await FireStoreUtils.getMatchingRideAlerts(booking);
+
+      print('✅ Found ${matchingAlerts.length} matching alerts');
+
+      // Send notification to each user with matching alert
+      for (var alert in matchingAlerts) {
+        // Skip if the user is the one who published the ride
+        if (alert.userId == booking.createdBy) {
+          print('⏭️ Skipping alert for ride publisher');
+          continue;
+        }
+
+        String title =
+            '🚗 Ride: ${booking.pickUpAddress} → ${booking.dropAddress}';
+        String message =
+            'A new ride matching your search is now available! Departure: ${Constant.dateCustomizationShow(booking.departureDateTime!.toDate())}';
+
+        // Replace placeholders in the message
+        message = message
+            .replaceAll(
+                '{pickup}', alert.pickUpAddress ?? 'your pickup location')
+            .replaceAll('{drop}', alert.dropAddress ?? 'your drop location')
+            .replaceAll(
+                '{date}',
+                Constant.dateCustomizationShow(
+                    booking.departureDateTime!.toDate()));
+
+        // Prepare notification payload
+        Map<String, dynamic> data = {
+          'type': 'ride_alert',
+          'title': title,
+          'message': message,
+          'bookingId': booking.id ?? '',
+          'alertId': alert.id ?? '',
+          'pickUpAddress': booking.pickUpAddress ?? '',
+          'dropAddress': booking.dropAddress ?? '',
+          'departureTime':
+              booking.departureDateTime?.toDate().toIso8601String() ?? '',
+        };
+
+        // Get user's FCM token from their profile
+        UserModel? alertUser =
+            await FireStoreUtils.getUserProfile(alert.userId ?? '');
+        String? fcmToken = alertUser?.fcmToken;
+
+        // Send FCM notification
+        if (fcmToken != null && fcmToken.isNotEmpty) {
+          await _sendFCMMessage(fcmToken, title, message, data);
+          print('📤 Notification sent to user: ${alert.userId}');
+        } else {
+          print('⚠️ No FCM token for user: ${alert.userId}');
+        }
+      }
+    } catch (e) {
+      print('❌ Error sending ride alert notifications: $e');
+    }
+  }
+
+  /// Send FCM notification directly with custom title/body
+  Future<void> _sendFCMMessage(
+    String fcmToken,
+    String title,
+    String body,
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      final String accessToken = await SendNotification.getAccessToken();
+      if (accessToken.isEmpty) {
+        print('❌ Failed to get FCM access token');
+        return;
+      }
+
+      String projectId = Constant.senderId.isNotEmpty
+          ? Constant.senderId
+          : DefaultFirebaseOptions.currentPlatform.projectId;
+
+      final notificationPayload = {
+        'message': {
+          'token': fcmToken,
+          'notification': {
+            'body': body,
+            'title': title,
+          },
+          'data': data,
+          'android': {
+            'notification': {
+              'channel_id': 'ride_alert_channel',
+              'sound': 'default',
+              'icon': 'ic_notification',
+              'color': '#FF6B00',
+            },
+            'priority': 'HIGH',
+          },
+          'apns': {
+            'headers': {
+              'apns-push-type': 'alert',
+              'apns-priority': '10',
+            },
+            'payload': {
+              'aps': {
+                'alert': {
+                  'title': title,
+                  'body': body,
+                },
+                'sound': 'default',
+              },
+            },
+          },
+        }
+      };
+
+      final response = await http.post(
+        Uri.parse(
+            'https://fcm.googleapis.com/v1/projects/$projectId/messages:send'),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(notificationPayload),
+      );
+
+      if (response.statusCode == 200) {
+        print('✅ FCM sent successfully');
+      } else {
+        print('❌ FCM failed: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      print('❌ Error sending FCM: $e');
     }
   }
 }

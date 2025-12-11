@@ -24,4 +24,5 @@ class CollectionName {
   static const String advertiseBanners = "AdvertiseBanners";
   static const String adminChat = "chat_admin";
   static const String sos = "sos";
+  static const String rideAlerts = "ride_alerts";
 }

@@ -47,151 +47,177 @@ class StepThreeStopOverDetailsScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              body: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  children: [
-                    const SizedBox(
-                      height: 30,
-                    ),
-                    Timeline.tileBuilder(
-                      shrinkWrap: true,
-                      theme: TimelineThemeData(
-                        nodePosition: 0,
-                        // indicatorPosition: 0,
+              body: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    children: [
+                      const SizedBox(
+                        height: 30,
                       ),
-                      builder: TimelineTileBuilder.connected(
-                        contentsAlign: ContentsAlign.basic,
-                        indicatorBuilder: (context, index) {
-                          return Container(
-                            width: 8,
-                            height: 8,
-                            decoration: ShapeDecoration(
-                              color: index == 0
-                                  ? AppThemeData.warning100
-                                  : controller.allSelectedCityList.length - 1 == index
-                                      ? AppThemeData.success100
-                                      : AppThemeData.grey100,
-                              shape: const OvalBorder(),
-                              shadows: [
-                                BoxShadow(
-                                  color: index == 0
-                                      ? AppThemeData.warning300
-                                      : controller.allSelectedCityList.length - 1 == index
-                                          ? AppThemeData.success400
-                                          : AppThemeData.grey300,
-                                  blurRadius: 0,
-                                  offset: const Offset(0, 0),
-                                  spreadRadius: 2,
-                                )
-                              ],
-                            ),
-                          );
-                        },
-                        connectorBuilder: (context, index, connectorType) {
-                          return const DashedLineConnector(
-                            color: AppThemeData.grey300,
-                            gap: 2,
-                          );
-                        },
-                        contentsBuilder: (context, index) {
-                          CityModel cityModel = controller.allSelectedCityList[index];
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Constant.getCityName(themeChange, cityModel.geometry!.location!,
-                                      style: index == 0
-                                          ? TextStyle(color: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800, fontFamily: AppThemeData.regular, fontSize: 12)
-                                          : index == controller.allSelectedCityList.length - 1
-                                              ? TextStyle(color: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800, fontFamily: AppThemeData.regular, fontSize: 12)
-                                              : TextStyle(color: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800, fontFamily: AppThemeData.bold, fontSize: 14)),
-                                ),
-                                index == 0 || index == controller.allSelectedCityList.length - 1
-                                    ? const SizedBox()
-                                    : InkWell(
-                                        onTap: () async {
-                                          int newIndex = controller.selectedCityList.indexWhere((p0) => p0.placeId == cityModel.placeId);
-                                          print("=========>");
-                                          print(newIndex);
-                                          await Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => Theme(
-                                                data: Theme.of(context).brightness == Brightness.dark
-                                                    ? ThemeData.dark().copyWith(
-                                                        primaryColor: AppThemeData.primary300,
-                                                        scaffoldBackgroundColor: AppThemeData.grey900,
-                                                      )
-                                                    : ThemeData.light().copyWith(
-                                                        primaryColor: AppThemeData.primary300,
-                                                        scaffoldBackgroundColor: AppThemeData.grey50,
-                                                      ),
-                                                child: PlacePicker(
-                                                  apiKey: Constant.mapAPIKey,
-                                                  onPlacePicked: (result) {
-                                                    Get.back();
-
-                                                    CityModel newCityModel = CityModel(
-                                                      name: result.formattedAddress.toString(),
-                                                      placeId: result.placeId.toString(),
-                                                      geometry: Geometry(location: Location.fromJson(result.geometry!.location.toJson())),
-                                                    );
-                                                    controller.selectedCityList.removeAt(newIndex);
-                                                    controller.selectedCityList.insert(newIndex, newCityModel);
-                                                    controller.wayPointFilter();
-                                                  },
-                                                  initialPosition: LatLng(cityModel.geometry!.location!.lat!, cityModel.geometry!.location!.lng!),
-                                                  useCurrentLocation: false,
-                                                  selectInitialPosition: true,
-                                                  usePinPointingSearch: true,
-                                                  usePlaceDetailSearch: true,
-                                                  zoomGesturesEnabled: true,
-                                                  zoomControlsEnabled: true,
-                                                  resizeToAvoidBottomInset: false, // only works in page mode, less flickery, remove if wrong offsets
+                      Timeline.tileBuilder(
+                        shrinkWrap: true,
+                        theme: TimelineThemeData(
+                          nodePosition: 0,
+                          // indicatorPosition: 0,
+                        ),
+                        builder: TimelineTileBuilder.connected(
+                          contentsAlign: ContentsAlign.basic,
+                          indicatorBuilder: (context, index) {
+                            return Container(
+                              width: 8,
+                              height: 8,
+                              decoration: ShapeDecoration(
+                                color: index == 0
+                                    ? AppThemeData.warning100
+                                    : controller.allSelectedCityList.length - 1 == index
+                                        ? AppThemeData.success100
+                                        : AppThemeData.grey100,
+                                shape: const OvalBorder(),
+                                shadows: [
+                                  BoxShadow(
+                                    color: index == 0
+                                        ? AppThemeData.warning300
+                                        : controller.allSelectedCityList.length - 1 == index
+                                            ? AppThemeData.success400
+                                            : AppThemeData.grey300,
+                                    blurRadius: 0,
+                                    offset: const Offset(0, 0),
+                                    spreadRadius: 2,
+                                  )
+                                ],
+                              ),
+                            );
+                          },
+                          connectorBuilder: (context, index, connectorType) {
+                            return const DashedLineConnector(
+                              color: AppThemeData.grey300,
+                              gap: 2,
+                            );
+                          },
+                          contentsBuilder: (context, index) {
+                            CityModel cityModel = controller.allSelectedCityList[index];
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Constant.getCityName(themeChange, cityModel.geometry!.location!,
+                                        style: index == 0
+                                            ? TextStyle(color: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800, fontFamily: AppThemeData.regular, fontSize: 12)
+                                            : index == controller.allSelectedCityList.length - 1
+                                                ? TextStyle(color: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800, fontFamily: AppThemeData.regular, fontSize: 12)
+                                                : TextStyle(color: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800, fontFamily: AppThemeData.bold, fontSize: 14)),
+                                  ),
+                                  index == 0 || index == controller.allSelectedCityList.length - 1
+                                      ? const SizedBox()
+                                      : InkWell(
+                                          onTap: () async {
+                                            int newIndex = controller.selectedCityList.indexWhere((p0) => p0.placeId == cityModel.placeId);
+                                            print("=========>");
+                                            print(newIndex);
+                                            print('✅ Opening PlacePicker for Editing Stopover Location');
+                                            print('📍 API Endpoint: Places API (Camera Location Search)');
+                                            print('🔑 Using API Key: ${Constant.mapAPIKey.substring(0, 10)}...');
+                                            try {
+                                              await Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) => Theme(
+                                                    data: Theme.of(context).brightness == Brightness.dark
+                                                        ? ThemeData.dark().copyWith(
+                                                            primaryColor: AppThemeData.primary300,
+                                                            scaffoldBackgroundColor: AppThemeData.grey900,
+                                                          )
+                                                        : ThemeData.light().copyWith(
+                                                            primaryColor: AppThemeData.primary300,
+                                                            scaffoldBackgroundColor: AppThemeData.grey50,
+                                                          ),
+                                                    child: PlacePicker(
+                                                      apiKey: Constant.mapAPIKey,
+                                                      onPlacePicked: (result) {
+                                                        print('✅ Place picked successfully for Editing Stopover Location');
+                                                        Get.back();
+                
+                                                        CityModel newCityModel = CityModel(
+                                                          name: result.formattedAddress.toString(),
+                                                          placeId: result.placeId.toString(),
+                                                          geometry: Geometry(location: Location.fromJson(result.geometry!.location.toJson())),
+                                                        );
+                                                        controller.selectedCityList.removeAt(newIndex);
+                                                        controller.selectedCityList.insert(newIndex, newCityModel);
+                                                        controller.wayPointFilter();
+                                                      },
+                                                      onAutoCompleteFailed: (error) {
+                                                        print('🔴 PlacePicker AutoComplete Failed for Editing Stopover Location');
+                                                        print('📍 API Endpoint: Places API Autocomplete');
+                                                        print('❌ Error Details: $error');
+                                                        print('🔑 API Key Used: ${Constant.mapAPIKey.substring(0, 10)}...');
+                                                      },
+                                                      onGeocodingSearchFailed: (error) {
+                                                        print('🔴 PlacePicker Geocoding Search Failed for Editing Stopover Location');
+                                                        print('📍 API Endpoint: Geocoding API / Places API Reverse Geocoding');
+                                                        print('❌ Error Details: $error');
+                                                        print('🔑 API Key Used: ${Constant.mapAPIKey.substring(0, 10)}...');
+                                                      },
+                                                      initialPosition: LatLng(cityModel.geometry!.location!.lat!, cityModel.geometry!.location!.lng!),
+                                                      useCurrentLocation: false,
+                                                      selectInitialPosition: true,
+                                                      usePinPointingSearch: true,
+                                                      usePlaceDetailSearch: true,
+                                                      zoomGesturesEnabled: true,
+                                                      zoomControlsEnabled: true,
+                                                      resizeToAvoidBottomInset: false, // only works in page mode, less flickery, remove if wrong offsets
+                                                    ),
+                                                  ),
                                                 ),
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                        child: const Icon(Icons.chevron_right_outlined))
-                              ],
-                            ),
-                          );
-                        },
-                        itemCount: controller.allSelectedCityList.length,
+                                              );
+                                            } catch (e, stackTrace) {
+                                              print('🔴 Exception in PlacePicker for Editing Stopover Location');
+                                              print('📍 API Endpoint: Multiple (PlacePicker initialization)');
+                                              print('❌ Error: $e');
+                                              print('📚 Stack Trace: $stackTrace');
+                                              print('🔑 API Key Used: ${Constant.mapAPIKey.substring(0, 10)}...');
+                                            }
+                                          },
+                                          child: const Icon(Icons.chevron_right_outlined))
+                                ],
+                              ),
+                            );
+                          },
+                          itemCount: controller.allSelectedCityList.length,
+                        ),
                       ),
-                    ),
-                    InkWell(
-                      onTap: () {
-                        Get.to(const MapViewScreen());
-                      },
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              child: Text(
-                                "View Map".tr,
-                                textAlign: TextAlign.start,
-                                style: TextStyle(
-                                    decoration: TextDecoration.underline,
-                                    decorationColor: AppThemeData.primary300,
-                                    color: themeChange.getThem() ? AppThemeData.primary300 : AppThemeData.primary300,
-                                    fontFamily: AppThemeData.bold,
-                                    fontSize: 14),
+                      InkWell(
+                        onTap: () {
+                          Get.to(const MapViewScreen());
+                        },
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                child: Text(
+                                  "View Map".tr,
+                                  textAlign: TextAlign.start,
+                                  style: TextStyle(
+                                      decoration: TextDecoration.underline,
+                                      decorationColor: AppThemeData.primary300,
+                                      color: themeChange.getThem() ? AppThemeData.primary300 : AppThemeData.primary300,
+                                      fontFamily: AppThemeData.bold,
+                                      fontSize: 14),
+                                ),
                               ),
                             ),
-                          ),
-                          Icon(
-                            Icons.chevron_right_outlined,
-                            color: AppThemeData.primary300,
-                          ),
-                        ],
-                      ),
-                    )
-                  ],
+                            Icon(
+                              Icons.chevron_right_outlined,
+                              color: AppThemeData.primary300,
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
                 ),
               ),
               bottomNavigationBar: Padding(

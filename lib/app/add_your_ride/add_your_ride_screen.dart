@@ -35,418 +35,499 @@ class AddYourRideScreen extends StatelessWidget {
             backgroundColor: themeChange.getThem()
                 ? AppThemeData.grey800
                 : AppThemeData.grey50,
-            body: SingleChildScrollView(
-              child: Column(
-                children: [
-                  Stack(
-                    children: [
-                      NetworkImageWidget(
-                        imageUrl: themeChange.getThem()
-                            ? Constant.appBannerImageDark
-                            : Constant.appBannerImageLight,
-                        fit: BoxFit.cover,
-                        width: Responsive.width(100, context),
-                        height: Responsive.height(50, context),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(
-                            top: MediaQuery.of(context).viewPadding.top + 10,
-                            left: 12),
-                        child: Row(
-                          children: [
-                            InkWell(
-                              onTap: () {
-                                Get.back();
-                              },
-                              child: Icon(
-                                Icons.close,
-                                color: themeChange.getThem()
-                                    ? AppThemeData.primary300
-                                    : AppThemeData.primary300,
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 10,
-                            ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(
-                          top: MediaQuery.of(context).size.height * .32,
-                          left: 16,
-                          right: 16,
-                        ),
-                        child: Container(
+            body: SafeArea(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Stack(
+                      children: [
+                        NetworkImageWidget(
+                          imageUrl: themeChange.getThem()
+                              ? Constant.appBannerImageDark
+                              : Constant.appBannerImageLight,
+                          fit: BoxFit.cover,
                           width: Responsive.width(100, context),
-                          decoration: BoxDecoration(
-                            color: themeChange.getThem()
-                                ? AppThemeData.grey900
-                                : AppThemeData.grey50,
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(10)),
-                            border: Border.all(
-                              color: themeChange.getThem()
-                                  ? AppThemeData.grey700
-                                  : AppThemeData.grey200,
-                            ),
-                          ),
-                          child: Column(
+                          height: Responsive.height(50, context),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(
+                              top: MediaQuery.of(context).viewPadding.top + 10,
+                              left: 12),
+                          child: Row(
                             children: [
                               InkWell(
-                                onTap: () async {
-                                  await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => Theme(
-                                        data: Theme.of(context).brightness ==
-                                                Brightness.dark
-                                            ? ThemeData.dark().copyWith(
-                                                primaryColor:
-                                                    AppThemeData.primary300,
-                                                scaffoldBackgroundColor:
-                                                    AppThemeData.grey900,
-                                              )
-                                            : ThemeData.light().copyWith(
-                                                primaryColor:
-                                                    AppThemeData.primary300,
-                                                scaffoldBackgroundColor:
-                                                    AppThemeData.grey50,
-                                              ),
-                                        child: PlacePicker(
-                                          apiKey: Constant.mapAPIKey,
-                                          onPlacePicked: (result) {
-                                            Get.back();
-                                            controller.pickUpLocationController
-                                                    .value.text =
-                                                result.formattedAddress
-                                                    .toString();
-                                            controller.pickUpLocation.value =
-                                                CityModel(
-                                              name: result.formattedAddress
-                                                  .toString(),
-                                              placeId:
-                                                  result.placeId.toString(),
-                                              geometry: Geometry(
-                                                  location: Location.fromJson(
-                                                      result.geometry!.location
-                                                          .toJson())),
-                                            );
-                                            print(controller
-                                                .pickUpLocation.value);
-                                            // controller.pickUpLocation.value = Location(lat: result.geometry!.location.lat, lng: result.geometry!.location.lng);
-                                          },
-                                          initialPosition: const LatLng(37.7749,
-                                              -122.4194), // Default to San Francisco, you can change this to your preferred default location
-                                          useCurrentLocation: true,
-                                          selectInitialPosition: true,
-                                          usePinPointingSearch: true,
-                                          usePlaceDetailSearch: true,
-                                          zoomGesturesEnabled: true,
-                                          zoomControlsEnabled: true,
-                                          resizeToAvoidBottomInset:
-                                              false, // only works in page mode, less flickery, remove if wrong offsets
-                                        ),
-                                      ),
-                                    ),
-                                  );
+                                onTap: () {
+                                  Get.back();
                                 },
-                                child: TextFormField(
-                                  controller:
-                                      controller.pickUpLocationController.value,
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      color: themeChange.getThem()
-                                          ? AppThemeData.grey50
-                                          : AppThemeData.grey900,
-                                      fontFamily: AppThemeData.medium),
-                                  decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    hintText: 'Enter Pickup Location'.tr,
-                                    enabled: false,
-                                    prefixIcon: Padding(
-                                      padding: const EdgeInsets.all(12),
-                                      child: SvgPicture.asset(
-                                          "assets/icons/ic_source.svg"),
-                                    ),
-                                    hintStyle: TextStyle(
-                                      fontSize: 16,
-                                      color: themeChange.getThem()
-                                          ? AppThemeData.grey700
-                                          : AppThemeData.grey700,
-                                      fontFamily: AppThemeData.medium,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const Divider(
-                                height: 1,
-                              ),
-                              InkWell(
-                                onTap: () async {
-                                  await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => PlacePicker(
-                                        apiKey: Constant.mapAPIKey,
-                                        onPlacePicked: (result) {
-                                          Get.back();
-                                          controller.dropLocationController
-                                                  .value.text =
-                                              result.formattedAddress
-                                                  .toString();
-                                          controller.dropLocation.value =
-                                              CityModel(
-                                            name: result.formattedAddress
-                                                .toString(),
-                                            placeId: result.placeId.toString(),
-                                            geometry: Geometry(
-                                                location: Location.fromJson(
-                                                    result.geometry!.location
-                                                        .toJson())),
-                                          );
-                                        },
-                                        initialPosition: const LatLng(37.7749,
-                                            -122.4194), // Default to San Francisco, you can change this to your preferred default location
-                                        useCurrentLocation: true,
-                                        selectInitialPosition: true,
-                                        usePinPointingSearch: true,
-                                        usePlaceDetailSearch: true,
-                                        zoomGesturesEnabled: true,
-                                        zoomControlsEnabled: true,
-                                        resizeToAvoidBottomInset:
-                                            false, // only works in page mode, less flickery, remove if wrong offsets
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: TextFormField(
-                                  controller:
-                                      controller.dropLocationController.value,
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      color: themeChange.getThem()
-                                          ? AppThemeData.grey50
-                                          : AppThemeData.grey900,
-                                      fontFamily: AppThemeData.medium),
-                                  decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    hintText: 'Enter Drop-off Location'.tr,
-                                    enabled: false,
-                                    prefixIcon: Padding(
-                                      padding: const EdgeInsets.all(12),
-                                      child: SvgPicture.asset(
-                                          "assets/icons/ic_destination.svg"),
-                                    ),
-                                    hintStyle: TextStyle(
-                                      fontSize: 16,
-                                      color: themeChange.getThem()
-                                          ? AppThemeData.grey700
-                                          : AppThemeData.grey700,
-                                      fontFamily: AppThemeData.medium,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const Divider(
-                                height: 1,
-                              ),
-                              InkWell(
-                                onTap: () async {
-                                  BottomPicker.dateTime(
-                                    backgroundColor: themeChange.getThem()
-                                        ? AppThemeData.grey900
-                                        : AppThemeData.grey100,
-                                    onSubmit: (index) async {
-                                      if (controller.pickUpLocationController
-                                          .value.text.isEmpty) {
-                                        ShowToastDialog.showToast(
-                                            "Please First Select Pickup Location"
-                                                .tr);
-                                      } else if (controller
-                                          .dropLocationController
-                                          .value
-                                          .text
-                                          .isEmpty) {
-                                        ShowToastDialog.showToast(
-                                            "Please First Select Drop Location"
-                                                .tr);
-                                      } else {
-                                        ShowToastDialog.showLoader(
-                                            "Please wait".tr);
-                                        controller.selectedDate.value = index;
-                                        DateFormat dateFormat = DateFormat(
-                                            "EEE dd MMMM , hh:mm aa");
-                                        String string =
-                                            dateFormat.format(index);
-                                        controller.dateController.value.text =
-                                            string;
-                                        Duration searchRideDuration =
-                                            await controller.getDuration(
-                                                startLocation: controller
-                                                    .pickUpLocation
-                                                    .value
-                                                    .geometry!
-                                                    .location!,
-                                                endLocation: controller
-                                                    .dropLocation
-                                                    .value
-                                                    .geometry!
-                                                    .location!);
-                                        var listOfRide = await controller
-                                            .checkPublishRideBetweenIntervalTime();
-                                        controller.newPublishRideActive.value =
-                                            listOfRide.where((ride) {
-                                          DateTime intervalDepartureTime =
-                                              controller.selectedDate.value.add(
-                                                  Duration(
-                                                      hours: int.parse(Constant
-                                                          .intervalHoursForPublishNewRide)));
-                                          DateTime intervalDurationTime =
-                                              intervalDepartureTime
-                                                  .add(searchRideDuration);
-                                          DateTime selectedDate =
-                                              controller.selectedDate.value;
-                                          log("listOfRide :: Selected Date: ${Constant.dateToString(selectedDate)} selectedDate :: Interval Duration Time: ${Constant.dateToString(intervalDurationTime)}");
-                                          DateTime rideDepartureTime =
-                                              ride.departureDateTime!.toDate();
-                                          return rideDepartureTime
-                                                  .isAfter(selectedDate) &&
-                                              rideDepartureTime.isBefore(
-                                                  intervalDurationTime);
-                                        }).toList();
-                                        if (controller
-                                            .newPublishRideActive.isEmpty) {
-                                          controller.OldPublishRideActive
-                                              .value = listOfRide.where((ride) {
-                                            DateTime pickUpTime = ride
-                                                .departureDateTime!
-                                                .toDate();
-                                            DateTime intervalDepartureTime =
-                                                pickUpTime.add(Duration(
-                                                    hours: int.parse(Constant
-                                                        .intervalHoursForPublishNewRide)));
-                                            DateTime droffTime =
-                                                intervalDepartureTime.add(Constant()
-                                                    .stringConvertIntoDuration(
-                                                        ride.estimatedTime ??
-                                                            ''));
-                                            log("listOfRide :: Start Date: ${Constant.dateToString(pickUpTime)} selectedDate :: End Time: ${Constant.dateToString(droffTime)} :: Selected Date :: ${Constant.dateToString(controller.selectedDate.value)}");
-                                            return controller.selectedDate.value
-                                                    .isAfter(pickUpTime) &&
-                                                controller.selectedDate.value
-                                                    .isBefore(droffTime);
-                                          }).toList();
-                                        }
-                                        ShowToastDialog.closeLoader();
-                                      }
-                                    },
-                                    minDateTime: DateTime.now(),
-                                    buttonAlignment: MainAxisAlignment.center,
-                                    displaySubmitButton: true,
-                                    pickerTitle: const Text(''),
-                                    pickerTextStyle: TextStyle(
-                                      fontSize: 16,
-                                      fontFamily: AppThemeData.regular,
-                                      color: themeChange.getThem()
-                                          ? AppThemeData.grey100
-                                          : AppThemeData.grey900,
-                                    ),
-                                    buttonSingleColor: AppThemeData.primary300,
-                                  ).show(context);
-                                },
-                                child: TextFormField(
-                                  controller: controller.dateController.value,
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      color: themeChange.getThem()
-                                          ? AppThemeData.grey50
-                                          : AppThemeData.grey900,
-                                      fontFamily: AppThemeData.medium),
-                                  decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    enabled: false,
-                                    hintText: 'Date and time (departure)'.tr,
-                                    prefixIcon: Padding(
-                                      padding: const EdgeInsets.all(12),
-                                      child: SvgPicture.asset(
-                                          "assets/icons/ic_calender.svg"),
-                                    ),
-                                    hintStyle: TextStyle(
-                                      fontSize: 16,
-                                      color: themeChange.getThem()
-                                          ? AppThemeData.grey700
-                                          : AppThemeData.grey700,
-                                      fontFamily: AppThemeData.medium,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const Divider(
-                                height: 1,
-                              ),
-                              InkWell(
-                                onTap: () async {
-                                  if (controller.newPublishRideActive.isEmpty &&
-                                      controller.OldPublishRideActive.isEmpty) {
-                                    await addVehicleBuildBottomSheet(
-                                        context, themeChange.getThem());
-                                  }
-                                },
-                                child: TextFormField(
-                                  controller: controller
-                                      .selectedVehicleController.value,
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      color: themeChange.getThem()
-                                          ? AppThemeData.grey50
-                                          : AppThemeData.grey900,
-                                      fontFamily: AppThemeData.medium),
-                                  decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    hintText: 'Select Vehicle'.tr,
-                                    enabled: false,
-                                    prefixIcon: Padding(
-                                      padding: const EdgeInsets.all(12),
-                                      child: SvgPicture.asset(
-                                        "assets/icons/ic_car.svg",
-                                        color: themeChange.getThem()
-                                            ? AppThemeData.grey700
-                                            : AppThemeData.grey700,
-                                      ),
-                                    ),
-                                    suffixIcon:
-                                        const Icon(Icons.arrow_drop_down),
-                                    hintStyle: TextStyle(
-                                      fontSize: 16,
-                                      color: themeChange.getThem()
-                                          ? AppThemeData.grey700
-                                          : AppThemeData.grey700,
-                                      fontFamily: AppThemeData.medium,
-                                    ),
-                                  ),
+                                child: Icon(
+                                  Icons.close,
+                                  color: themeChange.getThem()
+                                      ? AppThemeData.primary300
+                                      : AppThemeData.primary300,
                                 ),
                               ),
                               const SizedBox(
-                                height: 5,
+                                width: 10,
                               ),
-                              if (controller.OldPublishRideActive.isNotEmpty ||
-                                  controller.newPublishRideActive.isNotEmpty)
-                                Text(
-                                  "You cannot create a new ride at the selected time of the periods because a previous ride is active at that time.",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: AppThemeData.warning400,
-                                  ),
-                                ),
                             ],
                           ),
                         ),
-                      )
-                    ],
-                  ),
-                ],
+                        Padding(
+                          padding: EdgeInsets.only(
+                            top: MediaQuery.of(context).size.height * .32,
+                            left: 16,
+                            right: 16,
+                          ),
+                          child: Container(
+                            width: Responsive.width(100, context),
+                            decoration: BoxDecoration(
+                              color: themeChange.getThem()
+                                  ? AppThemeData.grey900
+                                  : AppThemeData.grey50,
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(10)),
+                              border: Border.all(
+                                color: themeChange.getThem()
+                                    ? AppThemeData.grey700
+                                    : AppThemeData.grey200,
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                InkWell(
+                                  onTap: () async {
+                                    print(
+                                        '✅ Opening PlacePicker for Pickup Location');
+                                    print(
+                                        '📍 API Endpoint: Places API (Camera Location Search)');
+                                    print(
+                                        '🔑 Using API Key: ${Constant.mapAPIKey.substring(0, 10)}...');
+                                    try {
+                                      await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => Theme(
+                                            data: Theme.of(context).brightness ==
+                                                    Brightness.dark
+                                                ? ThemeData.dark().copyWith(
+                                                    primaryColor:
+                                                        AppThemeData.primary300,
+                                                    scaffoldBackgroundColor:
+                                                        AppThemeData.grey900,
+                                                  )
+                                                : ThemeData.light().copyWith(
+                                                    primaryColor:
+                                                        AppThemeData.primary300,
+                                                    scaffoldBackgroundColor:
+                                                        AppThemeData.grey50,
+                                                  ),
+                                            child: PlacePicker(
+                                              apiKey: Constant.mapAPIKey,
+                                              onPlacePicked: (result) {
+                                                print(
+                                                    '✅ Place picked successfully for Pickup Location');
+                                                Get.back();
+                                                controller
+                                                        .pickUpLocationController
+                                                        .value
+                                                        .text =
+                                                    result.formattedAddress
+                                                        .toString();
+                                                controller.pickUpLocation.value =
+                                                    CityModel(
+                                                  name: result.formattedAddress
+                                                      .toString(),
+                                                  placeId:
+                                                      result.placeId.toString(),
+                                                  geometry: Geometry(
+                                                      location: Location.fromJson(
+                                                          result
+                                                              .geometry!.location
+                                                              .toJson())),
+                                                );
+                                                print(controller
+                                                    .pickUpLocation.value);
+                                                // controller.pickUpLocation.value = Location(lat: result.geometry!.location.lat, lng: result.geometry!.location.lng);
+                                              },
+                                              onAutoCompleteFailed: (error) {
+                                                print(
+                                                    '🔴 PlacePicker AutoComplete Failed for Pickup Location');
+                                                print(
+                                                    '📍 API Endpoint: Places API Autocomplete');
+                                                print('❌ Error Details: $error');
+                                                print(
+                                                    '🔑 API Key Used: ${Constant.mapAPIKey.substring(0, 10)}...');
+                                              },
+                                              onGeocodingSearchFailed: (error) {
+                                                print(
+                                                    '🔴 PlacePicker Geocoding Search Failed for Pickup Location');
+                                                print(
+                                                    '📍 API Endpoint: Geocoding API / Places API Reverse Geocoding');
+                                                print('❌ Error Details: $error');
+                                                print(
+                                                    '🔑 API Key Used: ${Constant.mapAPIKey.substring(0, 10)}...');
+                                              },
+                                              initialPosition: const LatLng(
+                                                  37.7749,
+                                                  -122.4194), // Default to San Francisco, you can change this to your preferred default location
+                                              useCurrentLocation: true,
+                                              selectInitialPosition: true,
+                                              usePinPointingSearch: true,
+                                              usePlaceDetailSearch: true,
+                                              zoomGesturesEnabled: true,
+                                              zoomControlsEnabled: true,
+                                              resizeToAvoidBottomInset:
+                                                  false, // only works in page mode, less flickery, remove if wrong offsets
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    } catch (e, stackTrace) {
+                                      print(
+                                          '🔴 Exception in PlacePicker for Pickup Location');
+                                      print(
+                                          '📍 API Endpoint: Multiple (PlacePicker initialization)');
+                                      print('❌ Error: $e');
+                                      print('📚 Stack Trace: $stackTrace');
+                                      print(
+                                          '🔑 API Key Used: ${Constant.mapAPIKey.substring(0, 10)}...');
+                                    }
+                                  },
+                                  child: TextFormField(
+                                    controller:
+                                        controller.pickUpLocationController.value,
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        color: themeChange.getThem()
+                                            ? AppThemeData.grey50
+                                            : AppThemeData.grey900,
+                                        fontFamily: AppThemeData.medium),
+                                    decoration: InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: 'Enter Pickup Location'.tr,
+                                      enabled: false,
+                                      prefixIcon: Padding(
+                                        padding: const EdgeInsets.all(12),
+                                        child: SvgPicture.asset(
+                                            "assets/icons/ic_source.svg"),
+                                      ),
+                                      hintStyle: TextStyle(
+                                        fontSize: 16,
+                                        color: themeChange.getThem()
+                                            ? AppThemeData.grey700
+                                            : AppThemeData.grey700,
+                                        fontFamily: AppThemeData.medium,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const Divider(
+                                  height: 1,
+                                ),
+                                InkWell(
+                                  onTap: () async {
+                                    print(
+                                        '✅ Opening PlacePicker for Drop Location');
+                                    print(
+                                        '📍 API Endpoint: Places API (Camera Location Search)');
+                                    print(
+                                        '🔑 Using API Key: ${Constant.mapAPIKey.substring(0, 10)}...');
+                                    try {
+                                      await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => PlacePicker(
+                                            apiKey: Constant.mapAPIKey,
+                                            onPlacePicked: (result) {
+                                              print(
+                                                  '✅ Place picked successfully for Drop Location');
+                                              Get.back();
+                                              controller.dropLocationController
+                                                      .value.text =
+                                                  result.formattedAddress
+                                                      .toString();
+                                              controller.dropLocation.value =
+                                                  CityModel(
+                                                name: result.formattedAddress
+                                                    .toString(),
+                                                placeId:
+                                                    result.placeId.toString(),
+                                                geometry: Geometry(
+                                                    location: Location.fromJson(
+                                                        result.geometry!.location
+                                                            .toJson())),
+                                              );
+                                            },
+                                            onAutoCompleteFailed: (error) {
+                                              print(
+                                                  '🔴 PlacePicker AutoComplete Failed for Drop Location');
+                                              print(
+                                                  '📍 API Endpoint: Places API Autocomplete');
+                                              print('❌ Error Details: $error');
+                                              print(
+                                                  '🔑 API Key Used: ${Constant.mapAPIKey.substring(0, 10)}...');
+                                            },
+                                            onGeocodingSearchFailed: (error) {
+                                              print(
+                                                  '🔴 PlacePicker Geocoding Search Failed for Drop Location');
+                                              print(
+                                                  '📍 API Endpoint: Geocoding API / Places API Reverse Geocoding');
+                                              print('❌ Error Details: $error');
+                                              print(
+                                                  '🔑 API Key Used: ${Constant.mapAPIKey.substring(0, 10)}...');
+                                            },
+                                            initialPosition: const LatLng(37.7749,
+                                                -122.4194), // Default to San Francisco, you can change this to your preferred default location
+                                            useCurrentLocation: true,
+                                            selectInitialPosition: true,
+                                            usePinPointingSearch: true,
+                                            usePlaceDetailSearch: true,
+                                            zoomGesturesEnabled: true,
+                                            zoomControlsEnabled: true,
+                                            resizeToAvoidBottomInset:
+                                                false, // only works in page mode, less flickery, remove if wrong offsets
+                                          ),
+                                        ),
+                                      );
+                                    } catch (e, stackTrace) {
+                                      print(
+                                          '🔴 Exception in PlacePicker for Drop Location');
+                                      print(
+                                          '📍 API Endpoint: Multiple (PlacePicker initialization)');
+                                      print('❌ Error: $e');
+                                      print('📚 Stack Trace: $stackTrace');
+                                      print(
+                                          '🔑 API Key Used: ${Constant.mapAPIKey.substring(0, 10)}...');
+                                    }
+                                  },
+                                  child: TextFormField(
+                                    controller:
+                                        controller.dropLocationController.value,
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        color: themeChange.getThem()
+                                            ? AppThemeData.grey50
+                                            : AppThemeData.grey900,
+                                        fontFamily: AppThemeData.medium),
+                                    decoration: InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: 'Enter Drop-off Location'.tr,
+                                      enabled: false,
+                                      prefixIcon: Padding(
+                                        padding: const EdgeInsets.all(12),
+                                        child: SvgPicture.asset(
+                                            "assets/icons/ic_destination.svg"),
+                                      ),
+                                      hintStyle: TextStyle(
+                                        fontSize: 16,
+                                        color: themeChange.getThem()
+                                            ? AppThemeData.grey700
+                                            : AppThemeData.grey700,
+                                        fontFamily: AppThemeData.medium,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const Divider(
+                                  height: 1,
+                                ),
+                                InkWell(
+                                  onTap: () async {
+                                    BottomPicker.dateTime(
+                                      backgroundColor: themeChange.getThem()
+                                          ? AppThemeData.grey900
+                                          : AppThemeData.grey100,
+                                      onSubmit: (index) async {
+                                        if (controller.pickUpLocationController
+                                            .value.text.isEmpty) {
+                                          ShowToastDialog.showToast(
+                                              "Please First Select Pickup Location"
+                                                  .tr);
+                                        } else if (controller
+                                            .dropLocationController
+                                            .value
+                                            .text
+                                            .isEmpty) {
+                                          ShowToastDialog.showToast(
+                                              "Please First Select Drop Location"
+                                                  .tr);
+                                        } else {
+                                          ShowToastDialog.showLoader(
+                                              "Please wait".tr);
+                                          controller.selectedDate.value = index;
+                                          DateFormat dateFormat = DateFormat(
+                                              "EEE dd MMMM , hh:mm aa");
+                                          String string =
+                                              dateFormat.format(index);
+                                          controller.dateController.value.text =
+                                              string;
+                                          Duration searchRideDuration =
+                                              await controller.getDuration(
+                                                  startLocation: controller
+                                                      .pickUpLocation
+                                                      .value
+                                                      .geometry!
+                                                      .location!,
+                                                  endLocation: controller
+                                                      .dropLocation
+                                                      .value
+                                                      .geometry!
+                                                      .location!);
+                                          var listOfRide = await controller
+                                              .checkPublishRideBetweenIntervalTime();
+                                          controller.newPublishRideActive.value =
+                                              listOfRide.where((ride) {
+                                            DateTime intervalDepartureTime =
+                                                controller.selectedDate.value.add(
+                                                    Duration(
+                                                        hours: int.parse(Constant
+                                                            .intervalHoursForPublishNewRide)));
+                                            DateTime intervalDurationTime =
+                                                intervalDepartureTime
+                                                    .add(searchRideDuration);
+                                            DateTime selectedDate =
+                                                controller.selectedDate.value;
+                                            log("listOfRide :: Selected Date: ${Constant.dateToString(selectedDate)} selectedDate :: Interval Duration Time: ${Constant.dateToString(intervalDurationTime)}");
+                                            DateTime rideDepartureTime =
+                                                ride.departureDateTime!.toDate();
+                                            return rideDepartureTime
+                                                    .isAfter(selectedDate) &&
+                                                rideDepartureTime.isBefore(
+                                                    intervalDurationTime);
+                                          }).toList();
+                                          if (controller
+                                              .newPublishRideActive.isEmpty) {
+                                            controller.OldPublishRideActive
+                                                .value = listOfRide.where((ride) {
+                                              DateTime pickUpTime = ride
+                                                  .departureDateTime!
+                                                  .toDate();
+                                              DateTime intervalDepartureTime =
+                                                  pickUpTime.add(Duration(
+                                                      hours: int.parse(Constant
+                                                          .intervalHoursForPublishNewRide)));
+                                              DateTime droffTime =
+                                                  intervalDepartureTime.add(Constant()
+                                                      .stringConvertIntoDuration(
+                                                          ride.estimatedTime ??
+                                                              ''));
+                                              log("listOfRide :: Start Date: ${Constant.dateToString(pickUpTime)} selectedDate :: End Time: ${Constant.dateToString(droffTime)} :: Selected Date :: ${Constant.dateToString(controller.selectedDate.value)}");
+                                              return controller.selectedDate.value
+                                                      .isAfter(pickUpTime) &&
+                                                  controller.selectedDate.value
+                                                      .isBefore(droffTime);
+                                            }).toList();
+                                          }
+                                          ShowToastDialog.closeLoader();
+                                        }
+                                      },
+                                      minDateTime: DateTime.now(),
+                                      buttonAlignment: MainAxisAlignment.center,
+                                      displaySubmitButton: true,
+                                      pickerTitle: const Text(''),
+                                      pickerTextStyle: TextStyle(
+                                        fontSize: 16,
+                                        fontFamily: AppThemeData.regular,
+                                        color: themeChange.getThem()
+                                            ? AppThemeData.grey100
+                                            : AppThemeData.grey900,
+                                      ),
+                                      buttonSingleColor: AppThemeData.primary300,
+                                    ).show(context);
+                                  },
+                                  child: TextFormField(
+                                    controller: controller.dateController.value,
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        color: themeChange.getThem()
+                                            ? AppThemeData.grey50
+                                            : AppThemeData.grey900,
+                                        fontFamily: AppThemeData.medium),
+                                    decoration: InputDecoration(
+                                      border: InputBorder.none,
+                                      enabled: false,
+                                      hintText: 'Date and time (departure)'.tr,
+                                      prefixIcon: Padding(
+                                        padding: const EdgeInsets.all(12),
+                                        child: SvgPicture.asset(
+                                            "assets/icons/ic_calender.svg"),
+                                      ),
+                                      hintStyle: TextStyle(
+                                        fontSize: 16,
+                                        color: themeChange.getThem()
+                                            ? AppThemeData.grey700
+                                            : AppThemeData.grey700,
+                                        fontFamily: AppThemeData.medium,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const Divider(
+                                  height: 1,
+                                ),
+                                InkWell(
+                                  onTap: () async {
+                                    if (controller.newPublishRideActive.isEmpty &&
+                                        controller.OldPublishRideActive.isEmpty) {
+                                      await addVehicleBuildBottomSheet(
+                                          context, themeChange.getThem());
+                                    }
+                                  },
+                                  child: TextFormField(
+                                    controller: controller
+                                        .selectedVehicleController.value,
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        color: themeChange.getThem()
+                                            ? AppThemeData.grey50
+                                            : AppThemeData.grey900,
+                                        fontFamily: AppThemeData.medium),
+                                    decoration: InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: 'Select Vehicle'.tr,
+                                      enabled: false,
+                                      prefixIcon: Padding(
+                                        padding: const EdgeInsets.all(12),
+                                        child: SvgPicture.asset(
+                                          "assets/icons/ic_car.svg",
+                                          color: themeChange.getThem()
+                                              ? AppThemeData.grey700
+                                              : AppThemeData.grey700,
+                                        ),
+                                      ),
+                                      suffixIcon:
+                                          const Icon(Icons.arrow_drop_down),
+                                      hintStyle: TextStyle(
+                                        fontSize: 16,
+                                        color: themeChange.getThem()
+                                            ? AppThemeData.grey700
+                                            : AppThemeData.grey700,
+                                        fontFamily: AppThemeData.medium,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 5,
+                                ),
+                                if (controller.OldPublishRideActive.isNotEmpty ||
+                                    controller.newPublishRideActive.isNotEmpty)
+                                  Text(
+                                    "You cannot create a new ride at the selected time of the periods because a previous ride is active at that time.",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: AppThemeData.warning400,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
             bottomNavigationBar: Padding(

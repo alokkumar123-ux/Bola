@@ -39,84 +39,86 @@ class StepOneRoutesScreen extends StatelessWidget {
               ),
               elevation: 0,
             ),
-            body: Column(
-              children: [
-                Expanded(
-                  child: Obx(() {
-                    return google.GoogleMap(
-                      onMapCreated: controller.setMapController,
-                      polylines: controller.polylines,
-                      initialCameraPosition: google.CameraPosition(
-                        target: google.LatLng(controller.pickUpLocation.value.geometry!.location!.lat!, controller.pickUpLocation.value.geometry!.location!.lng!),
-                        zoom: 10,
-                      ),
-                    );
-                  }),
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: controller.routes.length,
-                    itemBuilder: (context, index) {
-                      Routes route = controller.routes[index];
-                      return Obx(
-                        () => Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                          child: InkWell(
-                            onTap: () => controller.selectRoute(index),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "${route.legs!.first.duration!.text.toString()} - ${route.legs!.first.steps!.any((step) => step.htmlInstructions!.contains('Toll road') || step.htmlInstructions!.contains('Toll plaza')) ? "Tolls" : "No Tolls"}",
-                                        style: TextStyle(color: themeChange.getThem() ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.bold, fontSize: 16),
-                                      ),
-                                      Text(
-                                        "${route.legs!.first.distance!.text.toString()} - ${route.summary.toString()}",
-                                        style: TextStyle(color: themeChange.getThem() ? AppThemeData.grey300 : AppThemeData.grey600, fontFamily: AppThemeData.regular, fontSize: 12),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Radio(
-                                  value: index,
-                                  groupValue: controller.selectedRouteIndex.value,
-                                  activeColor: AppThemeData.primary300,
-                                  onChanged: (value) {
-                                    controller.selectedRouteIndex.value = value!;
-                                  },
-                                )
-                              ],
-                            ),
-                          ),
+            body: SafeArea(
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Obx(() {
+                      return google.GoogleMap(
+                        onMapCreated: controller.setMapController,
+                        polylines: controller.polylines,
+                        initialCameraPosition: google.CameraPosition(
+                          target: google.LatLng(controller.pickUpLocation.value.geometry!.location!.lat!, controller.pickUpLocation.value.geometry!.location!.lng!),
+                          zoom: 10,
                         ),
                       );
-                    },
+                    }),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  child: RoundedButtonFill(
-                    title: "Next".tr,
-                    color: AppThemeData.primary300,
-                    textColor: AppThemeData.grey50,
-                    onPress: () {
-                      controller.getPopularCity(
-                        controller.pickUpLocation.value.geometry!.location!.lat!,
-                        controller.pickUpLocation.value.geometry!.location!.lng!,
-                        controller.dropLocation.value.geometry!.location!.lat!,
-                        controller.dropLocation.value.geometry!.location!.lng!,
-                      );
-                      controller.distance.value = controller.routes[controller.selectedRouteIndex.value].legs!.first.distance!.value!;
-                      controller.estimatedTime.value = controller.routes[controller.selectedRouteIndex.value].legs!.first.duration!.text!;
-
-                      Get.to(const StepTwoStopOverScreen());
-                    },
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: controller.routes.length,
+                      itemBuilder: (context, index) {
+                        Routes route = controller.routes[index];
+                        return Obx(
+                          () => Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                            child: InkWell(
+                              onTap: () => controller.selectRoute(index),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "${route.legs!.first.duration!.text.toString()} - ${route.legs!.first.steps!.any((step) => step.htmlInstructions!.contains('Toll road') || step.htmlInstructions!.contains('Toll plaza')) ? "Tolls" : "No Tolls"}",
+                                          style: TextStyle(color: themeChange.getThem() ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.bold, fontSize: 16),
+                                        ),
+                                        Text(
+                                          "${route.legs!.first.distance!.text.toString()} - ${route.summary.toString()}",
+                                          style: TextStyle(color: themeChange.getThem() ? AppThemeData.grey300 : AppThemeData.grey600, fontFamily: AppThemeData.regular, fontSize: 12),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Radio(
+                                    value: index,
+                                    groupValue: controller.selectedRouteIndex.value,
+                                    activeColor: AppThemeData.primary300,
+                                    onChanged: (value) {
+                                      controller.selectedRouteIndex.value = value!;
+                                    },
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    child: RoundedButtonFill(
+                      title: "Next".tr,
+                      color: AppThemeData.primary300,
+                      textColor: AppThemeData.grey50,
+                      onPress: () {
+                        controller.getPopularCity(
+                          controller.pickUpLocation.value.geometry!.location!.lat!,
+                          controller.pickUpLocation.value.geometry!.location!.lng!,
+                          controller.dropLocation.value.geometry!.location!.lat!,
+                          controller.dropLocation.value.geometry!.location!.lng!,
+                        );
+                        controller.distance.value = controller.routes[controller.selectedRouteIndex.value].legs!.first.distance!.value!;
+                        controller.estimatedTime.value = controller.routes[controller.selectedRouteIndex.value].legs!.first.duration!.text!;
+              
+                        Get.to(const StepTwoStopOverScreen());
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         });

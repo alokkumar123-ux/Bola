@@ -33,7 +33,7 @@ class SplashScreen extends StatelessWidget {
                   style: TextStyle(color: themeChange.getThem() ? AppThemeData.grey50 : AppThemeData.grey50, fontSize: 28, fontFamily: AppThemeData.bold),
                 ),
                 Text(
-                  "Share Your Journey, Share the Fun".tr,
+                  "Let's move together".tr,
                   style: TextStyle(color: themeChange.getThem() ? AppThemeData.grey50 : AppThemeData.grey50),
                 ),
               ],

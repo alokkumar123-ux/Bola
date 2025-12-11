@@ -31,7 +31,7 @@ class NetworkImageWidget extends StatelessWidget {
 
     if (sanitizedUrl.isEmpty) {
       return Image.asset(
-        Constant.userPlaceHolder,
+        Constant.getStartedImage,
         fit: fit ?? BoxFit.fitWidth,
         height: height ?? Responsive.height(8, context),
         width: width ?? Responsive.width(15, context),
@@ -50,7 +50,7 @@ class NetworkImageWidget extends StatelessWidget {
       errorWidget: (context, url, error) =>
           errorWidget ??
           Image.asset(
-            Constant.userPlaceHolder,
+            Constant.getStartedImage,
             fit: fit ?? BoxFit.fitWidth,
             height: height ?? Responsive.height(8, context),
             width: width ?? Responsive.width(15, context),

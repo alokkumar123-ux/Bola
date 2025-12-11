@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -138,27 +137,64 @@ class OtpScreen extends StatelessWidget {
                                   6) {
                                 ShowToastDialog.showLoader("Verify otp".tr);
 
-                                PhoneAuthCredential credential =
-                                    PhoneAuthProvider.credential(
-                                        verificationId:
-                                            controller.verificationId.value,
-                                        smsCode: controller
-                                            .otpController.value.text);
-                                String fcmToken = '';
-                                try {
-                                  fcmToken =
-                                      await NotificationService.getToken();
-                                } catch (e) {
-                                  debugPrint(
-                                      "Failed to get FCM token during phone verification: $e");
-                                  // Continue with verification even if FCM token fails
-                                }
-                                await FirebaseAuth.instance
-                                    .signInWithCredential(credential)
-                                    .then((value) async {
-                                  if (value.additionalUserInfo!.isNewUser) {
+                                // Verify OTP locally
+                                if (controller.verifyOTP(
+                                    controller.otpController.value.text)) {
+                                  // OTP is correct
+                                  String fcmToken = '';
+                                  try {
+                                    fcmToken =
+                                        await NotificationService.getToken();
+                                  } catch (e) {
+                                    debugPrint(
+                                        "Failed to get FCM token during phone verification: $e");
+                                  }
+
+                                  ShowToastDialog.closeLoader();
+
+                                  if (controller.isLogin.value) {
+                                    // Login flow - get existing user by phone number
+                                    UserModel? userModel = await FireStoreUtils
+                                        .getUserByPhoneNumber(
+                                            controller.countryCode.value,
+                                            controller.phoneNumber.value);
+                                    if (userModel != null) {
+                                      if (userModel.isActive == true) {
+                                        // Save user ID to local storage for session
+                                        await FireStoreUtils.setCurrentUid(
+                                            userModel.id!);
+
+                                        // Update FCM token for existing user
+                                        try {
+                                          String fcmToken =
+                                              await NotificationService
+                                                  .getToken();
+                                          userModel.fcmToken = fcmToken;
+                                          await FireStoreUtils.updateUser(
+                                              userModel);
+                                          debugPrint(
+                                              "FCM token updated for existing phone user: $fcmToken");
+                                        } catch (e) {
+                                          debugPrint(
+                                              "Failed to update FCM token for existing phone user: $e");
+                                        }
+
+                                        Get.offAll(const DashBoardScreen());
+                                      } else {
+                                        ShowToastDialog.showToast(
+                                            "This user is disable please contact administrator"
+                                                .tr);
+                                      }
+                                    } else {
+                                      ShowToastDialog.showToast(
+                                          "User not found".tr);
+                                    }
+                                  } else {
+                                    // Signup flow - create new user with secure UUID
+                                    String generatedUserId =
+                                        controller.generateUserId();
                                     UserModel userModel = UserModel();
-                                    userModel.id = value.user!.uid;
+                                    userModel.id = generatedUserId;
                                     userModel.countryCode =
                                         controller.countryCode.value;
                                     userModel.phoneNumber =
@@ -167,69 +203,16 @@ class OtpScreen extends StatelessWidget {
                                         Constant.phoneLoginType;
                                     userModel.fcmToken = fcmToken;
 
-                                    ShowToastDialog.closeLoader();
                                     Get.off(const InformationScreen(),
                                         arguments: {
                                           "userModel": userModel,
                                         });
-                                  } else {
-                                    await FireStoreUtils.userExistOrNot(
-                                            value.user!.uid)
-                                        .then((userExit) async {
-                                      ShowToastDialog.closeLoader();
-                                      if (userExit == true) {
-                                        UserModel? userModel =
-                                            await FireStoreUtils.getUserProfile(
-                                                value.user!.uid);
-                                        if (userModel != null) {
-                                          if (userModel.isActive == true) {
-                                            // Update FCM token for existing user on phone login with error handling
-                                            try {
-                                              String fcmToken =
-                                                  await NotificationService
-                                                      .getToken();
-                                              userModel.fcmToken = fcmToken;
-                                              await FireStoreUtils.updateUser(
-                                                  userModel);
-                                              debugPrint(
-                                                  "FCM token updated for existing phone user: $fcmToken");
-                                            } catch (e) {
-                                              debugPrint(
-                                                  "Failed to update FCM token for existing phone user: $e");
-                                              // Continue with login even if FCM token update fails
-                                            }
-
-                                            Get.offAll(const DashBoardScreen());
-                                          } else {
-                                            await FirebaseAuth.instance
-                                                .signOut();
-                                            ShowToastDialog.showToast(
-                                                "This user is disable please contact administrator"
-                                                    .tr);
-                                          }
-                                        }
-                                      } else {
-                                        UserModel userModel = UserModel();
-                                        userModel.id = value.user!.uid;
-                                        userModel.countryCode =
-                                            controller.countryCode.value;
-                                        userModel.phoneNumber =
-                                            controller.phoneNumber.value;
-                                        userModel.loginType =
-                                            Constant.phoneLoginType;
-                                        userModel.fcmToken = fcmToken;
-
-                                        Get.off(const InformationScreen(),
-                                            arguments: {
-                                              "userModel": userModel,
-                                            });
-                                      }
-                                    });
                                   }
-                                }).catchError((error) {
+                                } else {
+                                  // OTP is incorrect
                                   ShowToastDialog.closeLoader();
                                   ShowToastDialog.showToast("Invalid Code".tr);
-                                });
+                                }
                               } else {
                                 ShowToastDialog.showToast("Enter Valid otp".tr);
                               }

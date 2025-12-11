@@ -15,6 +15,7 @@ import 'package:poolmate/model/booking_model.dart';
 import 'package:poolmate/model/map/direction_api_model.dart';
 import 'package:poolmate/model/map/geometry.dart';
 import 'package:poolmate/model/recent_search_model.dart';
+import 'package:poolmate/model/ride_alert_model.dart';
 import 'package:poolmate/model/stop_over_model.dart';
 import 'package:poolmate/model/user_model.dart';
 import 'package:poolmate/utils/fire_store_utils.dart';
@@ -154,6 +155,10 @@ class HomeController extends GetxController {
       });
 
       ShowToastDialog.closeLoader();
+
+      // Auto-create ride alert if no rides found
+      await autoCreateRideAlert();
+
       Get.to(const SearchScreen())?.then((v) async {
         await getSearchHistory();
       });
@@ -590,6 +595,87 @@ class HomeController extends GetxController {
     } catch (e) {
       print('Error checking user booking access: $e');
       return false;
+    }
+  }
+
+  /// Create a ride alert for the current search
+  Future<void> createRideAlert() async {
+    try {
+      log('🔔 Creating ride alert...');
+
+      // Check if user already has an active alert for this route and date
+      String userId = FireStoreUtils.getCurrentUid();
+      String pickupAddr = pickUpLocationController.value.text;
+      String dropAddr = dropLocationController.value.text;
+      DateTime searchDateOnly = DateTime(selectedDate.value.year,
+          selectedDate.value.month, selectedDate.value.day);
+
+      List<RideAlertModel> existingAlerts =
+          await FireStoreUtils.getUserActiveRideAlerts(userId) ?? [];
+
+      // Check if similar alert already exists
+      bool alertExists = existingAlerts.any((alert) {
+        if (alert.pickUpAddress == pickupAddr &&
+            alert.dropAddress == dropAddr &&
+            alert.isActive == true) {
+          // Check if the search dates are on the same day
+          DateTime alertDate = alert.searchDate!.toDate();
+          DateTime alertDateOnly =
+              DateTime(alertDate.year, alertDate.month, alertDate.day);
+          return alertDateOnly == searchDateOnly;
+        }
+        return false;
+      });
+
+      if (alertExists) {
+        log('🔔 ⏭️ Alert already exists for this route and date - skipping');
+        return;
+      }
+
+      RideAlertModel rideAlert = RideAlertModel(
+        id: Constant.getUuid(),
+        userId: userId,
+        pickUpAddress: pickupAddr,
+        dropAddress: dropAddr,
+        pickUpLocation: pickUpLocation.value,
+        dropLocation: dropLocation.value,
+        person: personController.value.text,
+        searchDate: Timestamp.now(),
+        expiryDate: Timestamp.fromDate(selectedDate.value.add(const Duration(
+            days: 1))), // Alert expires one day after the search date
+        createdAt: Timestamp.now(),
+        isActive: true,
+      );
+
+      log('🔔 Alert details:');
+      log('🔔   ID: ${rideAlert.id}');
+      log('🔔   User: ${rideAlert.userId}');
+      log('🔔   Route: ${rideAlert.pickUpAddress} → ${rideAlert.dropAddress}');
+      log('🔔   Expiry: ${rideAlert.expiryDate?.toDate()}');
+
+      bool success = await FireStoreUtils.setRideAlert(rideAlert);
+
+      if (success) {
+        log('🔔 ✅ Ride alert created successfully: ${rideAlert.id}');
+      } else {
+        log('🔔 ❌ Failed to create ride alert');
+      }
+    } catch (e) {
+      log('🔔 ❌ Error creating ride alert: $e');
+    }
+  }
+
+  /// Automatically create ride alert after search if no rides found or user doesn't book
+  Future<void> autoCreateRideAlert() async {
+    log('🔔 Auto-create ride alert check...');
+    log('🔔 Search results count: ${searchedBookingList.length}');
+
+    // Create ride alert if no matching rides were found
+    if (searchedBookingList.isEmpty) {
+      log('🔔 No rides found - creating alert');
+      await createRideAlert();
+    } else {
+      log('🔔 Rides found - not creating alert automatically');
     }
   }
 }

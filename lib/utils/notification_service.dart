@@ -19,17 +19,17 @@ Future<void> awesomeOnActionReceivedMethod(
   final String? type = receivedAction.payload?['type'];
 
   // Stop SOS audio when notification is tapped
-  if (type == 'sos_alert') {
-    log('SOS Alert notification tapped - stopping audio');
-    try {
-      if (Get.isRegistered<SosAudioService>()) {
-        final sosAudioService = Get.find<SosAudioService>();
-        await sosAudioService.stopPlaying();
-      }
-    } catch (e) {
-      log("Error stopping SOS audio on notification tap: $e");
-    }
-  }
+  // if (type == 'sos_alert') {
+  //   log('SOS Alert notification tapped - stopping audio');
+  //   try {
+  //     if (Get.isRegistered<SosAudioService>()) {
+  //       final sosAudioService = Get.find<SosAudioService>();
+  //       await sosAudioService.stopPlaying();
+  //     }
+  //   } catch (e) {
+  //     log("Error stopping SOS audio on notification tap: $e");
+  //   }
+  // }
 
   final bool isBgApp =
       receivedAction.actionLifeCycle != NotificationLifeCycle.Foreground;
@@ -58,7 +58,7 @@ Future<void> awesomeOnNotificationCreatedMethod(
 Future<void> awesomeOnNotificationDisplayedMethod(
     ReceivedNotification receivedNotification) async {
   log('Awesome Notification displayed: ${receivedNotification.id}');
-  
+
   // Start audio when SOS notification is displayed
   final String? type = receivedNotification.payload?['type'];
   if (type == 'sos_alert') {
@@ -79,20 +79,20 @@ Future<void> awesomeOnNotificationDisplayedMethod(
 Future<void> awesomeOnDismissActionReceivedMethod(
     ReceivedAction receivedAction) async {
   log('Awesome Notification dismissed: ${receivedAction.id}');
-  
+
   // Stop SOS audio when notification is dismissed
-  final String? type = receivedAction.payload?['type'];
-  if (type == 'sos_alert') {
-    try {
-      if (Get.isRegistered<SosAudioService>()) {
-        final sosAudioService = Get.find<SosAudioService>();
-        await sosAudioService.stopPlaying();
-        log('SOS audio stopped after notification dismissed');
-      }
-    } catch (e) {
-      log('Error stopping SOS audio on dismiss: $e');
-    }
-  }
+  // final String? type = receivedAction.payload?['type'];
+  // if (type == 'sos_alert') {
+  //   try {
+  //     if (Get.isRegistered<SosAudioService>()) {
+  //       final sosAudioService = Get.find<SosAudioService>();
+  //       await sosAudioService.stopPlaying();
+  //       log('SOS audio stopped after notification dismissed');
+  //     }
+  //   } catch (e) {
+  //     log('Error stopping SOS audio on dismiss: $e');
+  //   }
+  // }
 }
 
 /// Top-level function for handling Firebase background messages
@@ -111,13 +111,13 @@ Future<void> firebaseMessageBackgroundHandle(RemoteMessage message) async {
     // For all notifications in background, create using Awesome Notifications
     // Android will also show system notification, but we want to ensure it shows
     try {
-      final String title = message.notification?.title ?? 
-                          message.data['title'] ?? 
-                          'Notification';
-      final String body = message.notification?.body ?? 
-                         message.data['body'] ?? 
-                         message.data['message'] ?? 
-                         'You have a new notification';
+      final String title = message.notification?.title ??
+          message.data['title'] ??
+          'Notification';
+      final String body = message.notification?.body ??
+          message.data['body'] ??
+          message.data['message'] ??
+          'You have a new notification';
 
       // Convert message.data to Map<String, String?> for payload
       Map<String, String?> payloadMap = {};
@@ -125,7 +125,8 @@ Future<void> firebaseMessageBackgroundHandle(RemoteMessage message) async {
         payloadMap[key] = value?.toString();
       });
 
-      String channelKey = type == 'sos_alert' ? 'sos_channel' : 'high_importance_channel';
+      String channelKey =
+          type == 'sos_alert' ? 'sos_channel' : 'high_importance_channel';
 
       await AwesomeNotifications().createNotification(
         content: NotificationContent(
@@ -187,7 +188,8 @@ class NotificationService {
     if (initialMessage != null) {
       log("App opened from terminated state with message: ${initialMessage.data}");
       final String type = initialMessage.data['type'] ?? '';
-      await handleNotificationTap(type: type, isBgApp: true, data: initialMessage.data);
+      await handleNotificationTap(
+          type: type, isBgApp: true, data: initialMessage.data);
     }
 
     // Foreground message handler
@@ -221,13 +223,14 @@ class NotificationService {
         await display(message);
       }
     });
-    
+
     // Handle notification tap when app is in background
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage? message) async {
       log("::::::::::::onMessageOpenedApp:::::::::::::::::");
       if (message != null) {
         final String type = message.data['type'] ?? '';
-        await handleNotificationTap(type: type, isBgApp: false, data: message.data);
+        await handleNotificationTap(
+            type: type, isBgApp: false, data: message.data);
       }
     });
 
@@ -238,7 +241,8 @@ class NotificationService {
   Future<void> _displaySosNotification(RemoteMessage message) async {
     try {
       final String title = message.notification?.title ?? 'SOS Alert!';
-      final String body = message.notification?.body ?? 'Passenger triggered SOS. Tap to respond.';
+      final String body = message.notification?.body ??
+          'Passenger triggered SOS. Tap to respond.';
 
       // Convert message.data to Map<String, String?> for payload
       Map<String, String?> payloadMap = {};
@@ -273,18 +277,7 @@ class NotificationService {
       Map<String, dynamic>? data}) async {
     final String uid = FireStoreUtils.getCurrentUid();
 
-    // Handle SOS alert - stop audio once driver acknowledges
-    if (type == 'sos_alert') {
-      log("SOS Alert notification handled - stopping audio");
-      try {
-        if (Get.isRegistered<SosAudioService>()) {
-          final sosAudioService = Get.find<SosAudioService>();
-          await sosAudioService.stopPlaying();
-        }
-      } catch (e) {
-        log("Error stopping SOS audio on notification tap: $e");
-      }
-    } else if (type == 'admin_chat' && uid.isNotEmpty) {
+    if (type == 'admin_chat' && uid.isNotEmpty) {
       await Preferences.setBoolean(Preferences.isClickOnNotification, true);
       if (isBgApp == false) {
         Get.offAll(HelpSupportScreen());
@@ -294,6 +287,14 @@ class NotificationService {
       if (isBgApp == false) {
         // Navigate to inbox screen when chat notification is tapped
         Get.offAll(const InboxScreen());
+      }
+    } else if (type == 'ride_alert' && uid.isNotEmpty) {
+      await Preferences.setBoolean(Preferences.isClickOnNotification, true);
+      if (isBgApp == false) {
+        // Navigate to search screen when ride alert is tapped
+        // You can pass the booking ID from data if needed
+        log('Ride alert notification tapped - navigating to search');
+        // Get.offAll() with search or booking details if needed
       }
     }
   }
@@ -333,15 +334,15 @@ class NotificationService {
   Future<void> display(RemoteMessage message) async {
     try {
       final String type = message.data['type'] ?? '';
-      
+
       // Get title and body from notification object or try to get from data
-      String title = message.notification?.title ?? 
-                     message.data['title'] ?? 
-                     'Notification';
-      String body = message.notification?.body ?? 
-                    message.data['body'] ?? 
-                    message.data['message'] ?? 
-                    'You have a new notification';
+      String title = message.notification?.title ??
+          message.data['title'] ??
+          'Notification';
+      String body = message.notification?.body ??
+          message.data['body'] ??
+          message.data['message'] ??
+          'You have a new notification';
 
       log('Displaying notification - Type: $type, Title: $title, Body: $body');
 
@@ -349,6 +350,8 @@ class NotificationService {
       String channelKey = 'high_importance_channel';
       if (type == 'sos_alert') {
         channelKey = 'sos_channel';
+      } else if (type == 'ride_alert') {
+        channelKey = 'ride_alert_channel';
       }
 
       // Convert message.data to Map<String, String?> for payload
@@ -358,7 +361,8 @@ class NotificationService {
       });
 
       // Ensure we have a valid notification ID
-      final notificationId = DateTime.now().millisecondsSinceEpoch.remainder(100000);
+      final notificationId =
+          DateTime.now().millisecondsSinceEpoch.remainder(100000);
 
       await AwesomeNotifications().createNotification(
         content: NotificationContent(

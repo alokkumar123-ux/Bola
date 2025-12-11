@@ -52,511 +52,357 @@ class StepFivePriceScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              body: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: Text(
-                        "Set your price per seats".tr,
-                        style: TextStyle(
-                            color: themeChange.getThem()
-                                ? AppThemeData.grey50
-                                : AppThemeData.grey900,
-                            fontFamily: AppThemeData.bold,
-                            fontSize: 20),
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 30,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        InkWell(
-                          onTap: () {
-                            // if (controller.price.value >=
-                            //     Constant.getMinusPercentageAmount(controller
-                            //         .recommendedPrice.value
-                            //         .toString())) {
-                              controller.changePriceVariant(false);
-                            // }
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border:
-                                    Border.all(color: AppThemeData.primary300)),
-                            child: Padding(
-                              padding: const EdgeInsets.all(4.0),
-                              child: Icon(Icons.remove,
-                                  color: AppThemeData.primary300),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        Text(
-                          Constant.amountShow(
-                              amount: controller.price.value.toString()),
-                          textAlign: TextAlign.center,
+              body: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        child: Text(
+                          "Set your price per seats".tr,
                           style: TextStyle(
-                            color: themeChange.getThem()
-                                ? AppThemeData.grey100
-                                : AppThemeData.grey800,
-                            fontSize: 32,
-                            fontFamily: AppThemeData.bold,
-                          ),
+                              color: themeChange.getThem()
+                                  ? AppThemeData.grey50
+                                  : AppThemeData.grey900,
+                              fontFamily: AppThemeData.bold,
+                              fontSize: 20),
                         ),
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        InkWell(
-                          onTap: () {
-                            // if (controller.price.value <=
-                            //     Constant.getPlusPercentageAmount(controller
-                            //         .recommendedPrice.value
-                            //         .toString())) {
-                              controller.changePriceVariant(true);
-                            // }
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border:
-                                    Border.all(color: AppThemeData.primary300)),
-                            child: Padding(
-                              padding: const EdgeInsets.all(4.0),
-                              child: Icon(
-                                Icons.add,
-                                color: AppThemeData.primary300,
+                      ),
+                      const SizedBox(
+                        height: 30,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          InkWell(
+                            onTap: () {
+                              // if (controller.price.value >=
+                              //     Constant.getMinusPercentageAmount(controller
+                              //         .recommendedPrice.value
+                              //         .toString())) {
+                              controller.changePriceVariant(false);
+                              // }
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border:
+                                      Border.all(color: AppThemeData.primary300)),
+                              child: Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: Icon(Icons.remove,
+                                    color: AppThemeData.primary300),
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 40,
-                    ),
-                    Center(
-                      child: Column(
-                        children: [
+                          const SizedBox(
+                            width: 10,
+                          ),
                           Text(
-                            "Recommended Price per seat: ${Constant.amountShow(amount: controller.recommendedPrice.value.toString())}"
-                                .tr,
+                            Constant.amountShow(
+                                amount: controller.price.value.toString()),
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                                color: themeChange.getThem()
-                                    ? AppThemeData.grey50
-                                    : AppThemeData.grey900,
-                                fontFamily: AppThemeData.regular,
-                                fontSize: 14),
+                              color: themeChange.getThem()
+                                  ? AppThemeData.grey100
+                                  : AppThemeData.grey800,
+                              fontSize: 32,
+                              fontFamily: AppThemeData.bold,
+                            ),
                           ),
                           const SizedBox(
-                            height: 5,
+                            width: 10,
                           ),
-                          Text(
-                            "Total Distance: ${Constant.distanceCalculate(controller.distance.value.toString())} ${Constant.distanceType}"
-                                .tr,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                color: themeChange.getThem()
-                                    ? AppThemeData.grey50
-                                    : AppThemeData.grey900,
-                                fontFamily: AppThemeData.regular,
-                                fontSize: 14),
-                          ),
-                          const SizedBox(
-                            height: 5,
-                          ),
-                          Text(
-                            "Price per ${Constant.distanceType} : ${Constant.amountShow(amount: controller.selectedUserVehicle.value.vehicleType!.perKmCharges.toString())}"
-                                .tr,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                color: themeChange.getThem()
-                                    ? AppThemeData.grey50
-                                    : AppThemeData.grey900,
-                                fontFamily: AppThemeData.regular,
-                                fontSize: 14),
+                          InkWell(
+                            onTap: () {
+                              // if (controller.price.value <=
+                              //     Constant.getPlusPercentageAmount(controller
+                              //         .recommendedPrice.value
+                              //         .toString())) {
+                              controller.changePriceVariant(true);
+                              // }
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border:
+                                      Border.all(color: AppThemeData.primary300)),
+                              child: Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: Icon(
+                                  Icons.add,
+                                  color: AppThemeData.primary300,
+                                ),
+                              ),
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(
-                      height: 40,
-                    ),
-                    InkWell(
-                      onTap: () {
-                        Get.to(const StepSixStopOverPriceScreen());
-                      },
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 10),
+                      const SizedBox(
+                        height: 40,
+                      ),
+                      Center(
+                        child: Column(
+                          children: [
+                            Text(
+                              "Recommended Price per seat: ${Constant.amountShow(amount: controller.recommendedPrice.value.toString())}"
+                                  .tr,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: themeChange.getThem()
+                                      ? AppThemeData.grey50
+                                      : AppThemeData.grey900,
+                                  fontFamily: AppThemeData.regular,
+                                  fontSize: 14),
+                            ),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            Text(
+                              "Total Distance: ${Constant.distanceCalculate(controller.distance.value.toString())} ${Constant.distanceType}"
+                                  .tr,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: themeChange.getThem()
+                                      ? AppThemeData.grey50
+                                      : AppThemeData.grey900,
+                                  fontFamily: AppThemeData.regular,
+                                  fontSize: 14),
+                            ),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            Text(
+                              "Price per ${Constant.distanceType} : ${Constant.amountShow(amount: controller.selectedUserVehicle.value.vehicleType!.perKmCharges.toString())}"
+                                  .tr,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: themeChange.getThem()
+                                      ? AppThemeData.grey50
+                                      : AppThemeData.grey900,
+                                  fontFamily: AppThemeData.regular,
+                                  fontSize: 14),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 40,
+                      ),
+                      InkWell(
+                        onTap: () {
+                          Get.to(const StepSixStopOverPriceScreen());
+                        },
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                child: Text(
+                                  "Stopover prices".tr,
+                                  textAlign: TextAlign.start,
+                                  style: TextStyle(
+                                      decoration: TextDecoration.underline,
+                                      decorationColor: AppThemeData.primary300,
+                                      color: themeChange.getThem()
+                                          ? AppThemeData.primary300
+                                          : AppThemeData.primary300,
+                                      fontFamily: AppThemeData.bold,
+                                      fontSize: 14),
+                                ),
+                              ),
+                            ),
+                            Icon(
+                              Icons.chevron_right_outlined,
+                              color: AppThemeData.primary300,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 10),
+                        child: Divider(),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          changeLuggageBuildBottomSheet(context);
+                        },
+                        child: Row(
+                          children: [
+                            SvgPicture.asset("assets/icons/ic_luggage.svg"),
+                            const SizedBox(
+                              width: 12,
+                            ),
+                            Expanded(
                               child: Text(
-                                "Stopover prices".tr,
+                                "Luggage allowed".tr,
                                 textAlign: TextAlign.start,
                                 style: TextStyle(
-                                    decoration: TextDecoration.underline,
-                                    decorationColor: AppThemeData.primary300,
                                     color: themeChange.getThem()
-                                        ? AppThemeData.primary300
-                                        : AppThemeData.primary300,
-                                    fontFamily: AppThemeData.bold,
+                                        ? AppThemeData.grey200
+                                        : AppThemeData.grey700,
+                                    fontFamily: AppThemeData.medium,
                                     fontSize: 14),
                               ),
                             ),
-                          ),
-                          Icon(
-                            Icons.chevron_right_outlined,
-                            color: AppThemeData.primary300,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 10),
-                      child: Divider(),
-                    ),
-                    InkWell(
-                      onTap: () {
-                        changeLuggageBuildBottomSheet(context);
-                      },
-                      child: Row(
-                        children: [
-                          SvgPicture.asset("assets/icons/ic_luggage.svg"),
-                          const SizedBox(
-                            width: 12,
-                          ),
-                          Expanded(
-                            child: Text(
-                              "Luggage allowed".tr,
+                            Text(
+                              "${controller.luggageAllowed.value} Carry on bag"
+                                  .tr,
                               textAlign: TextAlign.start,
                               style: TextStyle(
                                   color: themeChange.getThem()
-                                      ? AppThemeData.grey200
-                                      : AppThemeData.grey700,
+                                      ? AppThemeData.grey300
+                                      : AppThemeData.grey600,
                                   fontFamily: AppThemeData.medium,
                                   fontSize: 14),
                             ),
-                          ),
-                          Text(
-                            "${controller.luggageAllowed.value} Carry on bag"
-                                .tr,
-                            textAlign: TextAlign.start,
-                            style: TextStyle(
-                                color: themeChange.getThem()
-                                    ? AppThemeData.grey300
-                                    : AppThemeData.grey600,
-                                fontFamily: AppThemeData.medium,
-                                fontSize: 14),
-                          ),
-                          const SizedBox(
-                            width: 5,
-                          ),
-                          const Icon(Icons.chevron_right_outlined)
-                        ],
+                            const SizedBox(
+                              width: 5,
+                            ),
+                            const Icon(Icons.chevron_right_outlined)
+                          ],
+                        ),
                       ),
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 10),
-                      child: Divider(),
-                    ),
-                    InkWell(
-                      onTap: () {
-                        Get.to(const TravelPreferenceScreen())!.then((value) {
-                          controller.getUserData();
-                        });
-                      },
-                      child: Row(
-                        children: [
-                          SvgPicture.asset("assets/icons/ic_preferences.svg"),
-                          const SizedBox(
-                            width: 12,
-                          ),
-                          Expanded(
-                            child: Text(
-                              "Preferences".tr,
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 10),
+                        child: Divider(),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          Get.to(const TravelPreferenceScreen())!.then((value) {
+                            controller.getUserData();
+                          });
+                        },
+                        child: Row(
+                          children: [
+                            SvgPicture.asset("assets/icons/ic_preferences.svg"),
+                            const SizedBox(
+                              width: 12,
+                            ),
+                            Expanded(
+                              child: Text(
+                                "Preferences".tr,
+                                textAlign: TextAlign.start,
+                                style: TextStyle(
+                                    color: themeChange.getThem()
+                                        ? AppThemeData.grey200
+                                        : AppThemeData.grey700,
+                                    fontFamily: AppThemeData.medium,
+                                    fontSize: 14),
+                              ),
+                            ),
+                            Text(
+                              "Change".tr,
                               textAlign: TextAlign.start,
                               style: TextStyle(
                                   color: themeChange.getThem()
-                                      ? AppThemeData.grey200
-                                      : AppThemeData.grey700,
+                                      ? AppThemeData.grey300
+                                      : AppThemeData.grey600,
                                   fontFamily: AppThemeData.medium,
                                   fontSize: 14),
                             ),
-                          ),
-                          Text(
-                            "Change".tr,
-                            textAlign: TextAlign.start,
-                            style: TextStyle(
-                                color: themeChange.getThem()
-                                    ? AppThemeData.grey300
-                                    : AppThemeData.grey600,
-                                fontFamily: AppThemeData.medium,
-                                fontSize: 14),
-                          ),
-                          const SizedBox(
-                            width: 5,
-                          ),
-                          const Icon(Icons.chevron_right_outlined)
-                        ],
+                            const SizedBox(
+                              width: 5,
+                            ),
+                            const Icon(Icons.chevron_right_outlined)
+                          ],
+                        ),
                       ),
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 10),
-                      child: Divider(),
-                    ),
-                    // Payment Method Selection Section
-                    Row(
-                      children: [
-                        SvgPicture.asset("assets/icons/ic_wallet.svg"),
-                        const SizedBox(
-                          width: 12,
-                        ),
-                        Expanded(
-                          child: Text(
-                            "Preferred Payment Method".tr,
-                            textAlign: TextAlign.start,
-                            style: TextStyle(
-                                color: themeChange.getThem()
-                                    ? AppThemeData.grey200
-                                    : AppThemeData.grey700,
-                                fontFamily: AppThemeData.medium,
-                                fontSize: 14),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: InkWell(
-                            onTap: () {
-                              if (controller.driverPaymentMethod.value ==
-                                  "Cash") {
-                                controller.driverPaymentMethod.value = "";
-                              } else {
-                                controller.driverPaymentMethod.value = "Cash";
-                              }
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 12, horizontal: 16),
-                              decoration: BoxDecoration(
-                                color: controller.driverPaymentMethod.value ==
-                                        "Cash"
-                                    ? AppThemeData.primary300.withOpacity(0.1)
-                                    : Colors.transparent,
-                                border: Border.all(
-                                  color: controller.driverPaymentMethod.value ==
-                                          "Cash"
-                                      ? AppThemeData.primary300
-                                      : AppThemeData.grey300,
-                                  width: 2,
-                                ),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.money,
-                                    color:
-                                        controller.driverPaymentMethod.value ==
-                                                "Cash"
-                                            ? AppThemeData.primary300
-                                            : AppThemeData.grey600,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    "Cash Only",
-                                    style: TextStyle(
-                                      color: controller
-                                                  .driverPaymentMethod.value ==
-                                              "Cash"
-                                          ? AppThemeData.primary300
-                                          : AppThemeData.grey600,
-                                      fontFamily: AppThemeData.medium,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: InkWell(
-                            onTap: () {
-                              if (controller.driverPaymentMethod.value ==
-                                  "Online") {
-                                controller.driverPaymentMethod.value = "";
-                              } else {
-                                controller.driverPaymentMethod.value = "Online";
-                              }
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 12, horizontal: 16),
-                              decoration: BoxDecoration(
-                                color: controller.driverPaymentMethod.value ==
-                                        "Online"
-                                    ? AppThemeData.primary300.withOpacity(0.1)
-                                    : Colors.transparent,
-                                border: Border.all(
-                                  color: controller.driverPaymentMethod.value ==
-                                          "Online"
-                                      ? AppThemeData.primary300
-                                      : AppThemeData.grey300,
-                                  width: 2,
-                                ),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.credit_card,
-                                    color:
-                                        controller.driverPaymentMethod.value ==
-                                                "Online"
-                                            ? AppThemeData.primary300
-                                            : AppThemeData.grey600,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    "Online Only",
-                                    style: TextStyle(
-                                      color: controller
-                                                  .driverPaymentMethod.value ==
-                                              "Online"
-                                          ? AppThemeData.primary300
-                                          : AppThemeData.grey600,
-                                      fontFamily: AppThemeData.medium,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (controller.driverPaymentMethod.value.isNotEmpty) ...[
-                      const SizedBox(height: 8),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 10),
+                        child: Divider(),
+                      ),
                       Text(
-                        controller.driverPaymentMethod.value == "Cash"
-                            ? "Passengers will only see cash payment option"
-                            : "Passengers will only see online payment options",
+                        "Passengers can pay with any available payment method".tr,
                         style: TextStyle(
                           color: AppThemeData.grey600,
                           fontSize: 12,
                           fontFamily: AppThemeData.regular,
                         ),
                       ),
-                    ] else ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        "Passengers can pay with any available payment method"
-                            .tr,
-                        style: TextStyle(
-                          color: AppThemeData.grey600,
-                          fontSize: 12,
-                          fontFamily: AppThemeData.regular,
-                        ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 10),
+                        child: Divider(),
                       ),
-                    ],
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 10),
-                      child: Divider(),
-                    ),
-                    InkWell(
-                      onTap: () {
-                        Get.to(const VerificationScreen())!.then((value) {
-                          controller.getUserData();
-                        });
-                      },
-                      child: Row(
-                        children: [
-                          SvgPicture.asset(
-                            "assets/icons/ic_shield.svg",
-                            color: controller.userModel.value.panVerified ==
-                                        true &&
-                                    controller.userModel.value.aadharVerified ==
-                                        true
-                                ? AppThemeData.success400
-                                : AppThemeData.warning300,
-                          ),
-                          const SizedBox(
-                            width: 12,
-                          ),
-                          Expanded(
-                            child: Text(
-                              controller.userModel.value.panVerified == true &&
-                                      controller
-                                              .userModel.value.aadharVerified ==
+                      InkWell(
+                        onTap: () {
+                          Get.to(const VerificationScreen())!.then((value) {
+                            controller.getUserData();
+                          });
+                        },
+                        child: Row(
+                          children: [
+                            SvgPicture.asset(
+                              "assets/icons/ic_shield.svg",
+                              color: controller.userModel.value.panVerified ==
+                                          true &&
+                                      controller.userModel.value.aadharVerified ==
                                           true
-                                  ? "Account Verified"
-                                  : "Account not Verify".tr,
+                                  ? AppThemeData.success400
+                                  : AppThemeData.warning300,
+                            ),
+                            const SizedBox(
+                              width: 12,
+                            ),
+                            Expanded(
+                              child: Text(
+                                controller.userModel.value.panVerified == true &&
+                                        controller
+                                                .userModel.value.aadharVerified ==
+                                            true
+                                    ? "Account Verified"
+                                    : "Account not Verify".tr,
+                                textAlign: TextAlign.start,
+                                style: TextStyle(
+                                    color:
+                                        controller.userModel.value.panVerified ==
+                                                    true &&
+                                                controller.userModel.value
+                                                        .aadharVerified ==
+                                                    true
+                                            ? AppThemeData.success400
+                                            : AppThemeData.warning300,
+                                    fontFamily: AppThemeData.medium,
+                                    fontSize: 14),
+                              ),
+                            ),
+                            Text(
+                              controller.userModel.value.panVerified == true &&
+                                      controller.userModel.value.aadharVerified ==
+                                          true
+                                  ? "Verified"
+                                  : "Verify".tr,
                               textAlign: TextAlign.start,
                               style: TextStyle(
-                                  color:
-                                      controller.userModel.value.panVerified ==
-                                                  true &&
-                                              controller.userModel.value
-                                                      .aadharVerified ==
-                                                  true
-                                          ? AppThemeData.success400
-                                          : AppThemeData.warning300,
+                                  color: controller.userModel.value.panVerified ==
+                                              true &&
+                                          controller.userModel.value
+                                                  .aadharVerified ==
+                                              true
+                                      ? AppThemeData.success400
+                                      : AppThemeData.warning400,
                                   fontFamily: AppThemeData.medium,
                                   fontSize: 14),
                             ),
-                          ),
-                          Text(
+                            const SizedBox(
+                              width: 5,
+                            ),
                             controller.userModel.value.panVerified == true &&
                                     controller.userModel.value.aadharVerified ==
                                         true
-                                ? "Verified"
-                                : "Verify".tr,
-                            textAlign: TextAlign.start,
-                            style: TextStyle(
-                                color: controller.userModel.value.panVerified ==
-                                            true &&
-                                        controller.userModel.value
-                                                .aadharVerified ==
-                                            true
-                                    ? AppThemeData.success400
-                                    : AppThemeData.warning400,
-                                fontFamily: AppThemeData.medium,
-                                fontSize: 14),
-                          ),
-                          const SizedBox(
-                            width: 5,
-                          ),
-                          controller.userModel.value.panVerified ==
-                                        true && controller.userModel.value.aadharVerified == true
-                              ? const SizedBox()
-                              : Icon(
-                                  Icons.chevron_right_outlined,
-                                  color:  AppThemeData.warning400,
-                                )
-                        ],
-                      ),
-                    )
-                  ],
+                                ? const SizedBox()
+                                : Icon(
+                                    Icons.chevron_right_outlined,
+                                    color: AppThemeData.warning400,
+                                  )
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
                 ),
               ),
               bottomNavigationBar: Padding(

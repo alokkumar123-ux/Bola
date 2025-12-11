@@ -92,6 +92,17 @@ void main() async {
           playSound: false, // suppress channel sound; we play alarm ourselves
           enableVibration: true,
         ),
+        NotificationChannel(
+          channelKey: 'ride_alert_channel',
+          channelName: 'Ride Alerts',
+          channelDescription:
+              'Notifications for new rides matching your search',
+          defaultColor: const Color(0xFF060606),
+          ledColor: Colors.blue,
+          importance: NotificationImportance.High,
+          playSound: true,
+          enableVibration: true,
+        ),
       ],
       channelGroups: [
         NotificationChannelGroup(

@@ -98,25 +98,589 @@ class BookedDetailsScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              body: controller.isLoading.value
-                  ? Center(child: Constant.loader())
-                  : SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        "Trip info".tr,
+              body: SafeArea(
+                child: controller.isLoading.value
+                    ? Center(child: Constant.loader())
+                    : SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          "Trip info".tr,
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            color: themeChange.getThem()
+                                                ? AppThemeData.grey100
+                                                : AppThemeData.grey800,
+                                            fontSize: 16,
+                                            overflow: TextOverflow.ellipsis,
+                                            fontFamily: AppThemeData.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      InkWell(
+                                        onTap: () {
+                                          showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return CustomDialogBox(
+                                                  title: "Ride ID".tr,
+                                                  descriptions: controller
+                                                      .bookingModel.value.id
+                                                      .toString(),
+                                                  positiveString: "Copied".tr,
+                                                  negativeString: "Cancel".tr,
+                                                  positiveClick: () async {
+                                                    Clipboard.setData(
+                                                            ClipboardData(
+                                                                text: controller
+                                                                    .bookingModel
+                                                                    .value
+                                                                    .id
+                                                                    .toString()))
+                                                        .then((_) {
+                                                      ShowToastDialog.showToast(
+                                                          "Booking id copied");
+                                                      Get.back(result: true);
+                                                    });
+                                                  },
+                                                  negativeClick: () {
+                                                    Get.back();
+                                                  },
+                                                  img: null,
+                                                );
+                                              });
+                                        },
+                                        child: Text(
+                                          Constant.orderId(
+                                              orderId: controller
+                                                  .bookingModel.value.id
+                                                  .toString()),
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            color: themeChange.getThem()
+                                                ? AppThemeData.grey100
+                                                : AppThemeData.grey800,
+                                            fontSize: 14,
+                                            overflow: TextOverflow.ellipsis,
+                                            fontFamily: AppThemeData.bold,
+                                          ),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 4),
+                                    child: Row(
+                                      children: [
+                                        SvgPicture.asset(
+                                          "assets/icons/ic_calender.svg",
+                                          height: 20,
+                                          width: 20,
+                                          colorFilter: ColorFilter.mode(
+                                              themeChange.getThem()
+                                                  ? AppThemeData.grey200
+                                                  : AppThemeData.grey700,
+                                              BlendMode.srcIn),
+                                        ),
+                                        const SizedBox(
+                                          width: 10,
+                                        ),
+                                        Text(
+                                          Constant.timestampToDateTime(
+                                              controller.bookingModel.value
+                                                  .departureDateTime!),
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            color: themeChange.getThem()
+                                                ? AppThemeData.grey200
+                                                : AppThemeData.grey700,
+                                            fontSize: 16,
+                                            overflow: TextOverflow.ellipsis,
+                                            fontFamily: AppThemeData.medium,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 4),
+                                    child: Row(
+                                      children: [
+                                        SvgPicture.asset(
+                                          "assets/icons/ic_time.svg",
+                                          height: 20,
+                                          width: 20,
+                                          colorFilter: ColorFilter.mode(
+                                              themeChange.getThem()
+                                                  ? AppThemeData.grey200
+                                                  : AppThemeData.grey700,
+                                              BlendMode.srcIn),
+                                        ),
+                                        const SizedBox(
+                                          width: 10,
+                                        ),
+                                        Text(
+                                          controller.bookingUserModel.value
+                                              .stopOver!.duration!.text
+                                              .toString(),
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            color: themeChange.getThem()
+                                                ? AppThemeData.grey200
+                                                : AppThemeData.grey700,
+                                            fontSize: 16,
+                                            overflow: TextOverflow.ellipsis,
+                                            fontFamily: AppThemeData.medium,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 4),
+                                    child: Row(
+                                      children: [
+                                        SvgPicture.asset(
+                                          "assets/icons/ic_distance.svg",
+                                          height: 20,
+                                          width: 20,
+                                          colorFilter: ColorFilter.mode(
+                                              themeChange.getThem()
+                                                  ? AppThemeData.grey200
+                                                  : AppThemeData.grey700,
+                                              BlendMode.srcIn),
+                                        ),
+                                        const SizedBox(
+                                          width: 10,
+                                        ),
+                                        Text(
+                                          "${Constant.distanceCalculate(controller.bookingUserModel.value.stopOver!.distance!.value.toString())} ${Constant.distanceType}",
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            color: themeChange.getThem()
+                                                ? AppThemeData.grey200
+                                                : AppThemeData.grey700,
+                                            fontSize: 16,
+                                            overflow: TextOverflow.ellipsis,
+                                            fontFamily: AppThemeData.medium,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 4),
+                                    child: Row(
+                                      children: [
+                                        SvgPicture.asset(
+                                          "assets/icons/ic_luggage.svg",
+                                          height: 20,
+                                          width: 20,
+                                          colorFilter: ColorFilter.mode(
+                                              themeChange.getThem()
+                                                  ? AppThemeData.grey200
+                                                  : AppThemeData.grey700,
+                                              BlendMode.srcIn),
+                                        ),
+                                        const SizedBox(
+                                          width: 10,
+                                        ),
+                                        Text(
+                                          "${controller.bookingModel.value.luggageAllowed!.toString()} luggage",
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            color: themeChange.getThem()
+                                                ? AppThemeData.grey200
+                                                : AppThemeData.grey700,
+                                            fontSize: 16,
+                                            overflow: TextOverflow.ellipsis,
+                                            fontFamily: AppThemeData.medium,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  controller.bookingModel.value
+                                              .twoPassengerMaxInBack ==
+                                          false
+                                      ? const SizedBox()
+                                      : Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 4),
+                                          child: Row(
+                                            children: [
+                                              SvgPicture.asset(
+                                                "assets/icons/ic_back_two.svg",
+                                                height: 20,
+                                                width: 20,
+                                              ),
+                                              const SizedBox(
+                                                width: 10,
+                                              ),
+                                              Text(
+                                                "2 Passengers Max in Back Seat",
+                                                maxLines: 1,
+                                                style: TextStyle(
+                                                  color: themeChange.getThem()
+                                                      ? AppThemeData.grey200
+                                                      : AppThemeData.grey700,
+                                                  fontSize: 16,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  fontFamily:
+                                                      AppThemeData.medium,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 4),
+                                    child: Row(
+                                      children: [
+                                        SvgPicture.asset(
+                                          "assets/icons/ic_wallet.svg",
+                                          height: 20,
+                                          width: 20,
+                                          colorFilter: ColorFilter.mode(
+                                              themeChange.getThem()
+                                                  ? AppThemeData.grey200
+                                                  : AppThemeData.grey700,
+                                              BlendMode.srcIn),
+                                        ),
+                                        const SizedBox(
+                                          width: 10,
+                                        ),
+                                        Text(
+                                          "${controller.bookingUserModel.value.paymentType}",
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            color: themeChange.getThem()
+                                                ? AppThemeData.grey200
+                                                : AppThemeData.grey700,
+                                            fontSize: 16,
+                                            overflow: TextOverflow.ellipsis,
+                                            fontFamily: AppThemeData.medium,
+                                          ),
+                                        ),
+                                        Text(
+                                          " (${controller.bookingUserModel.value.paymentStatus == true ? "Paid" : "UnPaid"})",
+                                          style: TextStyle(
+                                              color: controller
+                                                          .bookingUserModel
+                                                          .value
+                                                          .paymentStatus ==
+                                                      true
+                                                  ? AppThemeData.success400
+                                                  : AppThemeData.warning300,
+                                              fontFamily: AppThemeData.bold,
+                                              fontSize: 14),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 4),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.verified_user,
+                                          color: const Color(0xFF7E7D7D),
+                                        ),
+                                        const SizedBox(
+                                          width: 10,
+                                        ),
+                                        Text(
+                                          "OTP : ",
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            color: themeChange.getThem()
+                                                ? AppThemeData.grey200
+                                                : AppThemeData.grey700,
+                                            fontSize: 16,
+                                            overflow: TextOverflow.ellipsis,
+                                            fontFamily: AppThemeData.medium,
+                                          ),
+                                        ),
+                                        Text(
+                                          controller
+                                                  .bookingUserModel.value.otp ??
+                                              "-",
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            color: themeChange.getThem()
+                                                ? AppThemeData.grey100
+                                                : AppThemeData.grey900,
+                                            fontSize: 16,
+                                            overflow: TextOverflow.ellipsis,
+                                            fontFamily: AppThemeData.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 5),
+                                    child: Divider(),
+                                  ),
+                                  Timeline.tileBuilder(
+                                    shrinkWrap: true,
+                                    padding: EdgeInsets.zero,
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    theme: TimelineThemeData(
+                                      nodePosition: 0,
+                                      // indicatorPosition: 0,
+                                    ),
+                                    builder: TimelineTileBuilder.connected(
+                                      contentsAlign: ContentsAlign.basic,
+                                      indicatorBuilder: (context, index) {
+                                        return Container(
+                                          width: 8,
+                                          height: 8,
+                                          decoration: const ShapeDecoration(
+                                            color: Color(0xFFF5F7F8),
+                                            shape: OvalBorder(),
+                                            shadows: [
+                                              BoxShadow(
+                                                color: Color(0xFFC1CED6),
+                                                blurRadius: 0,
+                                                offset: Offset(0, 0),
+                                                spreadRadius: 2,
+                                              )
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                      connectorBuilder:
+                                          (context, index, connectorType) {
+                                        return const DashedLineConnector(
+                                          color: AppThemeData.grey300,
+                                          gap: 2,
+                                        );
+                                      },
+                                      contentsBuilder: (context, index) {
+                                        return Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 14, vertical: 14),
+                                          child: index == 0
+                                              ? Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                        controller
+                                                                .bookingUserModel
+                                                                .value
+                                                                .stopOver!
+                                                                .startAddress
+                                                                ?.split(',')
+                                                                .first ??
+                                                            'Location',
+                                                        style: TextStyle(
+                                                            color: themeChange
+                                                                    .getThem()
+                                                                ? AppThemeData
+                                                                    .grey100
+                                                                : AppThemeData
+                                                                    .grey800,
+                                                            fontFamily:
+                                                                AppThemeData
+                                                                    .bold,
+                                                            fontSize: 18)),
+                                                    Text(
+                                                      controller
+                                                          .bookingUserModel
+                                                          .value
+                                                          .stopOver!
+                                                          .startAddress
+                                                          .toString(),
+                                                      maxLines: 1,
+                                                      style: TextStyle(
+                                                          color: themeChange
+                                                                  .getThem()
+                                                              ? AppThemeData
+                                                                  .grey100
+                                                              : AppThemeData
+                                                                  .grey800,
+                                                          fontFamily:
+                                                              AppThemeData
+                                                                  .regular,
+                                                          fontSize: 14),
+                                                    ),
+                                                    const SizedBox(
+                                                      height: 5,
+                                                    ),
+                                                    Row(
+                                                      children: [
+                                                        SvgPicture.asset(
+                                                          "assets/icons/ic_walk.svg",
+                                                          colorFilter:
+                                                              const ColorFilter
+                                                                  .mode(
+                                                                  AppThemeData
+                                                                      .secondary300,
+                                                                  BlendMode
+                                                                      .srcIn),
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 10,
+                                                        ),
+                                                        Text(
+                                                          "${Constant.calculateDistance(Location(lat: controller.bookingUserModel.value.stopOver!.startLocation!.lat, lng: controller.bookingUserModel.value.stopOver!.startLocation!.lng), controller.bookingUserModel.value.pickupLocation!).toStringAsFixed(2)} ${Constant.distanceType} from your pickup location",
+                                                          maxLines: 1,
+                                                          style: TextStyle(
+                                                            color: themeChange
+                                                                    .getThem()
+                                                                ? AppThemeData
+                                                                    .grey200
+                                                                : AppThemeData
+                                                                    .grey700,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            fontFamily:
+                                                                AppThemeData
+                                                                    .regular,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    )
+                                                  ],
+                                                )
+                                              : Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                        controller
+                                                                .bookingUserModel
+                                                                .value
+                                                                .stopOver!
+                                                                .endAddress
+                                                                ?.split(',')
+                                                                .first ??
+                                                            'Location',
+                                                        style: TextStyle(
+                                                            color: themeChange
+                                                                    .getThem()
+                                                                ? AppThemeData
+                                                                    .grey100
+                                                                : AppThemeData
+                                                                    .grey800,
+                                                            fontFamily:
+                                                                AppThemeData
+                                                                    .bold,
+                                                            fontSize: 18)),
+                                                    Text(
+                                                      controller
+                                                          .bookingUserModel
+                                                          .value
+                                                          .stopOver!
+                                                          .endAddress
+                                                          .toString(),
+                                                      maxLines: 1,
+                                                      style: TextStyle(
+                                                          color: themeChange
+                                                                  .getThem()
+                                                              ? AppThemeData
+                                                                  .grey100
+                                                              : AppThemeData
+                                                                  .grey800,
+                                                          fontFamily:
+                                                              AppThemeData
+                                                                  .regular,
+                                                          fontSize: 14),
+                                                    ),
+                                                    const SizedBox(
+                                                      height: 5,
+                                                    ),
+                                                    Row(
+                                                      children: [
+                                                        SvgPicture.asset(
+                                                          "assets/icons/ic_walk.svg",
+                                                          colorFilter:
+                                                              const ColorFilter
+                                                                  .mode(
+                                                                  AppThemeData
+                                                                      .success400,
+                                                                  BlendMode
+                                                                      .srcIn),
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 10,
+                                                        ),
+                                                        Text(
+                                                          "${Constant.calculateDistance(Location(lat: controller.bookingUserModel.value.stopOver!.endLocation!.lat, lng: controller.bookingUserModel.value.stopOver!.endLocation!.lng), controller.bookingUserModel.value.dropLocation!).toStringAsFixed(2)} ${Constant.distanceType} from your drop location",
+                                                          maxLines: 1,
+                                                          style: TextStyle(
+                                                            color: themeChange
+                                                                    .getThem()
+                                                                ? AppThemeData
+                                                                    .grey200
+                                                                : AppThemeData
+                                                                    .grey700,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            fontFamily:
+                                                                AppThemeData
+                                                                    .regular,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    )
+                                                  ],
+                                                ),
+                                        );
+                                      },
+                                      itemCount: 2,
+                                    ),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 5),
+                                    child: Divider(),
+                                  ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          "Seat No. Booked".tr,
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            color: themeChange.getThem()
+                                                ? AppThemeData.grey200
+                                                : AppThemeData.grey700,
+                                            fontSize: 16,
+                                            overflow: TextOverflow.ellipsis,
+                                            fontFamily: AppThemeData.medium,
+                                          ),
+                                        ),
+                                      ),
+                                      Text(
+                                        " ${_formatSeatLabelsCsv(controller.bookingUserModel.value.bookedSeat)}",
                                         maxLines: 1,
                                         style: TextStyle(
                                           color: themeChange.getThem()
@@ -127,306 +691,72 @@ class BookedDetailsScreen extends StatelessWidget {
                                           fontFamily: AppThemeData.bold,
                                         ),
                                       ),
-                                    ),
-                                    InkWell(
-                                      onTap: () {
-                                        showDialog(
-                                            context: context,
-                                            builder: (BuildContext context) {
-                                              return CustomDialogBox(
-                                                title: "Ride ID".tr,
-                                                descriptions: controller
-                                                    .bookingModel.value.id
-                                                    .toString(),
-                                                positiveString: "Copied".tr,
-                                                negativeString: "Cancel".tr,
-                                                positiveClick: () async {
-                                                  Clipboard.setData(
-                                                          ClipboardData(
-                                                              text: controller
-                                                                  .bookingModel
-                                                                  .value
-                                                                  .id
-                                                                  .toString()))
-                                                      .then((_) {
-                                                    ShowToastDialog.showToast(
-                                                        "Booking id copied");
-                                                    Get.back(result: true);
-                                                  });
-                                                },
-                                                negativeClick: () {
-                                                  Get.back();
-                                                },
-                                                img: null,
-                                              );
-                                            });
-                                      },
-                                      child: Text(
-                                        Constant.orderId(
-                                            orderId: controller
-                                                .bookingModel.value.id
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                    height: 5,
+                                  ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          "Price for one seat".tr,
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            color: themeChange.getThem()
+                                                ? AppThemeData.grey200
+                                                : AppThemeData.grey700,
+                                            fontSize: 16,
+                                            overflow: TextOverflow.ellipsis,
+                                            fontFamily: AppThemeData.medium,
+                                          ),
+                                        ),
+                                      ),
+                                      Text(
+                                        Constant.amountShow(
+                                            amount: controller
+                                                .getCorrectPricePerSeat()
                                                 .toString()),
                                         maxLines: 1,
                                         style: TextStyle(
                                           color: themeChange.getThem()
                                               ? AppThemeData.grey100
                                               : AppThemeData.grey800,
-                                          fontSize: 14,
+                                          fontSize: 16,
                                           overflow: TextOverflow.ellipsis,
                                           fontFamily: AppThemeData.bold,
                                         ),
                                       ),
-                                    )
-                                  ],
-                                ),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 4),
-                                  child: Row(
-                                    children: [
-                                      SvgPicture.asset(
-                                        "assets/icons/ic_calender.svg",
-                                        height: 20,
-                                        width: 20,
-                                        colorFilter: ColorFilter.mode(
-                                            themeChange.getThem()
-                                                ? AppThemeData.grey200
-                                                : AppThemeData.grey700,
-                                            BlendMode.srcIn),
-                                      ),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                      Text(
-                                        Constant.timestampToDateTime(controller
-                                            .bookingModel
-                                            .value
-                                            .departureDateTime!),
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          color: themeChange.getThem()
-                                              ? AppThemeData.grey200
-                                              : AppThemeData.grey700,
-                                          fontSize: 16,
-                                          overflow: TextOverflow.ellipsis,
-                                          fontFamily: AppThemeData.medium,
-                                        ),
-                                      ),
                                     ],
                                   ),
-                                ),
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 4),
-                                  child: Row(
+                                  const SizedBox(
+                                    height: 5,
+                                  ),
+                                  Row(
                                     children: [
-                                      SvgPicture.asset(
-                                        "assets/icons/ic_time.svg",
-                                        height: 20,
-                                        width: 20,
-                                        colorFilter: ColorFilter.mode(
-                                            themeChange.getThem()
+                                      Expanded(
+                                        child: Text(
+                                          "Subtotal".tr,
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            color: themeChange.getThem()
                                                 ? AppThemeData.grey200
                                                 : AppThemeData.grey700,
-                                            BlendMode.srcIn),
-                                      ),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                      Text(
-                                        controller.bookingUserModel.value
-                                            .stopOver!.duration!.text
-                                            .toString(),
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          color: themeChange.getThem()
-                                              ? AppThemeData.grey200
-                                              : AppThemeData.grey700,
-                                          fontSize: 16,
-                                          overflow: TextOverflow.ellipsis,
-                                          fontFamily: AppThemeData.medium,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 4),
-                                  child: Row(
-                                    children: [
-                                      SvgPicture.asset(
-                                        "assets/icons/ic_distance.svg",
-                                        height: 20,
-                                        width: 20,
-                                        colorFilter: ColorFilter.mode(
-                                            themeChange.getThem()
-                                                ? AppThemeData.grey200
-                                                : AppThemeData.grey700,
-                                            BlendMode.srcIn),
-                                      ),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                      Text(
-                                        "${Constant.distanceCalculate(controller.bookingUserModel.value.stopOver!.distance!.value.toString())} ${Constant.distanceType}",
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          color: themeChange.getThem()
-                                              ? AppThemeData.grey200
-                                              : AppThemeData.grey700,
-                                          fontSize: 16,
-                                          overflow: TextOverflow.ellipsis,
-                                          fontFamily: AppThemeData.medium,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 4),
-                                  child: Row(
-                                    children: [
-                                      SvgPicture.asset(
-                                        "assets/icons/ic_luggage.svg",
-                                        height: 20,
-                                        width: 20,
-                                        colorFilter: ColorFilter.mode(
-                                            themeChange.getThem()
-                                                ? AppThemeData.grey200
-                                                : AppThemeData.grey700,
-                                            BlendMode.srcIn),
-                                      ),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                      Text(
-                                        "${controller.bookingModel.value.luggageAllowed!.toString()} luggage",
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          color: themeChange.getThem()
-                                              ? AppThemeData.grey200
-                                              : AppThemeData.grey700,
-                                          fontSize: 16,
-                                          overflow: TextOverflow.ellipsis,
-                                          fontFamily: AppThemeData.medium,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                controller.bookingModel.value
-                                            .twoPassengerMaxInBack ==
-                                        false
-                                    ? const SizedBox()
-                                    : Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 4),
-                                        child: Row(
-                                          children: [
-                                            SvgPicture.asset(
-                                              "assets/icons/ic_back_two.svg",
-                                              height: 20,
-                                              width: 20,
-                                            ),
-                                            const SizedBox(
-                                              width: 10,
-                                            ),
-                                            Text(
-                                              "2 Passengers Max in Back Seat",
-                                              maxLines: 1,
-                                              style: TextStyle(
-                                                color: themeChange.getThem()
-                                                    ? AppThemeData.grey200
-                                                    : AppThemeData.grey700,
-                                                fontSize: 16,
-                                                overflow: TextOverflow.ellipsis,
-                                                fontFamily: AppThemeData.medium,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 4),
-                                  child: Row(
-                                    children: [
-                                      SvgPicture.asset(
-                                        "assets/icons/ic_wallet.svg",
-                                        height: 20,
-                                        width: 20,
-                                        colorFilter: ColorFilter.mode(
-                                            themeChange.getThem()
-                                                ? AppThemeData.grey200
-                                                : AppThemeData.grey700,
-                                            BlendMode.srcIn),
-                                      ),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                      Text(
-                                        "${controller.bookingUserModel.value.paymentType}",
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          color: themeChange.getThem()
-                                              ? AppThemeData.grey200
-                                              : AppThemeData.grey700,
-                                          fontSize: 16,
-                                          overflow: TextOverflow.ellipsis,
-                                          fontFamily: AppThemeData.medium,
+                                            fontSize: 16,
+                                            overflow: TextOverflow.ellipsis,
+                                            fontFamily: AppThemeData.medium,
+                                          ),
                                         ),
                                       ),
                                       Text(
-                                        " (${controller.bookingUserModel.value.paymentStatus == true ? "Paid" : "UnPaid"})",
-                                        style: TextStyle(
-                                            color: controller.bookingUserModel
-                                                        .value.paymentStatus ==
-                                                    true
-                                                ? AppThemeData.success400
-                                                : AppThemeData.warning300,
-                                            fontFamily: AppThemeData.bold,
-                                            fontSize: 14),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 4),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.verified_user,
-                                        color: const Color(0xFF7E7D7D),
-                                      ),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                      Text(
-                                        "OTP : ",
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          color: themeChange.getThem()
-                                              ? AppThemeData.grey200
-                                              : AppThemeData.grey700,
-                                          fontSize: 16,
-                                          overflow: TextOverflow.ellipsis,
-                                          fontFamily: AppThemeData.medium,
-                                        ),
-                                      ),
-                                      Text(
-                                        controller.bookingUserModel.value.otp ??
-                                            "-",
+                                        Constant.amountShow(
+                                            amount: controller.bookingUserModel
+                                                .value.subTotal),
                                         maxLines: 1,
                                         style: TextStyle(
                                           color: themeChange.getThem()
                                               ? AppThemeData.grey100
-                                              : AppThemeData.grey900,
+                                              : AppThemeData.grey800,
                                           fontSize: 16,
                                           overflow: TextOverflow.ellipsis,
                                           fontFamily: AppThemeData.bold,
@@ -434,114 +764,31 @@ class BookedDetailsScreen extends StatelessWidget {
                                       ),
                                     ],
                                   ),
-                                ),
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 5),
-                                  child: Divider(),
-                                ),
-                                Timeline.tileBuilder(
-                                  shrinkWrap: true,
-                                  padding: EdgeInsets.zero,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  theme: TimelineThemeData(
-                                    nodePosition: 0,
-                                    // indicatorPosition: 0,
+                                  const SizedBox(
+                                    height: 5,
                                   ),
-                                  builder: TimelineTileBuilder.connected(
-                                    contentsAlign: ContentsAlign.basic,
-                                    indicatorBuilder: (context, index) {
-                                      return Container(
-                                        width: 8,
-                                        height: 8,
-                                        decoration: const ShapeDecoration(
-                                          color: Color(0xFFF5F7F8),
-                                          shape: OvalBorder(),
-                                          shadows: [
-                                            BoxShadow(
-                                              color: Color(0xFFC1CED6),
-                                              blurRadius: 0,
-                                              offset: Offset(0, 0),
-                                              spreadRadius: 2,
-                                            )
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                    connectorBuilder:
-                                        (context, index, connectorType) {
-                                      return const DashedLineConnector(
-                                        color: AppThemeData.grey300,
-                                        gap: 2,
-                                      );
-                                    },
-                                    contentsBuilder: (context, index) {
-                                      return Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 14, vertical: 14),
-                                        child: index == 0
-                                            ? Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                      controller
-                                                              .bookingUserModel
-                                                              .value
-                                                              .stopOver!
-                                                              .startAddress
-                                                              ?.split(',')
-                                                              .first ??
-                                                          'Location',
-                                                      style: TextStyle(
-                                                          color: themeChange
-                                                                  .getThem()
-                                                              ? AppThemeData
-                                                                  .grey100
-                                                              : AppThemeData
-                                                                  .grey800,
-                                                          fontFamily:
-                                                              AppThemeData.bold,
-                                                          fontSize: 18)),
-                                                  Text(
-                                                    controller
-                                                        .bookingUserModel
-                                                        .value
-                                                        .stopOver!
-                                                        .startAddress
-                                                        .toString(),
-                                                    maxLines: 1,
-                                                    style: TextStyle(
-                                                        color: themeChange
-                                                                .getThem()
-                                                            ? AppThemeData
-                                                                .grey100
-                                                            : AppThemeData
-                                                                .grey800,
-                                                        fontFamily: AppThemeData
-                                                            .regular,
-                                                        fontSize: 14),
-                                                  ),
-                                                  const SizedBox(
-                                                    height: 5,
-                                                  ),
-                                                  Row(
-                                                    children: [
-                                                      SvgPicture.asset(
-                                                        "assets/icons/ic_walk.svg",
-                                                        colorFilter:
-                                                            const ColorFilter
-                                                                .mode(
-                                                                AppThemeData
-                                                                    .secondary300,
-                                                                BlendMode
-                                                                    .srcIn),
-                                                      ),
-                                                      const SizedBox(
-                                                        width: 10,
-                                                      ),
-                                                      Text(
-                                                        "${Constant.calculateDistance(Location(lat: controller.bookingUserModel.value.stopOver!.startLocation!.lat, lng: controller.bookingUserModel.value.stopOver!.startLocation!.lng), controller.bookingUserModel.value.pickupLocation!).toStringAsFixed(2)} ${Constant.distanceType} from your pickup location",
-                                                        maxLines: 1,
+                                  controller.bookingUserModel.value.taxList ==
+                                          null
+                                      ? const SizedBox()
+                                      : ListView.builder(
+                                          padding: EdgeInsets.zero,
+                                          physics:
+                                              const NeverScrollableScrollPhysics(),
+                                          itemCount: controller.bookingUserModel
+                                              .value.taxList!.length,
+                                          shrinkWrap: true,
+                                          itemBuilder: (context, index) {
+                                            TaxModel taxModel = controller
+                                                .bookingUserModel
+                                                .value
+                                                .taxList![index];
+                                            return Column(
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Expanded(
+                                                      child: Text(
+                                                        "${taxModel.title.toString()} (${taxModel.type == "fix" ? Constant.amountShow(amount: taxModel.tax) : "${taxModel.tax}%"})",
                                                         style: TextStyle(
                                                           color: themeChange
                                                                   .getThem()
@@ -549,691 +796,499 @@ class BookedDetailsScreen extends StatelessWidget {
                                                                   .grey200
                                                               : AppThemeData
                                                                   .grey700,
+                                                          fontSize: 16,
                                                           overflow: TextOverflow
                                                               .ellipsis,
                                                           fontFamily:
                                                               AppThemeData
-                                                                  .regular,
+                                                                  .medium,
                                                         ),
                                                       ),
-                                                    ],
-                                                  )
-                                                ],
-                                              )
-                                            : Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                      controller
-                                                              .bookingUserModel
-                                                              .value
-                                                              .stopOver!
-                                                              .endAddress
-                                                              ?.split(',')
-                                                              .first ??
-                                                          'Location',
+                                                    ),
+                                                    Text(
+                                                      "${Constant.amountShow(amount: Constant().calculateTax(amount: controller.bookingUserModel.value.subTotal.toString(), taxModel: taxModel).toStringAsFixed(Constant.currencyModel!.decimalDigits!).toString())} ",
                                                       style: TextStyle(
-                                                          color: themeChange
-                                                                  .getThem()
-                                                              ? AppThemeData
-                                                                  .grey100
-                                                              : AppThemeData
-                                                                  .grey800,
-                                                          fontFamily:
-                                                              AppThemeData.bold,
-                                                          fontSize: 18)),
-                                                  Text(
-                                                    controller
-                                                        .bookingUserModel
-                                                        .value
-                                                        .stopOver!
-                                                        .endAddress
-                                                        .toString(),
-                                                    maxLines: 1,
-                                                    style: TextStyle(
                                                         color: themeChange
                                                                 .getThem()
                                                             ? AppThemeData
                                                                 .grey100
                                                             : AppThemeData
                                                                 .grey800,
-                                                        fontFamily: AppThemeData
-                                                            .regular,
-                                                        fontSize: 14),
-                                                  ),
-                                                  const SizedBox(
-                                                    height: 5,
-                                                  ),
-                                                  Row(
-                                                    children: [
-                                                      SvgPicture.asset(
-                                                        "assets/icons/ic_walk.svg",
-                                                        colorFilter:
-                                                            const ColorFilter
-                                                                .mode(
-                                                                AppThemeData
-                                                                    .success400,
-                                                                BlendMode
-                                                                    .srcIn),
-                                                      ),
-                                                      const SizedBox(
-                                                        width: 10,
-                                                      ),
-                                                      Text(
-                                                        "${Constant.calculateDistance(Location(lat: controller.bookingUserModel.value.stopOver!.endLocation!.lat, lng: controller.bookingUserModel.value.stopOver!.endLocation!.lng), controller.bookingUserModel.value.dropLocation!).toStringAsFixed(2)} ${Constant.distanceType} from your drop location",
-                                                        maxLines: 1,
-                                                        style: TextStyle(
-                                                          color: themeChange
-                                                                  .getThem()
-                                                              ? AppThemeData
-                                                                  .grey200
-                                                              : AppThemeData
-                                                                  .grey700,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          fontFamily:
-                                                              AppThemeData
-                                                                  .regular,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  )
-                                                ],
-                                              ),
-                                      );
-                                    },
-                                    itemCount: 2,
-                                  ),
-                                ),
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 5),
-                                  child: Divider(),
-                                ),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        "Seat No. Booked".tr,
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          color: themeChange.getThem()
-                                              ? AppThemeData.grey200
-                                              : AppThemeData.grey700,
-                                          fontSize: 16,
-                                          overflow: TextOverflow.ellipsis,
-                                          fontFamily: AppThemeData.medium,
-                                        ),
-                                      ),
-                                    ),
-                                    Text(
-                                      " ${_formatSeatLabelsCsv(controller.bookingUserModel.value.bookedSeat)}",
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                        color: themeChange.getThem()
-                                            ? AppThemeData.grey100
-                                            : AppThemeData.grey800,
-                                        fontSize: 16,
-                                        overflow: TextOverflow.ellipsis,
-                                        fontFamily: AppThemeData.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(
-                                  height: 5,
-                                ),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        "Price for one seat".tr,
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          color: themeChange.getThem()
-                                              ? AppThemeData.grey200
-                                              : AppThemeData.grey700,
-                                          fontSize: 16,
-                                          overflow: TextOverflow.ellipsis,
-                                          fontFamily: AppThemeData.medium,
-                                        ),
-                                      ),
-                                    ),
-                                    Text(
-                                      Constant.amountShow(
-                                          amount: controller
-                                              .getCorrectPricePerSeat()
-                                              .toString()),
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                        color: themeChange.getThem()
-                                            ? AppThemeData.grey100
-                                            : AppThemeData.grey800,
-                                        fontSize: 16,
-                                        overflow: TextOverflow.ellipsis,
-                                        fontFamily: AppThemeData.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(
-                                  height: 5,
-                                ),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        "Subtotal".tr,
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          color: themeChange.getThem()
-                                              ? AppThemeData.grey200
-                                              : AppThemeData.grey700,
-                                          fontSize: 16,
-                                          overflow: TextOverflow.ellipsis,
-                                          fontFamily: AppThemeData.medium,
-                                        ),
-                                      ),
-                                    ),
-                                    Text(
-                                      Constant.amountShow(
-                                          amount: controller
-                                              .bookingUserModel.value.subTotal),
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                        color: themeChange.getThem()
-                                            ? AppThemeData.grey100
-                                            : AppThemeData.grey800,
-                                        fontSize: 16,
-                                        overflow: TextOverflow.ellipsis,
-                                        fontFamily: AppThemeData.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(
-                                  height: 5,
-                                ),
-                                controller.bookingUserModel.value.taxList ==
-                                        null
-                                    ? const SizedBox()
-                                    : ListView.builder(
-                                        padding: EdgeInsets.zero,
-                                        physics:
-                                            const NeverScrollableScrollPhysics(),
-                                        itemCount: controller.bookingUserModel
-                                            .value.taxList!.length,
-                                        shrinkWrap: true,
-                                        itemBuilder: (context, index) {
-                                          TaxModel taxModel = controller
-                                              .bookingUserModel
-                                              .value
-                                              .taxList![index];
-                                          return Column(
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Expanded(
-                                                    child: Text(
-                                                      "${taxModel.title.toString()} (${taxModel.type == "fix" ? Constant.amountShow(amount: taxModel.tax) : "${taxModel.tax}%"})",
-                                                      style: TextStyle(
-                                                        color: themeChange
-                                                                .getThem()
-                                                            ? AppThemeData
-                                                                .grey200
-                                                            : AppThemeData
-                                                                .grey700,
                                                         fontSize: 16,
                                                         overflow: TextOverflow
                                                             .ellipsis,
                                                         fontFamily:
-                                                            AppThemeData.medium,
+                                                            AppThemeData.bold,
                                                       ),
                                                     ),
-                                                  ),
-                                                  Text(
-                                                    "${Constant.amountShow(amount: Constant().calculateTax(amount: controller.bookingUserModel.value.subTotal.toString(), taxModel: taxModel).toStringAsFixed(Constant.currencyModel!.decimalDigits!).toString())} ",
-                                                    style: TextStyle(
-                                                      color: themeChange
-                                                              .getThem()
-                                                          ? AppThemeData.grey100
-                                                          : AppThemeData
-                                                              .grey800,
-                                                      fontSize: 16,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      fontFamily:
-                                                          AppThemeData.bold,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const Divider(
-                                                thickness: 1,
-                                              ),
-                                            ],
-                                          );
-                                        },
+                                                  ],
+                                                ),
+                                                const Divider(
+                                                  thickness: 1,
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          "Total".tr,
+                                          style: TextStyle(
+                                            color: themeChange.getThem()
+                                                ? AppThemeData.grey200
+                                                : AppThemeData.grey700,
+                                            fontSize: 16,
+                                            overflow: TextOverflow.ellipsis,
+                                            fontFamily: AppThemeData.medium,
+                                          ),
+                                        ),
                                       ),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        "Total".tr,
+                                      Text(
+                                        "${Constant.amountShow(amount: controller.calculateAmount().toString())} ",
                                         style: TextStyle(
                                           color: themeChange.getThem()
-                                              ? AppThemeData.grey200
-                                              : AppThemeData.grey700,
+                                              ? AppThemeData.grey100
+                                              : AppThemeData.grey800,
                                           fontSize: 16,
                                           overflow: TextOverflow.ellipsis,
-                                          fontFamily: AppThemeData.medium,
+                                          fontFamily: AppThemeData.bold,
                                         ),
                                       ),
-                                    ),
-                                    Text(
-                                      "${Constant.amountShow(amount: controller.calculateAmount().toString())} ",
-                                      style: TextStyle(
-                                        color: themeChange.getThem()
-                                            ? AppThemeData.grey100
-                                            : AppThemeData.grey800,
-                                        fontSize: 16,
-                                        overflow: TextOverflow.ellipsis,
-                                        fontFamily: AppThemeData.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 20),
-                            child: PreferredSize(
-                              preferredSize: const Size.fromHeight(4.0),
-                              child: Container(
-                                color: themeChange.getThem()
-                                    ? AppThemeData.grey800
-                                    : AppThemeData.grey100,
-                                height: 8.0,
-                              ),
-                            ),
-                          ),
-                          if (controller.publisherUserModel.value.id != null)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 5),
-                              child: Row(
-                                children: [
-                                  Stack(
-                                    children: [
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(60),
-                                        child: NetworkImageWidget(
-                                          imageUrl: controller
-                                              .publisherUserModel
-                                              .value
-                                              .profilePic
-                                              .toString(),
-                                          height: Responsive.width(14, context),
-                                          width: Responsive.width(14, context),
-                                        ),
-                                      ),
-                                      Positioned(
-                                          bottom: 0,
-                                          right: 0,
-                                          child: SvgPicture.asset(
-                                              "assets/icons/ic_verify.svg",
-                                              height: 24,
-                                              width: 24))
                                     ],
                                   ),
-                                  const SizedBox(
-                                    width: 10,
-                                  ),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              child: PreferredSize(
+                                preferredSize: const Size.fromHeight(4.0),
+                                child: Container(
+                                  color: themeChange.getThem()
+                                      ? AppThemeData.grey800
+                                      : AppThemeData.grey100,
+                                  height: 8.0,
+                                ),
+                              ),
+                            ),
+                            if (controller.publisherUserModel.value.id != null)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 5),
+                                child: Row(
+                                  children: [
+                                    Stack(
                                       children: [
-                                        Text(
-                                          controller.publisherUserModel.value
-                                              .fullName()
-                                              .toString(),
-                                          style: TextStyle(
-                                              color: themeChange.getThem()
-                                                  ? AppThemeData.grey100
-                                                  : AppThemeData.grey800,
-                                              fontFamily: AppThemeData.bold,
-                                              fontSize: 16),
+                                        ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(60),
+                                          child: NetworkImageWidget(
+                                            imageUrl: controller
+                                                .publisherUserModel
+                                                .value
+                                                .profilePic
+                                                .toString(),
+                                            height:
+                                                Responsive.width(14, context),
+                                            width:
+                                                Responsive.width(14, context),
+                                          ),
                                         ),
-                                        Row(
-                                          children: [
-                                            Text(
-                                              Constant.calculateReview(
-                                                  reviewCount: controller
-                                                      .publisherUserModel
-                                                      .value
-                                                      .reviewCount,
-                                                  reviewSum: controller
-                                                      .publisherUserModel
-                                                      .value
-                                                      .reviewSum),
-                                              style: TextStyle(
-                                                  color: themeChange.getThem()
-                                                      ? AppThemeData.grey200
-                                                      : AppThemeData.grey700,
-                                                  fontFamily:
-                                                      AppThemeData.medium,
-                                                  fontSize: 14),
-                                            ),
-                                            const SizedBox(
-                                              width: 5,
-                                            ),
-                                            Icon(
-                                              Icons.star,
-                                              size: 14,
-                                              color: themeChange.getThem()
-                                                  ? AppThemeData.grey200
-                                                  : AppThemeData.grey700,
-                                            ),
-                                            const SizedBox(
-                                              width: 5,
-                                            ),
-                                            Text(
-                                              "•",
-                                              style: TextStyle(
-                                                  color: themeChange.getThem()
-                                                      ? AppThemeData.grey500
-                                                      : AppThemeData.grey500,
-                                                  fontFamily:
-                                                      AppThemeData.medium,
-                                                  fontSize: 14),
-                                            ),
-                                            const SizedBox(
-                                              width: 5,
-                                            ),
-                                            InkWell(
-                                              onTap: () {
-                                                Get.to(const RatingViewScreen(),
-                                                    arguments: {
-                                                      "receiverUserId":
-                                                          controller
-                                                              .publisherUserModel
-                                                              .value
-                                                              .id
-                                                    });
-                                              },
-                                              child: Text(
-                                                "${double.parse(controller.publisherUserModel.value.reviewCount ?? "0").toStringAsFixed(0)} Ratings",
+                                        Positioned(
+                                            bottom: 0,
+                                            right: 0,
+                                            child: SvgPicture.asset(
+                                                "assets/icons/ic_verify.svg",
+                                                height: 24,
+                                                width: 24))
+                                      ],
+                                    ),
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            controller.publisherUserModel.value
+                                                .fullName()
+                                                .toString(),
+                                            style: TextStyle(
+                                                color: themeChange.getThem()
+                                                    ? AppThemeData.grey100
+                                                    : AppThemeData.grey800,
+                                                fontFamily: AppThemeData.bold,
+                                                fontSize: 16),
+                                          ),
+                                          Row(
+                                            children: [
+                                              Text(
+                                                Constant.calculateReview(
+                                                    reviewCount: controller
+                                                        .publisherUserModel
+                                                        .value
+                                                        .reviewCount,
+                                                    reviewSum: controller
+                                                        .publisherUserModel
+                                                        .value
+                                                        .reviewSum),
                                                 style: TextStyle(
-                                                    decoration: TextDecoration
-                                                        .underline,
-                                                    decorationColor:
-                                                        AppThemeData.primary300,
                                                     color: themeChange.getThem()
-                                                        ? AppThemeData
-                                                            .primary300
-                                                        : AppThemeData
-                                                            .primary300,
+                                                        ? AppThemeData.grey200
+                                                        : AppThemeData.grey700,
                                                     fontFamily:
                                                         AppThemeData.medium,
                                                     fontSize: 14),
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
+                                              const SizedBox(
+                                                width: 5,
+                                              ),
+                                              Icon(
+                                                Icons.star,
+                                                size: 14,
+                                                color: themeChange.getThem()
+                                                    ? AppThemeData.grey200
+                                                    : AppThemeData.grey700,
+                                              ),
+                                              const SizedBox(
+                                                width: 5,
+                                              ),
+                                              Text(
+                                                "•",
+                                                style: TextStyle(
+                                                    color: themeChange.getThem()
+                                                        ? AppThemeData.grey500
+                                                        : AppThemeData.grey500,
+                                                    fontFamily:
+                                                        AppThemeData.medium,
+                                                    fontSize: 14),
+                                              ),
+                                              const SizedBox(
+                                                width: 5,
+                                              ),
+                                              InkWell(
+                                                onTap: () {
+                                                  Get.to(
+                                                      const RatingViewScreen(),
+                                                      arguments: {
+                                                        "receiverUserId":
+                                                            controller
+                                                                .publisherUserModel
+                                                                .value
+                                                                .id
+                                                      });
+                                                },
+                                                child: Text(
+                                                  "${double.parse(controller.publisherUserModel.value.reviewCount ?? "0").toStringAsFixed(0)} Ratings",
+                                                  style: TextStyle(
+                                                      decoration: TextDecoration
+                                                          .underline,
+                                                      decorationColor:
+                                                          AppThemeData
+                                                              .primary300,
+                                                      color:
+                                                          themeChange.getThem()
+                                                              ? AppThemeData
+                                                                  .primary300
+                                                              : AppThemeData
+                                                                  .primary300,
+                                                      fontFamily:
+                                                          AppThemeData.medium,
+                                                      fontSize: 14),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(
-                                    width: 5,
-                                  ),
-                                  InkWell(
-                                    onTap: () async {
-                                      await Constant.makePhoneCall(
-                                          "${controller.publisherUserModel.value.countryCode.toString()} ${controller.publisherUserModel.value.phoneNumber.toString()}");
-                                    },
-                                    child: SvgPicture.asset(
-                                      "assets/icons/ic_call.svg",
+                                    const SizedBox(
+                                      width: 5,
                                     ),
+                                    InkWell(
+                                      onTap: () async {
+                                        await Constant.makePhoneCall(
+                                            "${controller.publisherUserModel.value.countryCode.toString()} ${controller.publisherUserModel.value.phoneNumber.toString()}");
+                                      },
+                                      child: SvgPicture.asset(
+                                        "assets/icons/ic_call.svg",
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
+                                    InkWell(
+                                      onTap: () {
+                                        Get.to(const ChatScreen(), arguments: {
+                                          "receiverModel": controller
+                                              .publisherUserModel.value
+                                        });
+                                      },
+                                      child: SvgPicture.asset(
+                                        "assets/icons/ic_chat.svg",
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 10),
+                              child: Row(
+                                children: [
+                                  SvgPicture.asset(
+                                    "assets/icons/ic_car.svg",
+                                    colorFilter: ColorFilter.mode(
+                                        themeChange.getThem()
+                                            ? AppThemeData.grey300
+                                            : AppThemeData.grey600,
+                                        BlendMode.srcIn),
                                   ),
                                   const SizedBox(
                                     width: 10,
                                   ),
-                                  InkWell(
-                                    onTap: () {
-                                      Get.to(const ChatScreen(), arguments: {
-                                        "receiverModel":
-                                            controller.publisherUserModel.value
-                                      });
-                                    },
-                                    child: SvgPicture.asset(
-                                      "assets/icons/ic_chat.svg",
+                                  Text(
+                                    "${controller.bookingModel.value.vehicleInformation!.vehicleBrand!.name} ${controller.bookingModel.value.vehicleInformation!.vehicleModel!.name} (${controller.bookingModel.value.vehicleInformation!.licensePlatNumber})",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: themeChange.getThem()
+                                          ? AppThemeData.grey200
+                                          : AppThemeData.grey700,
+                                      fontFamily: AppThemeData.medium,
                                     ),
-                                  )
+                                  ),
                                 ],
                               ),
                             ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 10),
-                            child: Row(
-                              children: [
-                                SvgPicture.asset(
-                                  "assets/icons/ic_car.svg",
-                                  colorFilter: ColorFilter.mode(
-                                      themeChange.getThem()
-                                          ? AppThemeData.grey300
-                                          : AppThemeData.grey600,
-                                      BlendMode.srcIn),
-                                ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                Text(
-                                  "${controller.bookingModel.value.vehicleInformation!.vehicleBrand!.name} ${controller.bookingModel.value.vehicleInformation!.vehicleModel!.name} (${controller.bookingModel.value.vehicleInformation!.licensePlatNumber})",
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: themeChange.getThem()
-                                        ? AppThemeData.grey200
-                                        : AppThemeData.grey700,
-                                    fontFamily: AppThemeData.medium,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          controller.bookingModel.value.travelPreference == null
-                              ? const SizedBox()
-                              : Column(
-                                  children: [
-                                    const Padding(
-                                      padding:
-                                          EdgeInsets.symmetric(vertical: 5),
-                                      child: Divider(),
-                                    ),
-                                    controller
-                                                    .bookingModel
-                                                    .value
-                                                    .travelPreference!
-                                                    .chattiness ==
-                                                null ||
-                                            controller
-                                                .bookingModel
-                                                .value
-                                                .travelPreference!
-                                                .chattiness!
-                                                .isEmpty
-                                        ? const SizedBox()
-                                        : Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16, vertical: 5),
-                                            child: Row(
-                                              children: [
-                                                controller
-                                                            .bookingModel
-                                                            .value
-                                                            .travelPreference!
-                                                            .chattiness ==
-                                                        "I’m the quite type"
-                                                    ? SvgPicture.asset(
-                                                        "assets/icons/ic_love_chat.svg")
-                                                    : SvgPicture.asset(
-                                                        "assets/icons/ic_quites.svg"),
-                                                const SizedBox(
-                                                  width: 10,
-                                                ),
-                                                Expanded(
-                                                    child: Text(
-                                                  controller
+                            controller.bookingModel.value.travelPreference ==
+                                    null
+                                ? const SizedBox()
+                                : Column(
+                                    children: [
+                                      const Padding(
+                                        padding:
+                                            EdgeInsets.symmetric(vertical: 5),
+                                        child: Divider(),
+                                      ),
+                                      controller
                                                       .bookingModel
                                                       .value
                                                       .travelPreference!
-                                                      .chattiness
-                                                      .toString(),
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    color: themeChange.getThem()
-                                                        ? AppThemeData.grey50
-                                                        : AppThemeData.grey900,
-                                                    fontFamily:
-                                                        AppThemeData.medium,
+                                                      .chattiness ==
+                                                  null ||
+                                              controller
+                                                  .bookingModel
+                                                  .value
+                                                  .travelPreference!
+                                                  .chattiness!
+                                                  .isEmpty
+                                          ? const SizedBox()
+                                          : Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16,
+                                                      vertical: 5),
+                                              child: Row(
+                                                children: [
+                                                  controller
+                                                              .bookingModel
+                                                              .value
+                                                              .travelPreference!
+                                                              .chattiness ==
+                                                          "I’m the quite type"
+                                                      ? SvgPicture.asset(
+                                                          "assets/icons/ic_love_chat.svg")
+                                                      : SvgPicture.asset(
+                                                          "assets/icons/ic_quites.svg"),
+                                                  const SizedBox(
+                                                    width: 10,
                                                   ),
-                                                )),
-                                              ],
+                                                  Expanded(
+                                                      child: Text(
+                                                    controller
+                                                        .bookingModel
+                                                        .value
+                                                        .travelPreference!
+                                                        .chattiness
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      color: themeChange
+                                                              .getThem()
+                                                          ? AppThemeData.grey50
+                                                          : AppThemeData
+                                                              .grey900,
+                                                      fontFamily:
+                                                          AppThemeData.medium,
+                                                    ),
+                                                  )),
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                    controller
-                                                    .bookingModel
-                                                    .value
-                                                    .travelPreference!
-                                                    .smoking ==
-                                                null ||
-                                            controller
-                                                .bookingModel
-                                                .value
-                                                .travelPreference!
-                                                .smoking!
-                                                .isEmpty
-                                        ? const SizedBox()
-                                        : Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16, vertical: 5),
-                                            child: Row(
-                                              children: [
-                                                controller
-                                                            .bookingModel
-                                                            .value
-                                                            .travelPreference!
-                                                            .chattiness ==
-                                                        "No smoking, Please"
-                                                    ? SvgPicture.asset(
-                                                        "assets/icons/ic_no_smoking.svg")
-                                                    : SvgPicture.asset(
-                                                        "assets/icons/ic_smoking.svg"),
-                                                const SizedBox(
-                                                  width: 10,
-                                                ),
-                                                Expanded(
-                                                    child: Text(
-                                                  controller.bookingModel.value
-                                                      .travelPreference!.smoking
-                                                      .toString(),
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    color: themeChange.getThem()
-                                                        ? AppThemeData.grey50
-                                                        : AppThemeData.grey900,
-                                                    fontFamily:
-                                                        AppThemeData.medium,
+                                      controller
+                                                      .bookingModel
+                                                      .value
+                                                      .travelPreference!
+                                                      .smoking ==
+                                                  null ||
+                                              controller
+                                                  .bookingModel
+                                                  .value
+                                                  .travelPreference!
+                                                  .smoking!
+                                                  .isEmpty
+                                          ? const SizedBox()
+                                          : Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16,
+                                                      vertical: 5),
+                                              child: Row(
+                                                children: [
+                                                  controller
+                                                              .bookingModel
+                                                              .value
+                                                              .travelPreference!
+                                                              .chattiness ==
+                                                          "No smoking, Please"
+                                                      ? SvgPicture.asset(
+                                                          "assets/icons/ic_no_smoking.svg")
+                                                      : SvgPicture.asset(
+                                                          "assets/icons/ic_smoking.svg"),
+                                                  const SizedBox(
+                                                    width: 10,
                                                   ),
-                                                )),
-                                              ],
+                                                  Expanded(
+                                                      child: Text(
+                                                    controller
+                                                        .bookingModel
+                                                        .value
+                                                        .travelPreference!
+                                                        .smoking
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      color: themeChange
+                                                              .getThem()
+                                                          ? AppThemeData.grey50
+                                                          : AppThemeData
+                                                              .grey900,
+                                                      fontFamily:
+                                                          AppThemeData.medium,
+                                                    ),
+                                                  )),
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                    controller.bookingModel.value
-                                                    .travelPreference!.music ==
-                                                null ||
-                                            controller
-                                                .bookingModel
-                                                .value
-                                                .travelPreference!
-                                                .music!
-                                                .isEmpty
-                                        ? const SizedBox()
-                                        : Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16, vertical: 5),
-                                            child: Row(
-                                              children: [
-                                                controller
-                                                            .bookingModel
-                                                            .value
-                                                            .travelPreference!
-                                                            .music ==
-                                                        "Silence is golden"
-                                                    ? SvgPicture.asset(
-                                                        "assets/icons/ic_no_music.svg")
-                                                    : SvgPicture.asset(
-                                                        "assets/icons/ic_music.svg"),
-                                                const SizedBox(
-                                                  width: 10,
-                                                ),
-                                                Expanded(
-                                                    child: Text(
-                                                  controller.bookingModel.value
-                                                      .travelPreference!.music
-                                                      .toString(),
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    color: themeChange.getThem()
-                                                        ? AppThemeData.grey50
-                                                        : AppThemeData.grey900,
-                                                    fontFamily:
-                                                        AppThemeData.medium,
+                                      controller
+                                                      .bookingModel
+                                                      .value
+                                                      .travelPreference!
+                                                      .music ==
+                                                  null ||
+                                              controller
+                                                  .bookingModel
+                                                  .value
+                                                  .travelPreference!
+                                                  .music!
+                                                  .isEmpty
+                                          ? const SizedBox()
+                                          : Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16,
+                                                      vertical: 5),
+                                              child: Row(
+                                                children: [
+                                                  controller
+                                                              .bookingModel
+                                                              .value
+                                                              .travelPreference!
+                                                              .music ==
+                                                          "Silence is golden"
+                                                      ? SvgPicture.asset(
+                                                          "assets/icons/ic_no_music.svg")
+                                                      : SvgPicture.asset(
+                                                          "assets/icons/ic_music.svg"),
+                                                  const SizedBox(
+                                                    width: 10,
                                                   ),
-                                                )),
-                                              ],
+                                                  Expanded(
+                                                      child: Text(
+                                                    controller
+                                                        .bookingModel
+                                                        .value
+                                                        .travelPreference!
+                                                        .music
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      color: themeChange
+                                                              .getThem()
+                                                          ? AppThemeData.grey50
+                                                          : AppThemeData
+                                                              .grey900,
+                                                      fontFamily:
+                                                          AppThemeData.medium,
+                                                    ),
+                                                  )),
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                    controller.bookingModel.value
-                                                    .travelPreference!.pets ==
-                                                null ||
-                                            controller.bookingModel.value
-                                                .travelPreference!.pets!.isEmpty
-                                        ? const SizedBox()
-                                        : Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16, vertical: 5),
-                                            child: Row(
-                                              children: [
-                                                SvgPicture.asset(
-                                                    "assets/icons/pet.svg"),
-                                                const SizedBox(
-                                                  width: 10,
-                                                ),
-                                                Expanded(
-                                                    child: Text(
-                                                  controller.bookingModel.value
-                                                      .travelPreference!.pets
-                                                      .toString(),
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    color: themeChange.getThem()
-                                                        ? AppThemeData.grey50
-                                                        : AppThemeData.grey900,
-                                                    fontFamily:
-                                                        AppThemeData.medium,
+                                      controller.bookingModel.value
+                                                      .travelPreference!.pets ==
+                                                  null ||
+                                              controller
+                                                  .bookingModel
+                                                  .value
+                                                  .travelPreference!
+                                                  .pets!
+                                                  .isEmpty
+                                          ? const SizedBox()
+                                          : Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16,
+                                                      vertical: 5),
+                                              child: Row(
+                                                children: [
+                                                  SvgPicture.asset(
+                                                      "assets/icons/pet.svg"),
+                                                  const SizedBox(
+                                                    width: 10,
                                                   ),
-                                                )),
-                                              ],
+                                                  Expanded(
+                                                      child: Text(
+                                                    controller
+                                                        .bookingModel
+                                                        .value
+                                                        .travelPreference!
+                                                        .pets
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      color: themeChange
+                                                              .getThem()
+                                                          ? AppThemeData.grey50
+                                                          : AppThemeData
+                                                              .grey900,
+                                                      fontFamily:
+                                                          AppThemeData.medium,
+                                                    ),
+                                                  )),
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                  ],
-                                )
-                        ],
+                                    ],
+                                  )
+                          ],
+                        ),
                       ),
-                    ),
+              ),
               bottomNavigationBar: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 child: Column(

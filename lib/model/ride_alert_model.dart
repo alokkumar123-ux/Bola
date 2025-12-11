@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:poolmate/model/map/geometry.dart';
 
-class RecentSearchModel {
+class RideAlertModel {
   String? id;
   String? userId;
   String? pickUpAddress;
@@ -9,23 +9,27 @@ class RecentSearchModel {
   Location? pickUpLocation;
   Location? dropLocation;
   String? person;
-  Timestamp? bookedDate;
+  Timestamp? searchDate; // The date when user searched
+  Timestamp?
+      expiryDate; // When this alert should expire (matches the ride date)
   Timestamp? createdAt;
-  bool? hasActiveAlert; // Track if this search has an active ride alert
+  bool? isActive; // Whether the alert is still active
 
-  RecentSearchModel(
-      {this.id,
-      this.userId,
-      this.pickUpAddress,
-      this.dropAddress,
-      this.pickUpLocation,
-      this.dropLocation,
-      this.person,
-      this.bookedDate,
-      this.createdAt,
-      this.hasActiveAlert});
+  RideAlertModel({
+    this.id,
+    this.userId,
+    this.pickUpAddress,
+    this.dropAddress,
+    this.pickUpLocation,
+    this.dropLocation,
+    this.person,
+    this.searchDate,
+    this.expiryDate,
+    this.createdAt,
+    this.isActive,
+  });
 
-  RecentSearchModel.fromJson(Map<String, dynamic> json) {
+  RideAlertModel.fromJson(Map<String, dynamic> json) {
     id = json['id'] ?? '';
     userId = json['userId'] ?? '';
     pickUpAddress = json['pickUpAddress'] ?? '';
@@ -37,9 +41,10 @@ class RecentSearchModel {
         ? Location.fromJson(json['dropLocation'])
         : null;
     person = json['person'];
-    bookedDate = json['bookedDate'];
+    searchDate = json['searchDate'];
+    expiryDate = json['expiryDate'];
     createdAt = json['createdAt'];
-    hasActiveAlert = json['hasActiveAlert'] ?? false;
+    isActive = json['isActive'] ?? true;
   }
 
   Map<String, dynamic> toJson() {
@@ -53,11 +58,12 @@ class RecentSearchModel {
     data['pickUpAddress'] = pickUpAddress;
     data['dropAddress'] = dropAddress;
     data['person'] = person;
-    data['bookedDate'] = bookedDate;
+    data['searchDate'] = searchDate;
+    data['expiryDate'] = expiryDate;
     data['createdAt'] = createdAt;
     data['id'] = id;
     data['userId'] = userId;
-    data['hasActiveAlert'] = hasActiveAlert;
+    data['isActive'] = isActive;
     return data;
   }
 }

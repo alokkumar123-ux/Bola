@@ -54,8 +54,8 @@ android {
         applicationId "com.alok.poolmate"
         minSdkVersion flutter.minSdkVersion
         targetSdkVersion 36
-        versionCode 22
-        versionName "1.2.1"
+        versionCode 23
+        versionName "1.2.2"
         multiDexEnabled true
     }
 

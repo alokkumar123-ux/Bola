@@ -6,8 +6,10 @@ import 'package:poolmate/app/accessibility/accessibility_screen.dart';
 import 'package:poolmate/app/add_vehicle/vehicle_list_screen.dart';
 import 'package:poolmate/app/edit_profile/edit_profile_screen.dart';
 import 'package:poolmate/app/help_support_screen/help_support_screen.dart';
+import 'package:poolmate/app/webview_screen.dart';
 import 'package:poolmate/app/on_boarding_screen/get_started_screen.dart';
 import 'package:poolmate/app/rating_view_screen/rating_view_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:poolmate/app/travel_preference/travel_preference_screen.dart';
 import 'package:poolmate/app/verification_screen/verification_screen.dart';
 import 'package:poolmate/app/withdraw_payment_setup_screen/payment_setup_screen.dart';
@@ -23,9 +25,9 @@ import 'package:poolmate/utils/fire_store_utils.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
+    bool isLoading = false;
     final themeChange = Provider.of<DarkThemeProvider>(context);
     return GetX(
         init: ProfileController(),
@@ -79,6 +81,42 @@ class ProfileScreen extends StatelessWidget {
                     fontFamily: AppThemeData.bold,
                     fontSize: 18),
               ),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: StatefulBuilder(
+                    builder: (context, setState) {
+                      return InkWell(
+                        onTap: () async {
+                          setState(() => isLoading = true);
+                          final url = Uri.parse('https://wa.me/917002729565');
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(url,
+                                mode: LaunchMode.externalApplication);
+                          }
+                          setState(() => isLoading = false);
+                        },
+                        child: isLoading == true
+                            ? SizedBox(
+                                height: 35,
+                                width: 35,
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    color: Colors.black,
+                                    strokeWidth: 2.5,
+                                  ),
+                                ),
+                              )
+                            : Image.asset(
+                                'assets/images/whatsapp_logo.png',
+                                height: 35,
+                                width: 35,
+                              ),
+                      );
+                    },
+                  ),
+                ),
+              ],
               elevation: 0,
               bottom: PreferredSize(
                 preferredSize: const Size.fromHeight(4.0),
@@ -90,283 +128,325 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
             ),
-            body: controller.isLoading.value
-                ? Center(child: Constant.loader())
-                : Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 30),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(60),
-                            child: NetworkImageWidget(
-                              fit: BoxFit.cover,
-                              imageUrl: controller.userModel.value.profilePic
-                                  .toString(),
-                              height: Responsive.width(24, context),
-                              width: Responsive.width(24, context),
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                "${controller.userModel.value.fullName()}",
-                                style: TextStyle(
-                                    fontSize: 20,
-                                    fontFamily: AppThemeData.medium,
-                                    color: themeChange.getThem()
-                                        ? AppThemeData.grey50
-                                        : AppThemeData.grey900),
+            body: SafeArea(
+              child: controller.isLoading.value
+                  ? Center(child: Constant.loader())
+                  : Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 30),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(60),
+                              child: NetworkImageWidget(
+                                fit: BoxFit.cover,
+                                imageUrl: controller.userModel.value.profilePic
+                                    .toString(),
+                                height: Responsive.width(24, context),
+                                width: Responsive.width(24, context),
                               ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  const SizedBox(
-                                    width: 5,
-                                  ),
-                                  Text(
-                                    Constant.calculateReview(
-                                        reviewCount: controller
-                                            .userModel.value.reviewCount,
-                                        reviewSum: controller
-                                            .userModel.value.reviewSum),
-                                    style: TextStyle(
-                                        color: themeChange.getThem()
-                                            ? AppThemeData.grey200
-                                            : AppThemeData.grey700,
-                                        fontFamily: AppThemeData.medium,
-                                        fontSize: 14),
-                                  ),
-                                  const SizedBox(
-                                    width: 2,
-                                  ),
-                                  Icon(
-                                    Icons.star,
-                                    size: 14,
-                                    color: themeChange.getThem()
-                                        ? AppThemeData.grey200
-                                        : AppThemeData.grey700,
-                                  ),
-                                  const SizedBox(
-                                    width: 2,
-                                  ),
-                                  InkWell(
-                                    onTap: () {
-                                      Get.to(const RatingViewScreen(),
-                                          arguments: {
-                                            "receiverUserId":
-                                                controller.userModel.value.id
-                                          });
-                                    },
-                                    child: Text(
-                                      "${double.parse(controller.userModel.value.reviewCount ?? "0").toStringAsFixed(0)} Ratings",
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "${controller.userModel.value.fullName()}",
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      fontFamily: AppThemeData.medium,
+                                      color: themeChange.getThem()
+                                          ? AppThemeData.grey50
+                                          : AppThemeData.grey900),
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    const SizedBox(
+                                      width: 5,
+                                    ),
+                                    Text(
+                                      Constant.calculateReview(
+                                          reviewCount: controller
+                                              .userModel.value.reviewCount,
+                                          reviewSum: controller
+                                              .userModel.value.reviewSum),
                                       style: TextStyle(
-                                          decoration: TextDecoration.underline,
-                                          decorationColor:
-                                              AppThemeData.primary300,
                                           color: themeChange.getThem()
-                                              ? AppThemeData.primary300
-                                              : AppThemeData.primary300,
+                                              ? AppThemeData.grey200
+                                              : AppThemeData.grey700,
                                           fontFamily: AppThemeData.medium,
                                           fontSize: 14),
                                     ),
+                                    const SizedBox(
+                                      width: 2,
+                                    ),
+                                    Icon(
+                                      Icons.star,
+                                      size: 14,
+                                      color: themeChange.getThem()
+                                          ? AppThemeData.grey200
+                                          : AppThemeData.grey700,
+                                    ),
+                                    const SizedBox(
+                                      width: 2,
+                                    ),
+                                    InkWell(
+                                      onTap: () {
+                                        Get.to(const RatingViewScreen(),
+                                            arguments: {
+                                              "receiverUserId":
+                                                  controller.userModel.value.id
+                                            });
+                                      },
+                                      child: Text(
+                                        "${double.parse(controller.userModel.value.reviewCount ?? "0").toStringAsFixed(0)} Ratings",
+                                        style: TextStyle(
+                                            decoration: TextDecoration.underline,
+                                            decorationColor:
+                                                AppThemeData.primary300,
+                                            color: themeChange.getThem()
+                                                ? AppThemeData.primary300
+                                                : AppThemeData.primary300,
+                                            fontFamily: AppThemeData.medium,
+                                            fontSize: 14),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            InkWell(
+                              splashColor: Colors.transparent,
+                              highlightColor: Colors.transparent,
+                              onTap: () {
+                                Get.to(const EditProfileScreen())!.then((value) {
+                                  if (value == true) {
+                                    controller.getData();
+                                  }
+                                });
+                              },
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "Edit Profile".tr,
+                                    style: TextStyle(
+                                        fontSize: 14,
+                                        fontFamily: AppThemeData.bold,
+                                        color: themeChange.getThem()
+                                            ? AppThemeData.primary300
+                                            : AppThemeData.primary300,
+                                        decoration: TextDecoration.underline,
+                                        decorationColor: AppThemeData.primary300),
+                                  ),
+                                  Icon(
+                                    Icons.chevron_right,
+                                    color: AppThemeData.primary300,
+                                    fill: 1,
+                                    size: 22,
+                                  )
+                                ],
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 32,
+                            ),
+              
+                            menuItemWidget(
+                              onTap: () {
+                                Get.to(const VerificationScreen());
+                              },
+                              title: "Account Verification".tr,
+                              subTitle:
+                                  'Verify your account and update the documents'
+                                      .tr,
+                              svgImage: "assets/icons/ic_account_setting.svg",
+                              themeChange: themeChange,
+                              isVerified:
+                                  controller.userModel.value.aadharVerified ==
+                                      true,
+                            ),
+                            menuItemWidget(
+                              onTap: () {
+                                Get.to(const PaymentSetupScreen());
+                              },
+                              title: "Withdraw Methods".tr,
+                              subTitle:
+                                  'Manage your transaction via bank account details'
+                                      .tr,
+                              svgImage: "assets/icons/ic_bank_account.svg",
+                              themeChange: themeChange,
+                            ),
+                            menuItemWidget(
+                              onTap: () {
+                                Get.to(const VehicleListScreen());
+                              },
+                              title: "Vehicles".tr,
+                              subTitle: 'Manage your traveling vehicle'.tr,
+                              svgImage: "assets/icons/ic_car.svg",
+                              themeChange: themeChange,
+                            ),
+                            menuItemWidget(
+                              onTap: () {
+                                Get.to(const TravelPreferenceScreen());
+                              },
+                              title: "Travel Preference".tr,
+                              subTitle:
+                                  'Discover Your Ideal Travel Destination Based on Personal Preferences'
+                                      .tr,
+                              svgImage: "assets/icons/ic_wallet.svg",
+                              themeChange: themeChange,
+                            ),
+                            menuItemWidget(
+                              onTap: () {
+                                Get.to(const AccessibilityScreen());
+                              },
+                              title: "Accessibility".tr,
+                              subTitle: 'Language, mode change and more'.tr,
+                              svgImage: "assets/icons/ic_settings.svg",
+                              themeChange: themeChange,
+                            ),
+                            menuItemWidget(
+                              onTap: () {
+                                Get.to(HelpSupportScreen());
+                              },
+                              title: "Help & Support".tr,
+                              subTitle:
+                                  'Manage user queries and resolve issues efficiently from the admin panel.'
+                                      .tr,
+                              svgImage: "assets/icons/ic_shield.svg",
+                              themeChange: themeChange,
+                            ),
+                            menuItemWidget(
+                              onTap: () {
+                                Get.to(WebViewScreen(
+                                  url: 'https://bolaletsgo.com/privacy.html',
+                                ));
+                              },
+                              title: "Privacy Policy".tr,
+                              subTitle: 'View our privacy policy.'.tr,
+                              svgImage: "assets/icons/ic_document.svg",
+                              themeChange: themeChange,
+                            ),
+                            menuItemWidget(
+                              onTap: () {
+                                Get.to(WebViewScreen(
+                                  url: 'https://bolaletsgo.com/terms.html',
+                                ));
+                              },
+                              title: "Terms & Conditions".tr,
+                              subTitle: 'View our terms and conditions.'.tr,
+                              svgImage: "assets/icons/ic_cancel.svg",
+                              themeChange: themeChange,
+                            ),
+                            menuItemWidget(
+                              onTap: () {
+                                Get.to(WebViewScreen(
+                                  url: 'https://bolaletsgo.com/refund.html',
+                                ));
+                              },
+                              title: "Refund & Cancellation Policy".tr,
+                              subTitle:
+                                  'View our refund & cancellation policy.'.tr,
+                              svgImage: "assets/icons/ic_help_support.svg",
+                              themeChange: themeChange,
+                            ),
+                            InkWell(
+                              splashColor: Colors.transparent,
+                              highlightColor: Colors.transparent,
+                              onTap: () async {
+                                showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return CustomDialogBox(
+                                        title: "Log out".tr,
+                                        descriptions:
+                                            "You will be signed out of the app. Tap Log Out to confirm."
+                                                .tr,
+                                        positiveString: "Log out".tr,
+                                        negativeString: "Cancel".tr,
+                                        positiveClick: () async {
+                                          // Clear local user ID
+                                          await FireStoreUtils.clearCurrentUid();
+                                          // Sign out from Firebase if signed in
+                                          if (FirebaseAuth.instance.currentUser !=
+                                              null) {
+                                            await FirebaseAuth.instance.signOut();
+                                          }
+                                          Get.offAll(const GetStartedScreen());
+                                        },
+                                        negativeClick: () {
+                                          Get.back();
+                                        },
+                                        img: Image.asset(
+                                          'assets/images/ic_logout_dialog.png',
+                                          height: 40,
+                                          width: 40,
+                                        ),
+                                      );
+                                    });
+                              },
+                              child: Row(
+                                children: [
+                                  Container(
+                                    height: 46,
+                                    width: 46,
+                                    decoration: BoxDecoration(
+                                        color: themeChange.getThem()
+                                            ? AppThemeData.warning50
+                                            : AppThemeData.warning50,
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(30))),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(14),
+                                      child: SvgPicture.asset(
+                                        'assets/icons/ic_logout.svg',
+                                        color: themeChange.getThem()
+                                            ? AppThemeData.warning300
+                                            : AppThemeData.warning300,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  Text(
+                                    "Log out".tr,
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontFamily: AppThemeData.bold,
+                                        color: themeChange.getThem()
+                                            ? AppThemeData.warning300
+                                            : AppThemeData.warning300),
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
-                          InkWell(
-                            splashColor: Colors.transparent,
-                            highlightColor: Colors.transparent,
-                            onTap: () {
-                              Get.to(const EditProfileScreen())!.then((value) {
-                                if (value == true) {
-                                  controller.getData();
-                                }
-                              });
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(
-                                  "Edit Profile".tr,
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      fontFamily: AppThemeData.bold,
-                                      color: themeChange.getThem()
-                                          ? AppThemeData.primary300
-                                          : AppThemeData.primary300,
-                                      decoration: TextDecoration.underline,
-                                      decorationColor: AppThemeData.primary300),
-                                ),
-                                Icon(
-                                  Icons.chevron_right,
-                                  color: AppThemeData.primary300,
-                                  fill: 1,
-                                  size: 22,
-                                )
-                              ],
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 32,
-                          ),
-
-                          menuItemWidget(
-                            onTap: () {
-                              Get.to(const VerificationScreen());
-                            },
-                            title: "Account Verification".tr,
-                            subTitle:
-                                'Verify your account and update the documents'
-                                    .tr,
-                            svgImage: "assets/icons/ic_account_setting.svg",
-                            themeChange: themeChange,
-                            isVerified:
-                                controller.userModel.value.aadharVerified ==
-                                    true,
-                          ),
-                          menuItemWidget(
-                            onTap: () {
-                              Get.to(const PaymentSetupScreen());
-                            },
-                            title: "Withdraw Methods".tr,
-                            subTitle:
-                                'Manage your transaction via bank account details'
-                                    .tr,
-                            svgImage: "assets/icons/ic_bank_account.svg",
-                            themeChange: themeChange,
-                          ),
-                          menuItemWidget(
-                            onTap: () {
-                              Get.to(const VehicleListScreen());
-                            },
-                            title: "Vehicles".tr,
-                            subTitle: 'Manage your traveling vehicle'.tr,
-                            svgImage: "assets/icons/ic_car.svg",
-                            themeChange: themeChange,
-                          ),
-                          menuItemWidget(
-                            onTap: () {
-                              Get.to(const TravelPreferenceScreen());
-                            },
-                            title: "Travel Preference".tr,
-                            subTitle:
-                                'Discover Your Ideal Travel Destination Based on Personal Preferences'
-                                    .tr,
-                            svgImage: "assets/icons/ic_wallet.svg",
-                            themeChange: themeChange,
-                          ),
-                          menuItemWidget(
-                            onTap: () {
-                              Get.to(const AccessibilityScreen());
-                            },
-                            title: "Accessibility".tr,
-                            subTitle: 'Language, mode change and more'.tr,
-                            svgImage: "assets/icons/ic_settings.svg",
-                            themeChange: themeChange,
-                          ),
-                          menuItemWidget(
-                            onTap: () {
-                              Get.to(HelpSupportScreen());
-                            },
-                            title: "Help & Support".tr,
-                            subTitle:
-                                'Manage user queries and resolve issues efficiently from the admin panel.'
-                                    .tr,
-                            svgImage: "assets/icons/ic_help_support.svg",
-                            themeChange: themeChange,
-                          ),
-                          InkWell(
-                            splashColor: Colors.transparent,
-                            highlightColor: Colors.transparent,
-                            onTap: () async {
-                              showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return CustomDialogBox(
-                                      title: "Log out".tr,
-                                      descriptions:
-                                          "You will be signed out of the app. Tap Log Out to confirm."
-                                              .tr,
-                                      positiveString: "Log out".tr,
-                                      negativeString: "Cancel".tr,
-                                      positiveClick: () async {
-                                        await FirebaseAuth.instance.signOut();
-                                        Get.offAll(const GetStartedScreen());
-                                      },
-                                      negativeClick: () {
-                                        Get.back();
-                                      },
-                                      img: Image.asset(
-                                        'assets/images/ic_logout_dialog.png',
-                                        height: 40,
-                                        width: 40,
-                                      ),
-                                    );
-                                  });
-                            },
-                            child: Row(
-                              children: [
-                                Container(
-                                  height: 46,
-                                  width: 46,
-                                  decoration: BoxDecoration(
-                                      color: themeChange.getThem()
-                                          ? AppThemeData.warning50
-                                          : AppThemeData.warning50,
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(30))),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(14),
-                                    child: SvgPicture.asset(
-                                      'assets/icons/ic_logout.svg',
-                                      color: themeChange.getThem()
-                                          ? AppThemeData.warning300
-                                          : AppThemeData.warning300,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                Text(
-                                  "Log out".tr,
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontFamily: AppThemeData.bold,
-                                      color: themeChange.getThem()
-                                          ? AppThemeData.warning300
-                                          : AppThemeData.warning300),
-                                ),
-                              ],
-                            ),
-                          )
-                          // menuItemWidget(
-                          //   onTap: () {},
-                          //   title: "Account Verification",
-                          //   subTitle: 'Verify your account and update the documents',
-                          //   svgImage: "assets/icons/ic_account_setting.svg",
-                          //   themeChange: themeChange,
-                          // ),
-                          // menuItemWidget(
-                          //   onTap: () {},
-                          //   title: "Ride Statics",
-                          //   subTitle: 'Ratting, reviews and more',
-                          //   svgImage: "assets/icons/ic_account_setting.svg",
-                          //   themeChange: themeChange,
-                          // ),
-                        ],
+                            )
+                            // menuItemWidget(
+                            //   onTap: () {},
+                            //   title: "Account Verification",
+                            //   subTitle: 'Verify your account and update the documents',
+                            //   svgImage: "assets/icons/ic_account_setting.svg",
+                            //   themeChange: themeChange,
+                            // ),
+                            // menuItemWidget(
+                            //   onTap: () {},
+                            //   title: "Ride Statics",
+                            //   subTitle: 'Ratting, reviews and more',
+                            //   svgImage: "assets/icons/ic_account_setting.svg",
+                            //   themeChange: themeChange,
+                            // ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
+            ),
           );
         });
   }
