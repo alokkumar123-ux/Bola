@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:geocoding/geocoding.dart';
@@ -14,7 +16,11 @@ import 'package:poolmate/model/map/city_list_model.dart';
 import 'package:poolmate/model/review_model.dart';
 import 'package:poolmate/model/user_model.dart';
 import 'package:poolmate/model/wallet_transaction_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/booking_utils.dart';
+import 'package:poolmate/utils/firestore/referral_utils.dart';
+import 'package:poolmate/utils/firestore/user_utils.dart';
+import 'package:poolmate/utils/firestore/wallet_utils.dart';
+import 'package:poolmate/utils/firestore/review_utils.dart';
 
 class PublishedDetailsController extends GetxController {
   @override
@@ -37,7 +43,7 @@ class PublishedDetailsController extends GetxController {
 
     getUserData();
 
-    FireStoreUtils.fireStore
+    FirebaseFirestore.instance
         .collection(CollectionName.booking)
         .doc(bookingModel.value.id)
         .snapshots()
@@ -53,7 +59,7 @@ class PublishedDetailsController extends GetxController {
       },
     );
 
-    FireStoreUtils.fireStore
+    FirebaseFirestore.instance
         .collection(CollectionName.booking)
         .doc(bookingModel.value.id)
         .collection("bookedUser")
@@ -67,7 +73,7 @@ class PublishedDetailsController extends GetxController {
       }
     });
 
-    await FireStoreUtils.getUserProfile(bookingModel.value.createdBy.toString())
+    await UserUtils.getUserProfile(bookingModel.value.createdBy.toString())
         .then((value) {
       publisherUserModel.value = value!;
     });
@@ -89,7 +95,30 @@ class PublishedDetailsController extends GetxController {
       stopOver.removeAt(stopOver.length - 1);
       bookingModel.value.stopOver = stopOver;
 
-      await FireStoreUtils.setBooking(bookingModel.value);
+      await BookingUtils.setBooking(bookingModel.value);
+
+      // Re-fetch booking status from database to ensure we have the latest state
+      DocumentSnapshot bookingSnapshot = await FirebaseFirestore.instance
+          .collection(CollectionName.booking)
+          .doc(bookingModel.value.id)
+          .get();
+
+      if (bookingSnapshot.exists) {
+        BookingModel latestBooking = BookingModel.fromJson(
+            bookingSnapshot.data() as Map<String, dynamic>);
+
+        // If ride completed, process referral earnings for all booked users
+        if (latestBooking.status == Constant.completed &&
+            bookingUserList.isNotEmpty) {
+          print(
+              "Processing referral earnings for completed ride ${latestBooking.id}");
+          await ReferralUtils.processReferralOnRideCompleted(
+            bookingModel: latestBooking,
+            bookedUsers: bookingUserList.toList(),
+          );
+        }
+      }
+
       ShowToastDialog.closeLoader();
       CityModel nextStationCity;
       if (index == 0 || index == stopOver.length - 1) {
@@ -106,7 +135,7 @@ class PublishedDetailsController extends GetxController {
             element.stopOver!.startLocation!.lng!,
           );
           if (isSame) {
-            await FireStoreUtils.getUserProfile(element.id.toString())
+            await UserUtils.getUserProfile(element.id.toString())
                 .then((value) async {
               if (value != null) {
                 UserModel userModel = value;
@@ -135,7 +164,7 @@ class PublishedDetailsController extends GetxController {
   publishRide() async {
     ShowToastDialog.showLoader("Please wait");
     if (bookingUserList.isEmpty) {
-      await FireStoreUtils.setBooking(bookingModel.value).then((value) {
+      await BookingUtils.setBooking(bookingModel.value).then((value) {
         ShowToastDialog.closeLoader();
         Get.back(result: true);
       });
@@ -145,7 +174,7 @@ class PublishedDetailsController extends GetxController {
           BookedUserModel bookingUserModel = element;
           UserModel? userModel;
 
-          await FireStoreUtils.getUserProfile(bookingUserModel.id.toString())
+          await UserUtils.getUserProfile(bookingUserModel.id.toString())
               .then((value) {
             userModel = value!;
           });
@@ -233,9 +262,9 @@ class PublishedDetailsController extends GetxController {
           //   });
           // }
 
-          await FireStoreUtils.setCancelledUserBooking(
+          await BookingUtils.setCancelledUserBooking(
               bookingModel.value, bookingUserModel);
-          await FireStoreUtils.removeUserBooking(
+          await BookingUtils.removeUserBooking(
               bookingModel.value, bookingUserModel);
 
           await SendNotification.sendChatNotification(
@@ -249,7 +278,7 @@ class PublishedDetailsController extends GetxController {
       bookingModel.value.bookedSeat = "0";
       bookingModel.value.bookedUserId!.clear();
 
-      await FireStoreUtils.setBooking(bookingModel.value).then((value) {
+      await BookingUtils.setBooking(bookingModel.value).then((value) {
         ShowToastDialog.closeLoader();
         Get.back(result: true);
       });
@@ -265,7 +294,7 @@ class PublishedDetailsController extends GetxController {
       if (bookingUserList.isEmpty) {
         bookingModel.value.status = Constant.canceled;
         bookingModel.value.publish = false;
-        await FireStoreUtils.setBooking(bookingModel.value);
+        await BookingUtils.setBooking(bookingModel.value);
         ShowToastDialog.closeLoader();
         ShowToastDialog.showToast("Ride cancelled successfully".tr);
         Get.back(result: true);
@@ -280,7 +309,7 @@ class PublishedDetailsController extends GetxController {
         final BookedUserModel bookingUserModel = element;
         UserModel? userModel;
 
-        await FireStoreUtils.getUserProfile(bookingUserModel.id.toString())
+        await UserUtils.getUserProfile(bookingUserModel.id.toString())
             .then((value) {
           userModel = value!;
         });
@@ -290,9 +319,9 @@ class PublishedDetailsController extends GetxController {
           await _processRefundToPassenger(bookingUserModel, userModel!);
         }
 
-        await FireStoreUtils.setCancelledUserBooking(
+        await BookingUtils.setCancelledUserBooking(
             bookingModel.value, bookingUserModel);
-        await FireStoreUtils.removeUserBooking(
+        await BookingUtils.removeUserBooking(
             bookingModel.value, bookingUserModel);
 
         // Prepare detailed ride information
@@ -354,7 +383,7 @@ class PublishedDetailsController extends GetxController {
       bookingModel.value.publish = false;
       bookingModel.value.status = Constant.canceled;
 
-      await FireStoreUtils.setBooking(bookingModel.value);
+      await BookingUtils.setBooking(bookingModel.value);
       ShowToastDialog.closeLoader();
       ShowToastDialog.showToast("Ride cancelled successfully".tr);
       Get.back(result: true);
@@ -383,10 +412,10 @@ class PublishedDetailsController extends GetxController {
             note:
                 "Amount refunded to ${passengerUser.fullName()} for cancelled ride");
 
-        await FireStoreUtils.setWalletTransaction(publisherDeduction)
+        await WalletUtils.setWalletTransaction(publisherDeduction)
             .then((value) async {
           if (value == true) {
-            await FireStoreUtils.updateOtherUserWallet(
+            await WalletUtils.updateOtherUserWallet(
                 amount: "-${calculateAmount(bookingUserModel).toString()}",
                 id: bookingModel.value.createdBy.toString());
           }
@@ -411,10 +440,10 @@ class PublishedDetailsController extends GetxController {
               note:
                   "Admin commission reversed for ${passengerUser.fullName()} cancellation");
 
-          await FireStoreUtils.setWalletTransaction(adminCommissionReversal)
+          await WalletUtils.setWalletTransaction(adminCommissionReversal)
               .then((value) async {
             if (value == true) {
-              await FireStoreUtils.updateOtherUserWallet(
+              await WalletUtils.updateOtherUserWallet(
                   amount: adminCommissionAmount.toString(),
                   id: bookingModel.value.createdBy.toString());
             }
@@ -435,10 +464,10 @@ class PublishedDetailsController extends GetxController {
           note:
               "Refund for ride cancelled by ${publisherUserModel.value.fullName()}");
 
-      await FireStoreUtils.setWalletTransaction(passengerRefund)
+      await WalletUtils.setWalletTransaction(passengerRefund)
           .then((value) async {
         if (value == true) {
-          await FireStoreUtils.updateOtherUserWallet(
+          await WalletUtils.updateOtherUserWallet(
               amount: calculateAmount(bookingUserModel).toString(),
               id: passengerUser.id.toString());
         }
@@ -496,14 +525,14 @@ class PublishedDetailsController extends GetxController {
           type: type);
 
       // Update inbox for both users
-      await FireStoreUtils.fireStore
+      await FirebaseFirestore.instance
           .collection(CollectionName.chat)
           .doc(publisherUserModel.value.id.toString())
           .collection("inbox")
           .doc(passengerUser.id.toString())
           .set(senderInboxModel.toJson());
 
-      await FireStoreUtils.fireStore
+      await FirebaseFirestore.instance
           .collection(CollectionName.chat)
           .doc(passengerUser.id.toString())
           .collection("inbox")
@@ -523,14 +552,14 @@ class PublishedDetailsController extends GetxController {
           metadata: metadata);
 
       // Save chat message to both user conversations
-      await FireStoreUtils.fireStore
+      await FirebaseFirestore.instance
           .collection(CollectionName.chat)
           .doc(publisherUserModel.value.id.toString())
           .collection(passengerUser.id.toString())
           .doc(chatModel.chatID!)
           .set(chatModel.toJson());
 
-      await FireStoreUtils.fireStore
+      await FirebaseFirestore.instance
           .collection(CollectionName.chat)
           .doc(passengerUser.id.toString())
           .collection(publisherUserModel.value.id.toString())
@@ -546,7 +575,7 @@ class PublishedDetailsController extends GetxController {
   deleteRide() async {
     ShowToastDialog.showLoader("Please wait");
     if (bookingUserList.isEmpty) {
-      await FireStoreUtils.deleteBooking(bookingModel.value).then(
+      await BookingUtils.deleteBooking(bookingModel.value).then(
         (value) {
           ShowToastDialog.closeLoader();
           Get.back(result: true);
@@ -559,7 +588,7 @@ class PublishedDetailsController extends GetxController {
           BookedUserModel bookingUserModel = element;
           UserModel? userModel;
 
-          await FireStoreUtils.getUserProfile(bookingUserModel.id.toString())
+          await UserUtils.getUserProfile(bookingUserModel.id.toString())
               .then((value) {
             userModel = value!;
           });
@@ -648,9 +677,9 @@ class PublishedDetailsController extends GetxController {
           //   });
           // }
 
-          await FireStoreUtils.setCancelledUserBooking(
+          await BookingUtils.setCancelledUserBooking(
               bookingModel.value, bookingUserModel);
-          await FireStoreUtils.removeUserBooking(
+          await BookingUtils.removeUserBooking(
               bookingModel.value, bookingUserModel);
           await SendNotification.sendChatNotification(
               token: userModel!.fcmToken ?? "",
@@ -661,16 +690,16 @@ class PublishedDetailsController extends GetxController {
         },
       );
 
-      await FireStoreUtils.fireStore
+      await FirebaseFirestore.instance
           .collection(CollectionName.booking)
           .doc("bookedUser")
           .delete();
-      await FireStoreUtils.fireStore
+      await FirebaseFirestore.instance
           .collection(CollectionName.booking)
           .doc("cancelledUser")
           .delete();
 
-      await FireStoreUtils.deleteBooking(bookingModel.value).then(
+      await BookingUtils.deleteBooking(bookingModel.value).then(
         (value) {
           ShowToastDialog.closeLoader();
           Get.back(result: true);
@@ -683,7 +712,7 @@ class PublishedDetailsController extends GetxController {
   Rx<ReviewModel> reviewModel = ReviewModel().obs;
   Rx<UserModel> userModel = UserModel().obs;
   getReview() async {
-    await FireStoreUtils.getReview(
+    await ReviewUtils.getReview(
             bookingId: bookingModel.value.id ?? "",
             senderId: userModel.value.id ?? '')
         .then((value) {
@@ -694,7 +723,7 @@ class PublishedDetailsController extends GetxController {
   }
 
   getUserData() async {
-    await FireStoreUtils.getUserProfile(bookingModel.value.createdBy.toString())
+    await UserUtils.getUserProfile(bookingModel.value.createdBy.toString())
         .then((value) {
       publisherUserModel.value = value!;
     });

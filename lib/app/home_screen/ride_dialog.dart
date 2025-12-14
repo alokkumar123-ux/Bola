@@ -13,8 +13,11 @@ import 'package:poolmate/model/booking_model.dart';
 import 'package:poolmate/model/stop_over_model.dart';
 import 'package:poolmate/model/user_model.dart';
 import 'package:poolmate/model/map/geometry.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
 import 'widgets/seat_widgets.dart';
+import 'package:poolmate/utils/firestore/user_utils.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
+import 'package:poolmate/utils/firestore/wallet_utils.dart';
+import 'package:poolmate/utils/firestore/booking_utils.dart';
 
 // Enum to represent the different states a seat can be in
 enum SeatStatus { available, unavailable, reservedForLadies, selected, driver }
@@ -254,9 +257,9 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
       });
 
       // Clean local tracking
-      expiredSeats.forEach((seat) {
+      for (var seat in expiredSeats) {
         _tempSeatTimestamps.remove(seat);
-      });
+      }
     } catch (e) {
       print('Error cleaning up expired seats: $e');
     }
@@ -423,9 +426,9 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
 
   // Widget for displaying driver and car information
   Widget _buildDriverInfo() {
-    return FutureBuilder(
-      future: FireStoreUtils.getUserProfile(
-          widget.bookingModel.createdBy.toString()),
+    return FutureBuilder<UserModel?>(
+      future:
+          UserUtils.getUserProfile(widget.bookingModel.createdBy.toString()),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -1167,7 +1170,7 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
           children: [
             const Text('Price per seat: ',
                 style: TextStyle(color: Colors.black)),
-            Text('${Constant.amountShow(amount: pricePerSeat.toString())}',
+            Text(Constant.amountShow(amount: pricePerSeat.toString()),
                 style: const TextStyle(
                     fontWeight: FontWeight.bold, color: Colors.black)),
           ],
@@ -1177,7 +1180,7 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
           children: [
             const Text('Total payable amount: ',
                 style: TextStyle(color: Colors.black)),
-            Text('${Constant.amountShow(amount: totalAmount.toString())}',
+            Text(Constant.amountShow(amount: totalAmount.toString()),
                 style: const TextStyle(
                     fontWeight: FontWeight.bold, color: Colors.black)),
           ],
@@ -1419,7 +1422,7 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
     try {
       // Get current user
       UserModel? currentUser =
-          await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid());
+          await UserUtils.getUserProfile(AuthUtils.getCurrentUid());
       if (currentUser == null) {
         ShowToastDialog.showToast("User not found");
         return;
@@ -1449,7 +1452,7 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
       }
 
       // Get publisher user
-      UserModel? publisherUser = await FireStoreUtils.getUserProfile(
+      UserModel? publisherUser = await UserUtils.getUserProfile(
           widget.bookingModel.createdBy.toString());
       if (publisherUser == null) {
         ShowToastDialog.showToast("Driver not found");
@@ -1458,7 +1461,7 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
 
       // Check if user is already booked
       if (widget.bookingModel.bookedUserId!
-          .contains(FireStoreUtils.getCurrentUid())) {
+          .contains(AuthUtils.getCurrentUid())) {
         ShowToastDialog.showToast("You have already booked this ride");
         return;
       }
@@ -1469,7 +1472,7 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
       }
 
       // Add user to booked list
-      widget.bookingModel.bookedUserId!.add(FireStoreUtils.getCurrentUid());
+      widget.bookingModel.bookedUserId!.add(AuthUtils.getCurrentUid());
 
       // Update the bookedSeat field to store the actual seat numbers
       String currentBookedSeats = widget.bookingModel.bookedSeat ?? "";
@@ -1485,7 +1488,7 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
 
       // Create booking user model
       BookedUserModel bookingUserModel = BookedUserModel();
-      bookingUserModel.id = FireStoreUtils.getCurrentUid();
+      bookingUserModel.id = AuthUtils.getCurrentUid();
       // Generate 6-digit OTP for trip verification
       final String otp =
           (100000 + (DateTime.now().microsecondsSinceEpoch % 900000))
@@ -1538,14 +1541,18 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
       bookingUserModel.subTotal = totalAmount.toString();
 
       // Process payment if wallet is selected
+      // NOTE: Only process wallet payment if it wasn't already processed in BookingPaymentScreen
+      // The _isPaymentCompleted flag indicates payment was already done
       Map<String, dynamic>? paymentResult;
-      if (_selectedPaymentMethod.toLowerCase() == 'wallet' ||
-          _selectedPaymentMethod.toLowerCase() == 'my wallet') {
+      if ((_selectedPaymentMethod.toLowerCase() == 'wallet' ||
+              _selectedPaymentMethod.toLowerCase() == 'my wallet') &&
+          !_isPaymentCompleted) {
+        // Payment not yet processed, deduct from wallet now
         ShowToastDialog.showLoader("Processing payment...");
 
-        paymentResult = await FireStoreUtils.deductFromUserWallet(
+        paymentResult = await WalletUtils.deductFromUserWallet(
             amount: totalAmount.toString(),
-            userId: FireStoreUtils.getCurrentUid(),
+            userId: AuthUtils.getCurrentUid(),
             description:
                 "Ride booking payment - ${widget.bookingModel.pickUpAddress ?? 'Pickup'} to ${widget.bookingModel.dropAddress ?? 'Drop'}");
 
@@ -1566,7 +1573,11 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
           }
           return;
         }
+      }
 
+      // Only transfer to driver and record commission if wallet payment was used
+      if (_selectedPaymentMethod.toLowerCase() == 'wallet' ||
+          _selectedPaymentMethod.toLowerCase() == 'my wallet') {
         // Payment successful, now transfer money to driver after commission
         ShowToastDialog.showLoader("Transferring payment to driver...");
 
@@ -1579,20 +1590,20 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
 
         // Transfer money to driver's wallet
         Map<String, dynamic> driverPaymentResult =
-            await FireStoreUtils.addToDriverWallet(
+            await WalletUtils.addToDriverWallet(
                 amount: driverAmount.toString(),
                 driverId: widget.bookingModel.createdBy.toString(),
                 bookingId: widget.bookingModel.id ?? '',
                 description:
-                    "Ride booking payment received - ${widget.bookingModel.pickUpAddress ?? 'Pickup'} to ${widget.bookingModel.dropAddress ?? 'Drop'} (After ${adminCommissionRate}% commission)");
+                    "Ride booking payment received - ${widget.bookingModel.pickUpAddress ?? 'Pickup'} to ${widget.bookingModel.dropAddress ?? 'Drop'} (After $adminCommissionRate% commission)");
 
         // Record admin commission
-        await FireStoreUtils.recordAdminCommission(
+        await WalletUtils.recordAdminCommission(
           amount: adminCommissionAmount.toString(),
           bookingId: widget.bookingModel.id ?? '',
           description:
-              "Platform commission (${adminCommissionRate}%) from ride booking",
-          passengerId: FireStoreUtils.getCurrentUid(),
+              "Platform commission ($adminCommissionRate%) from ride booking",
+          passengerId: AuthUtils.getCurrentUid(),
           driverId: widget.bookingModel.createdBy.toString(),
         );
 
@@ -1653,8 +1664,7 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
       }
 
       // Save user booking
-      await FireStoreUtils.setUserBooking(
-          widget.bookingModel, bookingUserModel);
+      await BookingUtils.setUserBooking(widget.bookingModel, bookingUserModel);
 
       // Send notification to driver
       await SendNotification.sendOneNotification(
@@ -1675,7 +1685,7 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
       // Send WhatsApp notifications
       // Get current user profile for phone number
       UserModel? currentUserphone =
-          await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid());
+          await UserUtils.getUserProfile(AuthUtils.getCurrentUid());
 
       // To passenger: booking confirmed
       if (currentUserphone?.phoneNumber != null) {
@@ -1692,7 +1702,7 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
       }
 
       // Update main booking
-      await FireStoreUtils.setBooking(widget.bookingModel);
+      await BookingUtils.setBooking(widget.bookingModel);
 
       ShowToastDialog.closeLoader();
 

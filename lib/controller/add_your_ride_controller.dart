@@ -22,8 +22,12 @@ import 'package:poolmate/model/vehicle_information_model.dart';
 import 'package:poolmate/constant/send_notification.dart';
 import 'package:poolmate/firebase_options.dart';
 import 'package:poolmate/services/whatsapp_service.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
+import 'package:poolmate/utils/firestore/booking_utils.dart';
+import 'package:poolmate/utils/firestore/ridealert_utils.dart';
+import 'package:poolmate/utils/firestore/user_utils.dart';
+import 'package:poolmate/utils/firestore/vehicle_utils.dart';
 import '../themes/app_them_data.dart';
-import '../utils/fire_store_utils.dart';
 import 'package:http/http.dart' as http;
 
 class AddYourRideController extends GetxController {
@@ -65,7 +69,7 @@ class AddYourRideController extends GetxController {
       VehicleInformationModel().obs;
 
   getVehicleInformation({String? selectedId}) async {
-    await FireStoreUtils.getUserVehicleInformation().then((value) {
+    await VehicleUtils.getUserVehicleInformation().then((value) {
       if (value != null) {
         userVehicleList.value = value;
         if (selectedId != null) {
@@ -80,8 +84,7 @@ class AddYourRideController extends GetxController {
   }
 
   getUserData() async {
-    await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid())
-        .then((value) {
+    await UserUtils.getUserProfile(AuthUtils.getCurrentUid()).then((value) {
       if (value != null) {
         userModel.value = value;
       }
@@ -343,7 +346,7 @@ class AddYourRideController extends GetxController {
 
     BookingModel bookingModel = BookingModel();
     bookingModel.id = Constant.getUuid();
-    bookingModel.createdBy = FireStoreUtils.getCurrentUid();
+    bookingModel.createdBy = AuthUtils.getCurrentUid();
     bookingModel.totalSeat = numberOfSheet.value.toString();
     bookingModel.pricePerSeat = price.value.toString();
     bookingModel.pickUpAddress = pickUpLocationController.value.text;
@@ -376,7 +379,7 @@ class AddYourRideController extends GetxController {
     bookingModel.selectedSeats =
         selectedSeats.map((seat) => seat.toString()).toList();
 
-    await FireStoreUtils.setBooking(bookingModel).then((value) async {
+    await BookingUtils.setBooking(bookingModel).then((value) async {
       ShowToastDialog.closeLoader();
 
       // Send WhatsApp notification to driver about ride published
@@ -460,7 +463,7 @@ class AddYourRideController extends GetxController {
   var OldPublishRideActive = <BookingModel>[].obs;
 
   Future<List<BookingModel>> checkPublishRideBetweenIntervalTime() async {
-    return await FireStoreUtils.checkAtivePublishes() ?? <BookingModel>[];
+    return await BookingUtils.checkAtivePublishes() ?? <BookingModel>[];
   }
 
   Future<Duration> getDuration(
@@ -522,7 +525,7 @@ class AddYourRideController extends GetxController {
 
       // Get matching alerts from Firestore
       List<RideAlertModel> matchingAlerts =
-          await FireStoreUtils.getMatchingRideAlerts(booking);
+          await RideAlertUtils.getMatchingRideAlerts(booking);
 
       print('✅ Found ${matchingAlerts.length} matching alerts');
 
@@ -564,7 +567,7 @@ class AddYourRideController extends GetxController {
 
         // Get user's FCM token from their profile
         UserModel? alertUser =
-            await FireStoreUtils.getUserProfile(alert.userId ?? '');
+            await UserUtils.getUserProfile(alert.userId ?? '');
         String? fcmToken = alertUser?.fcmToken;
 
         // Send FCM notification

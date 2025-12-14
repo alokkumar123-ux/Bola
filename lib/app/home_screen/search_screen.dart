@@ -14,11 +14,13 @@ import 'package:poolmate/themes/app_them_data.dart';
 import 'package:poolmate/themes/responsive.dart';
 import 'package:poolmate/themes/round_button_fill.dart';
 import 'package:poolmate/utils/dark_theme_provider.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
 import 'package:poolmate/utils/network_image_widget.dart';
 import 'package:poolmate/app/home_screen/ride_dialog.dart';
 import 'package:poolmate/app/profile_screen/profile_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:poolmate/utils/firestore/vehicle_utils.dart';
+import 'package:poolmate/utils/firestore/user_utils.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -40,7 +42,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Future<void> _loadVehicleTypes() async {
     try {
-      final vehicleTypes = await FireStoreUtils.getVehicleType();
+      final vehicleTypes = await VehicleUtils.getVehicleType();
       if (vehicleTypes != null) {
         setState(() {
           _vehicleTypes = vehicleTypes;
@@ -135,490 +137,499 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
               elevation: 0,
             ),
-            body: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        "Showing ${controller.searchedBookingList.length} Rides",
-                        maxLines: 1,
-                        style: TextStyle(
-                          color: themeChange.getThem()
-                              ? AppThemeData.grey300
-                              : AppThemeData.grey600,
-                          fontSize: 16,
-                          overflow: TextOverflow.ellipsis,
-                          fontFamily: AppThemeData.medium,
+            body: SafeArea(
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          "Showing ${controller.searchedBookingList.length} Rides",
+                          maxLines: 1,
+                          style: TextStyle(
+                            color: themeChange.getThem()
+                                ? AppThemeData.grey300
+                                : AppThemeData.grey600,
+                            fontSize: 16,
+                            overflow: TextOverflow.ellipsis,
+                            fontFamily: AppThemeData.medium,
+                          ),
                         ),
-                      ),
-                      Spacer(),
-                      _buildVehicleTypeFilter(themeChange)
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Expanded(
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount:
-                          _getFilteredBookings(controller.searchedBookingList)
-                              .length,
-                      itemBuilder: (context, index) {
-                        BookingModel bookingModel = _getFilteredBookings(
-                            controller.searchedBookingList)[index];
+                        Spacer(),
+                        _buildVehicleTypeFilter(themeChange)
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount:
+                            _getFilteredBookings(controller.searchedBookingList)
+                                .length,
+                        itemBuilder: (context, index) {
+                          BookingModel bookingModel = _getFilteredBookings(
+                              controller.searchedBookingList)[index];
 
-                        return FutureBuilder<StopOverModel?>(
-                            future: controller.getPrice(bookingModel),
-                            builder: (context, snapshot) {
-                              switch (snapshot.connectionState) {
-                                case ConnectionState.waiting:
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 60),
-                                    child: Center(child: Constant.loader()),
-                                  );
-                                case ConnectionState.done:
-                                  if (snapshot.hasError) {
-                                    return Text(snapshot.error.toString());
-                                  } else if (snapshot.data == null) {
-                                    return SizedBox();
-                                  } else {
-                                    StopOverModel stopOverModel =
-                                        snapshot.data!;
-                                    return InkWell(
-                                      onTap: () async {
-                                        // Check if user is verified before showing ride dialog
-                                        await _checkUserVerificationAndShowDialog(
-                                          context,
-                                          bookingModel,
-                                          stopOverModel,
-                                        );
-                                      },
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 5),
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            color: themeChange.getThem()
-                                                ? AppThemeData.grey900
-                                                : AppThemeData.grey50,
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                          ),
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(20),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  children: [
-                                                    Expanded(
-                                                      child: RichText(
-                                                        text: TextSpan(
-                                                          style:
-                                                              Theme.of(context)
-                                                                  .textTheme
-                                                                  .bodyLarge,
-                                                          children: [
-                                                            // Use address strings instead of geocoding
-                                                            TextSpan(
-                                                              text: stopOverModel
-                                                                      .startAddress
-                                                                      ?.split(
-                                                                          ',')
-                                                                      .first ??
-                                                                  'Location',
-                                                              style: TextStyle(
-                                                                  color: themeChange.getThem()
-                                                                      ? AppThemeData
-                                                                          .grey100
-                                                                      : AppThemeData
-                                                                          .grey800,
-                                                                  fontFamily:
-                                                                      AppThemeData
-                                                                          .bold,
-                                                                  fontSize: 14),
-                                                            ),
-                                                            WidgetSpan(
-                                                              child: Padding(
-                                                                padding: const EdgeInsets
-                                                                    .symmetric(
-                                                                    horizontal:
-                                                                        10),
-                                                                child: SvgPicture
-                                                                    .asset(
-                                                                        "assets/icons/ic_right_arrow.svg"),
+                          return FutureBuilder<StopOverModel?>(
+                              future: controller.getPrice(bookingModel),
+                              builder: (context, snapshot) {
+                                switch (snapshot.connectionState) {
+                                  case ConnectionState.waiting:
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 60),
+                                      child: Center(child: Constant.loader()),
+                                    );
+                                  case ConnectionState.done:
+                                    if (snapshot.hasError) {
+                                      return Text(snapshot.error.toString());
+                                    } else if (snapshot.data == null) {
+                                      return SizedBox();
+                                    } else {
+                                      StopOverModel stopOverModel =
+                                          snapshot.data!;
+                                      return InkWell(
+                                        onTap: () async {
+                                          // Check if user is verified before showing ride dialog
+                                          await _checkUserVerificationAndShowDialog(
+                                            context,
+                                            bookingModel,
+                                            stopOverModel,
+                                          );
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 5),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: themeChange.getThem()
+                                                  ? AppThemeData.grey900
+                                                  : AppThemeData.grey50,
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(20),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: RichText(
+                                                          text: TextSpan(
+                                                            style: Theme.of(
+                                                                    context)
+                                                                .textTheme
+                                                                .bodyLarge,
+                                                            children: [
+                                                              // Use address strings instead of geocoding
+                                                              TextSpan(
+                                                                text: stopOverModel
+                                                                        .startAddress
+                                                                        ?.split(
+                                                                            ',')
+                                                                        .first ??
+                                                                    'Location',
+                                                                style: TextStyle(
+                                                                    color: themeChange.getThem()
+                                                                        ? AppThemeData
+                                                                            .grey100
+                                                                        : AppThemeData
+                                                                            .grey800,
+                                                                    fontFamily:
+                                                                        AppThemeData
+                                                                            .bold,
+                                                                    fontSize:
+                                                                        14),
                                                               ),
-                                                            ),
-                                                            TextSpan(
-                                                              text: stopOverModel
-                                                                      .endAddress
-                                                                      ?.split(
-                                                                          ',')
-                                                                      .first ??
-                                                                  'Location',
-                                                              style: TextStyle(
-                                                                  color: themeChange.getThem()
-                                                                      ? AppThemeData
-                                                                          .grey100
-                                                                      : AppThemeData
-                                                                          .grey800,
-                                                                  fontFamily:
-                                                                      AppThemeData
-                                                                          .bold,
-                                                                  fontSize: 14),
-                                                            ),
-                                                          ],
+                                                              WidgetSpan(
+                                                                child: Padding(
+                                                                  padding: const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          10),
+                                                                  child: SvgPicture
+                                                                      .asset(
+                                                                          "assets/icons/ic_right_arrow.svg"),
+                                                                ),
+                                                              ),
+                                                              TextSpan(
+                                                                text: stopOverModel
+                                                                        .endAddress
+                                                                        ?.split(
+                                                                            ',')
+                                                                        .first ??
+                                                                    'Location',
+                                                                style: TextStyle(
+                                                                    color: themeChange.getThem()
+                                                                        ? AppThemeData
+                                                                            .grey100
+                                                                        : AppThemeData
+                                                                            .grey800,
+                                                                    fontFamily:
+                                                                        AppThemeData
+                                                                            .bold,
+                                                                    fontSize:
+                                                                        14),
+                                                              ),
+                                                            ],
+                                                          ),
                                                         ),
                                                       ),
-                                                    ),
-                                                    Text(
-                                                      Constant.amountShow(
-                                                          amount: controller
-                                                              .getCorrectPrice(
-                                                                  bookingModel,
-                                                                  stopOverModel)
-                                                              .toString()),
-                                                      maxLines: 1,
-                                                      style: TextStyle(
-                                                        color: themeChange
-                                                                .getThem()
-                                                            ? AppThemeData
-                                                                .grey100
-                                                            : AppThemeData
-                                                                .grey800,
-                                                        fontSize: 16,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        fontFamily:
-                                                            AppThemeData.bold,
+                                                      Text(
+                                                        Constant.amountShow(
+                                                            amount: controller
+                                                                .getCorrectPrice(
+                                                                    bookingModel,
+                                                                    stopOverModel)
+                                                                .toString()),
+                                                        maxLines: 1,
+                                                        style: TextStyle(
+                                                          color: themeChange
+                                                                  .getThem()
+                                                              ? AppThemeData
+                                                                  .grey100
+                                                              : AppThemeData
+                                                                  .grey800,
+                                                          fontSize: 16,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          fontFamily:
+                                                              AppThemeData.bold,
+                                                        ),
                                                       ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(
-                                                  height: 5,
-                                                ),
-                                                Text(
-                                                  Constant.timestampToDateTime(
-                                                      bookingModel
-                                                          .departureDateTime!),
-                                                  maxLines: 1,
-                                                  style: TextStyle(
-                                                    color: themeChange.getThem()
-                                                        ? AppThemeData.grey200
-                                                        : AppThemeData.grey700,
-                                                    fontSize: 12,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    fontFamily:
-                                                        AppThemeData.regular,
+                                                    ],
                                                   ),
-                                                ),
-                                                const SizedBox(
-                                                  height: 10,
-                                                ),
-                                                Row(
-                                                  children: [
-                                                    SvgPicture.asset(
-                                                      "assets/icons/ic_walk.svg",
-                                                      colorFilter:
-                                                          const ColorFilter
-                                                              .mode(
-                                                              AppThemeData
-                                                                  .secondary300,
-                                                              BlendMode.srcIn),
+                                                  const SizedBox(
+                                                    height: 5,
+                                                  ),
+                                                  Text(
+                                                    Constant.timestampToDateTime(
+                                                        bookingModel
+                                                            .departureDateTime!),
+                                                    maxLines: 1,
+                                                    style: TextStyle(
+                                                      color: themeChange
+                                                              .getThem()
+                                                          ? AppThemeData.grey200
+                                                          : AppThemeData
+                                                              .grey700,
+                                                      fontSize: 12,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      fontFamily:
+                                                          AppThemeData.regular,
                                                     ),
-                                                    Text(
-                                                      "${Constant.calculateDistance(Location(lat: stopOverModel.startLocation!.lat, lng: stopOverModel.startLocation!.lng), controller.pickUpLocation.value).toStringAsFixed(2)} ${Constant.distanceType}",
-                                                      maxLines: 1,
-                                                      style: TextStyle(
-                                                        color: themeChange
-                                                                .getThem()
-                                                            ? AppThemeData
-                                                                .grey200
-                                                            : AppThemeData
-                                                                .grey700,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        fontFamily: AppThemeData
-                                                            .regular,
-                                                      ),
-                                                    ),
-                                                    const Icon(
-                                                      Icons
-                                                          .chevron_right_outlined,
-                                                      color:
-                                                          AppThemeData.grey700,
-                                                    ),
-                                                    // Show icon based on vehicle type
-                                                    _isMotorcycleType(bookingModel
-                                                            .vehicleInformation
-                                                            ?.vehicleType
-                                                            ?.name)
-                                                        ? Icon(
-                                                            Icons.motorcycle,
-                                                            color: themeChange
-                                                                    .getThem()
-                                                                ? AppThemeData
-                                                                    .grey300
-                                                                : AppThemeData
-                                                                    .grey600,
-                                                            size: 20,
-                                                          )
-                                                        : SvgPicture.asset(
-                                                            "assets/icons/ic_car.svg",
-                                                            colorFilter: ColorFilter.mode(
-                                                                themeChange
-                                                                        .getThem()
-                                                                    ? AppThemeData
-                                                                        .grey300
-                                                                    : AppThemeData
-                                                                        .grey600,
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  Row(
+                                                    children: [
+                                                      SvgPicture.asset(
+                                                        "assets/icons/ic_walk.svg",
+                                                        colorFilter:
+                                                            const ColorFilter
+                                                                .mode(
+                                                                AppThemeData
+                                                                    .secondary300,
                                                                 BlendMode
                                                                     .srcIn),
-                                                          ),
-                                                    const Icon(
-                                                      Icons
-                                                          .chevron_right_outlined,
-                                                      color:
-                                                          AppThemeData.grey700,
-                                                    ),
-                                                    SvgPicture.asset(
-                                                      "assets/icons/ic_walk.svg",
-                                                      colorFilter:
-                                                          const ColorFilter
-                                                              .mode(
-                                                              AppThemeData
-                                                                  .success400,
-                                                              BlendMode.srcIn),
-                                                    ),
-                                                    Text(
-                                                      "${Constant.calculateDistance(Location(lat: stopOverModel.endLocation!.lat, lng: stopOverModel.endLocation!.lng), controller.dropLocation.value).toStringAsFixed(2)} ${Constant.distanceType}",
-                                                      maxLines: 1,
-                                                      style: TextStyle(
-                                                        color: themeChange
-                                                                .getThem()
-                                                            ? AppThemeData
-                                                                .grey200
-                                                            : AppThemeData
-                                                                .grey700,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        fontFamily: AppThemeData
-                                                            .regular,
                                                       ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 16),
-                                                Text(
-                                                  '${_calculateAvailableSeats(bookingModel, stopOverModel)} seats available',
-                                                  style: TextStyle(
-                                                    color: themeChange.getThem()
-                                                        ? AppThemeData.grey200
-                                                        : AppThemeData.grey700,
-                                                    fontSize: 14,
-                                                    fontFamily:
-                                                        AppThemeData.medium,
+                                                      Text(
+                                                        "${Constant.calculateDistance(Location(lat: stopOverModel.startLocation!.lat, lng: stopOverModel.startLocation!.lng), controller.pickUpLocation.value).toStringAsFixed(2)} ${Constant.distanceType}",
+                                                        maxLines: 1,
+                                                        style: TextStyle(
+                                                          color: themeChange
+                                                                  .getThem()
+                                                              ? AppThemeData
+                                                                  .grey200
+                                                              : AppThemeData
+                                                                  .grey700,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          fontFamily:
+                                                              AppThemeData
+                                                                  .regular,
+                                                        ),
+                                                      ),
+                                                      const Icon(
+                                                        Icons
+                                                            .chevron_right_outlined,
+                                                        color: AppThemeData
+                                                            .grey700,
+                                                      ),
+                                                      // Show icon based on vehicle type
+                                                      _isMotorcycleType(bookingModel
+                                                              .vehicleInformation
+                                                              ?.vehicleType
+                                                              ?.name)
+                                                          ? Icon(
+                                                              Icons.motorcycle,
+                                                              color: themeChange
+                                                                      .getThem()
+                                                                  ? AppThemeData
+                                                                      .grey300
+                                                                  : AppThemeData
+                                                                      .grey600,
+                                                              size: 20,
+                                                            )
+                                                          : SvgPicture.asset(
+                                                              "assets/icons/ic_car.svg",
+                                                              colorFilter: ColorFilter.mode(
+                                                                  themeChange
+                                                                          .getThem()
+                                                                      ? AppThemeData
+                                                                          .grey300
+                                                                      : AppThemeData
+                                                                          .grey600,
+                                                                  BlendMode
+                                                                      .srcIn),
+                                                            ),
+                                                      const Icon(
+                                                        Icons
+                                                            .chevron_right_outlined,
+                                                        color: AppThemeData
+                                                            .grey700,
+                                                      ),
+                                                      SvgPicture.asset(
+                                                        "assets/icons/ic_walk.svg",
+                                                        colorFilter:
+                                                            const ColorFilter
+                                                                .mode(
+                                                                AppThemeData
+                                                                    .success400,
+                                                                BlendMode
+                                                                    .srcIn),
+                                                      ),
+                                                      Text(
+                                                        "${Constant.calculateDistance(Location(lat: stopOverModel.endLocation!.lat, lng: stopOverModel.endLocation!.lng), controller.dropLocation.value).toStringAsFixed(2)} ${Constant.distanceType}",
+                                                        maxLines: 1,
+                                                        style: TextStyle(
+                                                          color: themeChange
+                                                                  .getThem()
+                                                              ? AppThemeData
+                                                                  .grey200
+                                                              : AppThemeData
+                                                                  .grey700,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          fontFamily:
+                                                              AppThemeData
+                                                                  .regular,
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
-                                                ),
-                                                const Padding(
-                                                  padding: EdgeInsets.symmetric(
-                                                      vertical: 10),
-                                                  child: Divider(),
-                                                ),
-                                                FutureBuilder<UserModel?>(
-                                                    future: FireStoreUtils
-                                                        .getUserProfile(
-                                                            bookingModel
-                                                                .createdBy
-                                                                .toString()),
-                                                    builder:
-                                                        (context, snapshot) {
-                                                      switch (snapshot
-                                                          .connectionState) {
-                                                        case ConnectionState
-                                                              .waiting:
-                                                          return Center(
-                                                              child: Constant
-                                                                  .loader());
-                                                        case ConnectionState
-                                                              .done:
-                                                          if (snapshot
-                                                              .hasError) {
-                                                            return Text(snapshot
-                                                                .error
-                                                                .toString());
-                                                          } else {
-                                                            UserModel?
-                                                                userModel =
-                                                                snapshot.data;
-                                                            return userModel
-                                                                        ?.id ==
-                                                                    null
-                                                                ? Padding(
-                                                                    padding: const EdgeInsets
-                                                                        .symmetric(
-                                                                        vertical:
-                                                                            4),
-                                                                    child:
-                                                                        Center(
+                                                  const SizedBox(height: 16),
+                                                  Text(
+                                                    '${_calculateAvailableSeats(bookingModel, stopOverModel)} seats available',
+                                                    style: TextStyle(
+                                                      color: themeChange
+                                                              .getThem()
+                                                          ? AppThemeData.grey200
+                                                          : AppThemeData
+                                                              .grey700,
+                                                      fontSize: 14,
+                                                      fontFamily:
+                                                          AppThemeData.medium,
+                                                    ),
+                                                  ),
+                                                  const Padding(
+                                                    padding:
+                                                        EdgeInsets.symmetric(
+                                                            vertical: 10),
+                                                    child: Divider(),
+                                                  ),
+                                                  FutureBuilder<UserModel?>(
+                                                      future: UserUtils
+                                                          .getUserProfile(
+                                                              bookingModel
+                                                                  .createdBy
+                                                                  .toString()),
+                                                      builder:
+                                                          (context, snapshot) {
+                                                        switch (snapshot
+                                                            .connectionState) {
+                                                          case ConnectionState
+                                                                .waiting:
+                                                            return Center(
+                                                                child: Constant
+                                                                    .loader());
+                                                          case ConnectionState
+                                                                .done:
+                                                            if (snapshot
+                                                                .hasError) {
+                                                              return Text(snapshot
+                                                                  .error
+                                                                  .toString());
+                                                            } else {
+                                                              UserModel?
+                                                                  userModel =
+                                                                  snapshot.data;
+                                                              return userModel
+                                                                          ?.id ==
+                                                                      null
+                                                                  ? Padding(
+                                                                      padding: const EdgeInsets
+                                                                          .symmetric(
+                                                                          vertical:
+                                                                              4),
                                                                       child:
-                                                                          Text(
-                                                                        'Driver is not available'
-                                                                            .tr,
-                                                                        style:
-                                                                            TextStyle(
-                                                                          color: themeChange.getThem()
-                                                                              ? AppThemeData.grey100
-                                                                              : AppThemeData.grey800,
-                                                                          fontFamily:
-                                                                              AppThemeData.medium,
-                                                                          fontSize:
-                                                                              16,
+                                                                          Center(
+                                                                        child:
+                                                                            Text(
+                                                                          'Driver is not available'
+                                                                              .tr,
+                                                                          style:
+                                                                              TextStyle(
+                                                                            color: themeChange.getThem()
+                                                                                ? AppThemeData.grey100
+                                                                                : AppThemeData.grey800,
+                                                                            fontFamily:
+                                                                                AppThemeData.medium,
+                                                                            fontSize:
+                                                                                16,
+                                                                          ),
                                                                         ),
                                                                       ),
-                                                                    ),
-                                                                  )
-                                                                : Row(
-                                                                    children: [
-                                                                      Stack(
-                                                                        children: [
-                                                                          ClipRRect(
-                                                                            borderRadius:
-                                                                                BorderRadius.circular(60),
-                                                                            child:
-                                                                                NetworkImageWidget(
-                                                                              fit: BoxFit.cover,
-                                                                              imageUrl: userModel!.profilePic.toString(),
-                                                                              height: Responsive.width(10, context),
-                                                                              width: Responsive.width(10, context),
-                                                                            ),
-                                                                          ),
-                                                                          bookingModel.driverVerify == true
-                                                                              ? Positioned(bottom: 0, right: 0, child: SvgPicture.asset("assets/icons/ic_verify.svg"))
-                                                                              : const SizedBox()
-                                                                        ],
-                                                                      ),
-                                                                      const SizedBox(
-                                                                        width:
-                                                                            10,
-                                                                      ),
-                                                                      Expanded(
-                                                                        child:
-                                                                            Column(
-                                                                          crossAxisAlignment:
-                                                                              CrossAxisAlignment.start,
+                                                                    )
+                                                                  : Row(
+                                                                      children: [
+                                                                        Stack(
                                                                           children: [
-                                                                            Text(
-                                                                              userModel.fullName().toString(),
-                                                                              style: TextStyle(color: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800, fontFamily: AppThemeData.medium, fontSize: 16),
+                                                                            ClipRRect(
+                                                                              borderRadius: BorderRadius.circular(60),
+                                                                              child: NetworkImageWidget(
+                                                                                fit: BoxFit.cover,
+                                                                                imageUrl: userModel!.profilePic.toString(),
+                                                                                height: Responsive.width(10, context),
+                                                                                width: Responsive.width(10, context),
+                                                                              ),
                                                                             ),
-                                                                            Row(
-                                                                              children: [
-                                                                                Text(
-                                                                                  Constant.calculateReview(reviewCount: userModel.reviewCount, reviewSum: userModel.reviewSum),
-                                                                                  style: TextStyle(color: themeChange.getThem() ? AppThemeData.grey200 : AppThemeData.grey700, fontFamily: AppThemeData.medium, fontSize: 14),
-                                                                                ),
-                                                                                const SizedBox(
-                                                                                  width: 5,
-                                                                                ),
-                                                                                Icon(
-                                                                                  Icons.star,
-                                                                                  size: 14,
-                                                                                  color: themeChange.getThem() ? AppThemeData.grey200 : AppThemeData.grey700,
-                                                                                ),
-                                                                                const SizedBox(
-                                                                                  width: 5,
-                                                                                ),
-                                                                                Text(
-                                                                                  "•",
-                                                                                  style: TextStyle(color: themeChange.getThem() ? AppThemeData.grey500 : AppThemeData.grey500, fontFamily: AppThemeData.medium, fontSize: 14),
-                                                                                ),
-                                                                                const SizedBox(
-                                                                                  width: 5,
-                                                                                ),
-                                                                                InkWell(
-                                                                                  onTap: () {
-                                                                                    Get.to(const RatingViewScreen(), arguments: {
-                                                                                      "receiverUserId": userModel.id
-                                                                                    });
-                                                                                  },
-                                                                                  child: Text(
-                                                                                    "${double.parse(userModel.reviewCount ?? "0").toStringAsFixed(0)} Ratings",
-                                                                                    style: TextStyle(decoration: TextDecoration.underline, decorationColor: AppThemeData.primary300, color: themeChange.getThem() ? AppThemeData.primary300 : AppThemeData.primary300, fontFamily: AppThemeData.medium, fontSize: 14),
-                                                                                  ),
-                                                                                ),
-                                                                              ],
-                                                                            ),
+                                                                            bookingModel.driverVerify == true
+                                                                                ? Positioned(bottom: 0, right: 0, child: SvgPicture.asset("assets/icons/ic_verify.svg"))
+                                                                                : const SizedBox()
                                                                           ],
                                                                         ),
-                                                                      ),
-                                                                      bookingModel.driverVerify ==
-                                                                              true
-                                                                          ? RoundedButtonFill(
-                                                                              title: "Safe",
-                                                                              color: AppThemeData.info400,
-                                                                              textColor: AppThemeData.grey50,
-                                                                              width: 14,
-                                                                              height: 4,
-                                                                              onPress: () {},
-                                                                            )
-                                                                          : const SizedBox(),
-                                                                      const SizedBox(
-                                                                        width:
-                                                                            5,
-                                                                      ),
-                                                                      bookingModel.womenOnly ==
-                                                                              false
-                                                                          ? const SizedBox()
-                                                                          : SvgPicture
-                                                                              .asset(
-                                                                              "assets/icons/ic_woman_icon.svg",
-                                                                              colorFilter: ColorFilter.mode(themeChange.getThem() ? Colors.pink : Colors.pink, BlendMode.srcIn),
-                                                                            ),
-                                                                      const SizedBox(
-                                                                        width:
-                                                                            10,
-                                                                      ),
-                                                                      SvgPicture
-                                                                          .asset(
-                                                                        "assets/icons/ic_luggage.svg",
-                                                                        colorFilter: ColorFilter.mode(
-                                                                            themeChange.getThem()
-                                                                                ? AppThemeData.grey300
-                                                                                : AppThemeData.grey600,
-                                                                            BlendMode.srcIn),
-                                                                      )
-                                                                    ],
-                                                                  );
-                                                          }
-                                                        default:
-                                                          return Text(
-                                                              'Error'.tr);
-                                                      }
-                                                    })
-                                              ],
+                                                                        const SizedBox(
+                                                                          width:
+                                                                              10,
+                                                                        ),
+                                                                        Expanded(
+                                                                          child:
+                                                                              Column(
+                                                                            crossAxisAlignment:
+                                                                                CrossAxisAlignment.start,
+                                                                            children: [
+                                                                              Text(
+                                                                                userModel.fullName().toString(),
+                                                                                style: TextStyle(color: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800, fontFamily: AppThemeData.medium, fontSize: 16),
+                                                                              ),
+                                                                              Row(
+                                                                                children: [
+                                                                                  Text(
+                                                                                    Constant.calculateReview(reviewCount: userModel.reviewCount, reviewSum: userModel.reviewSum),
+                                                                                    style: TextStyle(color: themeChange.getThem() ? AppThemeData.grey200 : AppThemeData.grey700, fontFamily: AppThemeData.medium, fontSize: 14),
+                                                                                  ),
+                                                                                  const SizedBox(
+                                                                                    width: 5,
+                                                                                  ),
+                                                                                  Icon(
+                                                                                    Icons.star,
+                                                                                    size: 14,
+                                                                                    color: themeChange.getThem() ? AppThemeData.grey200 : AppThemeData.grey700,
+                                                                                  ),
+                                                                                  const SizedBox(
+                                                                                    width: 5,
+                                                                                  ),
+                                                                                  Text(
+                                                                                    "•",
+                                                                                    style: TextStyle(color: themeChange.getThem() ? AppThemeData.grey500 : AppThemeData.grey500, fontFamily: AppThemeData.medium, fontSize: 14),
+                                                                                  ),
+                                                                                  const SizedBox(
+                                                                                    width: 5,
+                                                                                  ),
+                                                                                  InkWell(
+                                                                                    onTap: () {
+                                                                                      Get.to(const RatingViewScreen(), arguments: {
+                                                                                        "receiverUserId": userModel.id
+                                                                                      });
+                                                                                    },
+                                                                                    child: Text(
+                                                                                      "${double.parse(userModel.reviewCount ?? "0").toStringAsFixed(0)} Ratings",
+                                                                                      style: TextStyle(decoration: TextDecoration.underline, decorationColor: AppThemeData.primary300, color: themeChange.getThem() ? AppThemeData.primary300 : AppThemeData.primary300, fontFamily: AppThemeData.medium, fontSize: 14),
+                                                                                    ),
+                                                                                  ),
+                                                                                ],
+                                                                              ),
+                                                                            ],
+                                                                          ),
+                                                                        ),
+                                                                        bookingModel.driverVerify ==
+                                                                                true
+                                                                            ? RoundedButtonFill(
+                                                                                title: "Safe",
+                                                                                color: AppThemeData.info400,
+                                                                                textColor: AppThemeData.grey50,
+                                                                                width: 14,
+                                                                                height: 4,
+                                                                                onPress: () {},
+                                                                              )
+                                                                            : const SizedBox(),
+                                                                        const SizedBox(
+                                                                          width:
+                                                                              5,
+                                                                        ),
+                                                                        bookingModel.womenOnly ==
+                                                                                false
+                                                                            ? const SizedBox()
+                                                                            : SvgPicture.asset(
+                                                                                "assets/icons/ic_woman_icon.svg",
+                                                                                colorFilter: ColorFilter.mode(themeChange.getThem() ? Colors.pink : Colors.pink, BlendMode.srcIn),
+                                                                              ),
+                                                                        const SizedBox(
+                                                                          width:
+                                                                              10,
+                                                                        ),
+                                                                        SvgPicture
+                                                                            .asset(
+                                                                          "assets/icons/ic_luggage.svg",
+                                                                          colorFilter: ColorFilter.mode(
+                                                                              themeChange.getThem() ? AppThemeData.grey300 : AppThemeData.grey600,
+                                                                              BlendMode.srcIn),
+                                                                        )
+                                                                      ],
+                                                                    );
+                                                            }
+                                                          default:
+                                                            return Text(
+                                                                'Error'.tr);
+                                                        }
+                                                      })
+                                                ],
+                                              ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                    );
-                                  }
-                                default:
-                                  return SizedBox();
-                              }
-                            });
-                      },
-                    ),
-                  )
-                ],
+                                      );
+                                    }
+                                  default:
+                                    return SizedBox();
+                                }
+                              });
+                        },
+                      ),
+                    )
+                  ],
+                ),
               ),
             ),
             floatingActionButtonLocation:
@@ -780,7 +791,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                   scale: 0.8,
                                   child: CupertinoSwitch(
                                     value: controller.verifyDriver.value,
-                                    activeColor: AppThemeData.primary300,
+                                    activeTrackColor: AppThemeData.primary300,
                                     onChanged: (value) {
                                       controller.verifyDriver.value = value;
                                     },
@@ -805,7 +816,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                   scale: 0.8,
                                   child: CupertinoSwitch(
                                     value: controller.isWoman.value,
-                                    activeColor: AppThemeData.primary300,
+                                    activeTrackColor: AppThemeData.primary300,
                                     onChanged: (value) {
                                       controller.isWoman.value = value;
                                     },
@@ -1245,7 +1256,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   ],
                 ),
               );
-            }).toList(),
+            }),
           ],
           onChanged: (VehicleTypeModel? newValue) {
             setState(() {
@@ -1332,7 +1343,7 @@ class _SearchScreenState extends State<SearchScreen> {
     try {
       // Get current user
       UserModel? currentUser =
-          await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid());
+          await UserUtils.getUserProfile(AuthUtils.getCurrentUid());
 
       if (currentUser == null) {
         return; // User not found, do nothing

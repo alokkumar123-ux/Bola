@@ -1,9 +1,10 @@
 import 'package:get/get.dart';
 import 'package:poolmate/model/vehicle_information_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/vehicle_utils.dart';
 
 class VehicleListController extends GetxController {
-  RxList<VehicleInformationModel> userVehicleList = <VehicleInformationModel>[].obs;
+  RxList<VehicleInformationModel> userVehicleList =
+      <VehicleInformationModel>[].obs;
 
   @override
   void onInit() {
@@ -15,7 +16,7 @@ class VehicleListController extends GetxController {
   RxBool isLoading = true.obs;
 
   getVehicleInformation() async {
-    await FireStoreUtils.getUserVehicleInformation().then((value) {
+    await VehicleUtils.getUserVehicleInformation().then((value) {
       if (value != null) {
         userVehicleList.value = value;
       }

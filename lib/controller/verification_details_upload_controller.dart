@@ -8,12 +8,14 @@ import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/constant/show_toast_dialog.dart';
 import 'package:poolmate/model/document_model.dart';
 import 'package:poolmate/model/user_verification_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/document_utils.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
 
 class DetailsUploadController extends GetxController {
   Rx<DocumentModel> documentModel = DocumentModel().obs;
 
-  Rx<TextEditingController> documentNumberController = TextEditingController().obs;
+  Rx<TextEditingController> documentNumberController =
+      TextEditingController().obs;
   Rx<DateTime?> selectedDate = DateTime.now().obs;
 
   RxString frontImage = "".obs;
@@ -40,12 +42,14 @@ class DetailsUploadController extends GetxController {
   Rx<Documents> documents = Documents().obs;
 
   getDocument() async {
-    await FireStoreUtils.getDocumentOfDriver().then((value) {
+    await DocumentUtils.getDocumentOfDriver().then((value) {
       isLoading.value = false;
       if (value != null) {
-        var contain = value.documents!.where((element) => element.documentId == documentModel.value.id);
+        var contain = value.documents!
+            .where((element) => element.documentId == documentModel.value.id);
         if (contain.isNotEmpty) {
-          documents.value = value.documents!.firstWhere((itemToCheck) => itemToCheck.documentId == documentModel.value.id);
+          documents.value = value.documents!.firstWhere((itemToCheck) =>
+              itemToCheck.documentId == documentModel.value.id);
           documentNumberController.value.text = documents.value.documentNumber!;
           frontImage.value = documents.value.frontImage!;
           backImage.value = documents.value.backImage!;
@@ -72,17 +76,24 @@ class DetailsUploadController extends GetxController {
     }
   }
 
-
   uploadDocument() async {
     String frontImageFileName = File(frontImage.value).path.split('/').last;
     String backImageFileName = File(backImage.value).path.split('/').last;
 
-    if(frontImage.value.isNotEmpty && Constant().hasValidUrl(frontImage.value) == false){
-      frontImage.value = await Constant.uploadUserImageToFireStorage(File(frontImage.value), "driverDocument/${FireStoreUtils.getCurrentUid()}", frontImageFileName);
+    if (frontImage.value.isNotEmpty &&
+        Constant().hasValidUrl(frontImage.value) == false) {
+      frontImage.value = await Constant.uploadUserImageToFireStorage(
+          File(frontImage.value),
+          "driverDocument/${AuthUtils.getCurrentUid()}",
+          frontImageFileName);
     }
 
-    if(backImage.value.isNotEmpty && Constant().hasValidUrl(backImage.value) == false){
-      backImage.value = await Constant.uploadUserImageToFireStorage(File(backImage.value), "driverDocument/${FireStoreUtils.getCurrentUid()}", backImageFileName);
+    if (backImage.value.isNotEmpty &&
+        Constant().hasValidUrl(backImage.value) == false) {
+      backImage.value = await Constant.uploadUserImageToFireStorage(
+          File(backImage.value),
+          "driverDocument/${AuthUtils.getCurrentUid()}",
+          backImageFileName);
     }
     documents.value.frontImage = frontImage.value;
     documents.value.backImage = backImage.value;
@@ -91,8 +102,7 @@ class DetailsUploadController extends GetxController {
     documents.value.verified = false;
     documents.value.status = "uploaded";
 
-
-    await FireStoreUtils.uploadDriverDocument(documents.value).then((value) {
+    await DocumentUtils.uploadDriverDocument(documents.value).then((value) {
       if (value) {
         ShowToastDialog.closeLoader();
         ShowToastDialog.showToast("Document upload successfully");

@@ -26,7 +26,9 @@ import 'package:poolmate/themes/custom_dialog_box.dart';
 import 'package:poolmate/themes/responsive.dart';
 import 'package:poolmate/themes/round_button_fill.dart';
 import 'package:poolmate/utils/dark_theme_provider.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/user_utils.dart';
+import 'package:poolmate/utils/firestore/review_utils.dart';
+import 'package:poolmate/utils/firestore/booking_utils.dart';
 import 'package:poolmate/utils/network_image_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:timelines_plus/timelines_plus.dart';
@@ -141,7 +143,8 @@ class PublishedDetailsScreen extends StatelessWidget {
                                           onTap: () {
                                             showDialog(
                                                 context: context,
-                                                builder: (BuildContext context) {
+                                                builder:
+                                                    (BuildContext context) {
                                                   return CustomDialogBox(
                                                     title: "Cancel Ride".tr,
                                                     descriptions:
@@ -225,7 +228,8 @@ class PublishedDetailsScreen extends StatelessWidget {
                                   ),
                                   Text(
                                     Constant.orderIdwithoutHash(
-                                        orderId: controller.bookingModel.value.id
+                                        orderId: controller
+                                            .bookingModel.value.id
                                             .toString()),
                                     maxLines: 1,
                                     style: TextStyle(
@@ -423,7 +427,8 @@ class PublishedDetailsScreen extends StatelessWidget {
                                   decoration: ShapeDecoration(
                                     color: index == 0
                                         ? AppThemeData.warning100
-                                        : controller.stopOver.length - 1 == index
+                                        : controller.stopOver.length - 1 ==
+                                                index
                                             ? AppThemeData.success100
                                             : AppThemeData.grey100,
                                     shape: const OvalBorder(),
@@ -443,14 +448,16 @@ class PublishedDetailsScreen extends StatelessWidget {
                                   ),
                                 );
                               },
-                              connectorBuilder: (context, index, connectorType) {
+                              connectorBuilder:
+                                  (context, index, connectorType) {
                                 return const DashedLineConnector(
                                   color: AppThemeData.grey300,
                                   gap: 4,
                                 );
                               },
                               contentsBuilder: (context, index) {
-                                CityModel cityModel = controller.stopOver[index];
+                                CityModel cityModel =
+                                    controller.stopOver[index];
                                 return Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16, vertical: 14),
@@ -464,36 +471,40 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                     color: themeChange.getThem()
                                                         ? AppThemeData.grey100
                                                         : AppThemeData.grey800,
-                                                    fontFamily: AppThemeData.bold,
+                                                    fontFamily: AppThemeData
+                                                        .bold,
                                                     fontSize: 14)
                                                 : index ==
-                                                        controller
-                                                                .stopOver.length -
+                                                        controller.stopOver
+                                                                .length -
                                                             1
                                                     ? TextStyle(
                                                         color: themeChange
                                                                 .getThem()
-                                                            ? AppThemeData.grey100
+                                                            ? AppThemeData
+                                                                .grey100
                                                             : AppThemeData
                                                                 .grey800,
-                                                        fontFamily:
-                                                            AppThemeData.bold,
+                                                        fontFamily: AppThemeData
+                                                            .bold,
                                                         fontSize: 14)
                                                     : TextStyle(
                                                         color: themeChange
                                                                 .getThem()
-                                                            ? AppThemeData.grey100
+                                                            ? AppThemeData
+                                                                .grey100
                                                             : AppThemeData
                                                                 .grey800,
-                                                        fontFamily:
-                                                            AppThemeData.regular,
+                                                        fontFamily: AppThemeData
+                                                            .regular,
                                                         fontSize: 14)),
                                       ),
                                       RoundedButtonFill(
                                         title: index == 0
                                             ? "Start"
                                             : index ==
-                                                    controller.stopOver.length - 1
+                                                    controller.stopOver.length -
+                                                        1
                                                 ? "Reached"
                                                 : "Arrived".tr,
                                         width: 18,
@@ -504,14 +515,14 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                 (cityModel.isArrived == true)
                                             ? AppThemeData.grey300
                                             : AppThemeData.success400,
-                                        textColor: (controller.bookingModel.value
-                                                        .status ==
+                                        textColor: (controller.bookingModel
+                                                        .value.status ==
                                                     Constant.canceled) ||
                                                 (cityModel.isArrived == true)
                                             ? AppThemeData.grey700
                                             : AppThemeData.grey50,
-                                        onPress: (controller
-                                                    .bookingModel.value.status ==
+                                        onPress: (controller.bookingModel.value
+                                                    .status ==
                                                 Constant.canceled)
                                             ? () {} // Disabled for cancelled bookings
                                             : () async {
@@ -547,7 +558,8 @@ class PublishedDetailsScreen extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                "${_formatSeatLabelsCsv(controller.bookingModel.value.bookedSeat)}",
+                                _formatSeatLabelsCsv(
+                                    controller.bookingModel.value.bookedSeat),
                                 maxLines: 1,
                                 style: TextStyle(
                                   color: themeChange.getThem()
@@ -605,8 +617,8 @@ class PublishedDetailsScreen extends StatelessWidget {
                       ),
                     ),
                     Padding(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 5),
                       child: Row(
                         children: [
                           Stack(
@@ -652,9 +664,11 @@ class PublishedDetailsScreen extends StatelessWidget {
                                   Text(
                                     Constant.calculateReview(
                                         reviewCount: controller
-                                            .publisherUserModel.value.reviewCount,
-                                        reviewSum: controller
-                                            .publisherUserModel.value.reviewSum),
+                                            .publisherUserModel
+                                            .value
+                                            .reviewCount,
+                                        reviewSum: controller.publisherUserModel
+                                            .value.reviewSum),
                                     style: TextStyle(
                                         color: themeChange.getThem()
                                             ? AppThemeData.grey200
@@ -865,8 +879,11 @@ class PublishedDetailsScreen extends StatelessWidget {
                                           horizontal: 16, vertical: 5),
                                       child: Row(
                                         children: [
-                                          controller.bookingModel.value
-                                                      .travelPreference!.music ==
+                                          controller
+                                                      .bookingModel
+                                                      .value
+                                                      .travelPreference!
+                                                      .music ==
                                                   "Silence is golden"
                                               ? SvgPicture.asset(
                                                   "assets/icons/ic_no_music.svg")
@@ -964,7 +981,7 @@ class PublishedDetailsScreen extends StatelessWidget {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 16, vertical: 5),
                                     child: FutureBuilder<UserModel?>(
-                                        future: FireStoreUtils.getUserProfile(
+                                        future: UserUtils.getUserProfile(
                                             bookingUserModel.id.toString()),
                                         builder: (context, snapshot) {
                                           switch (snapshot.connectionState) {
@@ -975,7 +992,8 @@ class PublishedDetailsScreen extends StatelessWidget {
                                               if (snapshot.hasError) {
                                                 return Text(
                                                     snapshot.error.toString());
-                                              } else if (snapshot.data == null) {
+                                              } else if (snapshot.data ==
+                                                  null) {
                                                 return const SizedBox();
                                               } else {
                                                 UserModel? userModel =
@@ -993,12 +1011,12 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                             imageUrl: userModel!
                                                                 .profilePic
                                                                 .toString(),
-                                                            height:
-                                                                Responsive.width(
-                                                                    14, context),
-                                                            width:
-                                                                Responsive.width(
-                                                                    14, context),
+                                                            height: Responsive
+                                                                .width(14,
+                                                                    context),
+                                                            width: Responsive
+                                                                .width(14,
+                                                                    context),
                                                           ),
                                                         ),
                                                         const SizedBox(
@@ -1025,9 +1043,8 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                                                   .grey100
                                                                               : AppThemeData
                                                                                   .grey800,
-                                                                          fontFamily:
-                                                                              AppThemeData
-                                                                                  .bold,
+                                                                          fontFamily: AppThemeData
+                                                                              .bold,
                                                                           fontSize:
                                                                               16),
                                                                     ),
@@ -1036,9 +1053,8 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                                     ),
                                                                     Text(
                                                                       Constant.calculateReview(
-                                                                          reviewCount:
-                                                                              userModel
-                                                                                  .reviewCount,
+                                                                          reviewCount: userModel
+                                                                              .reviewCount,
                                                                           reviewSum:
                                                                               userModel.reviewSum),
                                                                       style: TextStyle(
@@ -1047,9 +1063,8 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                                                   .grey200
                                                                               : AppThemeData
                                                                                   .grey700,
-                                                                          fontFamily:
-                                                                              AppThemeData
-                                                                                  .medium,
+                                                                          fontFamily: AppThemeData
+                                                                              .medium,
                                                                           fontSize:
                                                                               14),
                                                                     ),
@@ -1057,7 +1072,8 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                                       width: 5,
                                                                     ),
                                                                     Icon(
-                                                                      Icons.star,
+                                                                      Icons
+                                                                          .star,
                                                                       size: 14,
                                                                       color: themeChange.getThem()
                                                                           ? AppThemeData
@@ -1076,9 +1092,8 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                                                   .grey500
                                                                               : AppThemeData
                                                                                   .grey500,
-                                                                          fontFamily:
-                                                                              AppThemeData
-                                                                                  .medium,
+                                                                          fontFamily: AppThemeData
+                                                                              .medium,
                                                                           fontSize:
                                                                               14),
                                                                     ),
@@ -1086,15 +1101,16 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                                       width: 5,
                                                                     ),
                                                                     InkWell(
-                                                                      onTap: () {
+                                                                      onTap:
+                                                                          () {
                                                                         Get.to(
                                                                             const RatingViewScreen(),
                                                                             arguments: {
-                                                                              "receiverUserId":
-                                                                                  userModel.id
+                                                                              "receiverUserId": userModel.id
                                                                             });
                                                                       },
-                                                                      child: Text(
+                                                                      child:
+                                                                          Text(
                                                                         "${double.parse(userModel.reviewCount ?? "0").toStringAsFixed(0)} Ratings",
                                                                         style: TextStyle(
                                                                             decoration: TextDecoration
@@ -1102,14 +1118,10 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                                             decorationColor: AppThemeData
                                                                                 .primary300,
                                                                             color: themeChange.getThem()
-                                                                                ? AppThemeData
-                                                                                    .primary300
-                                                                                : AppThemeData
-                                                                                    .primary300,
-                                                                            fontFamily: AppThemeData
-                                                                                .medium,
-                                                                            fontSize:
-                                                                                14),
+                                                                                ? AppThemeData.primary300
+                                                                                : AppThemeData.primary300,
+                                                                            fontFamily: AppThemeData.medium,
+                                                                            fontSize: 14),
                                                                       ),
                                                                     ),
                                                                   ],
@@ -1163,7 +1175,8 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                                 .makePhoneCall(
                                                                     "${userModel.countryCode.toString()} ${userModel.phoneNumber.toString()}");
                                                           },
-                                                          child: SvgPicture.asset(
+                                                          child:
+                                                              SvgPicture.asset(
                                                             "assets/icons/ic_call.svg",
                                                           ),
                                                         ),
@@ -1179,7 +1192,8 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                                       userModel
                                                                 });
                                                           },
-                                                          child: SvgPicture.asset(
+                                                          child:
+                                                              SvgPicture.asset(
                                                             "assets/icons/ic_chat.svg",
                                                           ),
                                                         )
@@ -1195,7 +1209,8 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                           Axis.horizontal,
                                                       child: Row(
                                                         mainAxisAlignment:
-                                                            MainAxisAlignment.end,
+                                                            MainAxisAlignment
+                                                                .end,
                                                         crossAxisAlignment:
                                                             CrossAxisAlignment
                                                                 .end,
@@ -1251,16 +1266,14 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                                             .onGoing)
                                                                     ? () {
                                                                         ShowToastDialog.showToast(
-                                                                            "Please click Start button first to begin the ride"
-                                                                                .tr);
+                                                                            "Please click Start button first to begin the ride".tr);
                                                                       }
                                                                     : () {
                                                                         Get.to(
                                                                           const OtpVerificationScreen(),
                                                                           arguments: {
-                                                                            "bookingModel": controller
-                                                                                .bookingModel
-                                                                                .value,
+                                                                            "bookingModel":
+                                                                                controller.bookingModel.value,
                                                                             "bookingUserModel":
                                                                                 bookingUserModel,
                                                                             "onVerificationSuccess":
@@ -1306,7 +1319,8 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                           ),
                                                           RoundedButtonFill(
                                                             title:
-                                                                "View Details".tr,
+                                                                "View Details"
+                                                                    .tr,
                                                             color: AppThemeData
                                                                 .primary300,
                                                             width: 26,
@@ -1336,15 +1350,14 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                               true)
                                                             FutureBuilder<
                                                                     ReviewModel?>(
-                                                                future: FireStoreUtils.getReviewByReceiverId(
+                                                                future: ReviewUtils.getReviewByReceiverId(
                                                                     bookingId: controller
                                                                             .bookingModel
                                                                             .value
                                                                             .id ??
                                                                         '',
                                                                     receiverId:
-                                                                        userModel
-                                                                                .id ??
+                                                                        userModel.id ??
                                                                             ''),
                                                                 builder: (context,
                                                                     snapshot) {
@@ -1364,10 +1377,10 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                                               .data ==
                                                                           null) {
                                                                         return RoundedButtonFill(
-                                                                          title: "Add Review"
-                                                                              .tr,
-                                                                          color: AppThemeData
-                                                                              .primary300,
+                                                                          title:
+                                                                              "Add Review".tr,
+                                                                          color:
+                                                                              AppThemeData.primary300,
                                                                           width:
                                                                               26,
                                                                           height:
@@ -1379,12 +1392,9 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                                           onPress:
                                                                               () {
                                                                             Get.to(() => const ReviewScreen(), arguments: {
-                                                                              "bookingModel":
-                                                                                  controller.bookingModel.value,
-                                                                              "senderUserModel":
-                                                                                  controller.publisherUserModel.value,
-                                                                              "reciverUserModel":
-                                                                                  userModel
+                                                                              "bookingModel": controller.bookingModel.value,
+                                                                              "senderUserModel": controller.publisherUserModel.value,
+                                                                              "reciverUserModel": userModel
                                                                             })!
                                                                                 .then(
                                                                               (value) {
@@ -1399,15 +1409,13 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                                       } else {
                                                                         ReviewModel?
                                                                             reviewModel =
-                                                                            snapshot
-                                                                                .data;
+                                                                            snapshot.data;
                                                                         return RoundedButtonFill(
-                                                                          title: reviewModel?.id ==
-                                                                                  null
+                                                                          title: reviewModel?.id == null
                                                                               ? "Add Review".tr
                                                                               : "Edit Review".tr,
-                                                                          color: AppThemeData
-                                                                              .primary300,
+                                                                          color:
+                                                                              AppThemeData.primary300,
                                                                           width:
                                                                               26,
                                                                           height:
@@ -1419,12 +1427,9 @@ class PublishedDetailsScreen extends StatelessWidget {
                                                                           onPress:
                                                                               () {
                                                                             Get.to(() => const ReviewScreen(), arguments: {
-                                                                              "bookingModel":
-                                                                                  controller.bookingModel.value,
-                                                                              "senderUserModel":
-                                                                                  controller.publisherUserModel.value,
-                                                                              "reciverUserModel":
-                                                                                  userModel
+                                                                              "bookingModel": controller.bookingModel.value,
+                                                                              "senderUserModel": controller.publisherUserModel.value,
+                                                                              "reciverUserModel": userModel
                                                                             })!
                                                                                 .then(
                                                                               (value) {
@@ -1620,7 +1625,7 @@ class PublishedDetailsScreen extends StatelessWidget {
                           publishedDetailsController
                                   .bookingModel.value.vehicleInformation =
                               controller.selectedUserVehicle.value;
-                          await FireStoreUtils.setBooking(
+                          await BookingUtils.setBooking(
                                   publishedDetailsController.bookingModel.value)
                               .then(
                             (value) {

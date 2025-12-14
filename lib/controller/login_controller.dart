@@ -13,7 +13,8 @@ import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/constant/show_toast_dialog.dart';
 import 'package:poolmate/model/user_model.dart';
 import 'package:poolmate/services/whatsapp_auth_service.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
+import 'package:poolmate/utils/firestore/user_utils.dart';
 import 'package:poolmate/utils/notification_service.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
@@ -38,7 +39,7 @@ class LoginController extends GetxController {
     ShowToastDialog.showLoader("please wait...".tr);
 
     // Check if user exists in Firebase before sending OTP
-    bool userExists = await FireStoreUtils.userExistByPhoneNumber(
+    bool userExists = await AuthUtils.userExistByPhoneNumber(
       countryCodeController.value.text,
       phoneNumber.value.text,
     );
@@ -101,22 +102,22 @@ class LoginController extends GetxController {
             "userModel": userModel,
           });
         } else {
-          await FireStoreUtils.userExistOrNot(value.user!.uid)
+          await AuthUtils.userExistOrNot(value.user!.uid)
               .then((userExit) async {
             ShowToastDialog.closeLoader();
             if (userExit == true) {
               UserModel? userModel =
-                  await FireStoreUtils.getUserProfile(value.user!.uid);
+                  await UserUtils.getUserProfile(value.user!.uid);
               if (userModel != null) {
                 if (userModel.isActive == true) {
                   // Save user ID to local storage
-                  await FireStoreUtils.setCurrentUid(userModel.id!);
+                  await AuthUtils.setCurrentUid(userModel.id!);
 
                   // Update FCM token for existing user on login with error handling
                   try {
                     String fcmToken = await NotificationService.getToken();
                     userModel.fcmToken = fcmToken;
-                    await FireStoreUtils.updateUser(userModel);
+                    await UserUtils.updateUser(userModel);
                     debugPrint(
                         "FCM token updated for existing user: $fcmToken");
                   } catch (e) {
@@ -173,23 +174,23 @@ class LoginController extends GetxController {
             "userModel": userModel,
           });
         } else {
-          FireStoreUtils.userExistOrNot(userCredential.user!.uid)
+          AuthUtils.userExistOrNot(userCredential.user!.uid)
               .then((userExit) async {
             ShowToastDialog.closeLoader();
 
             if (userExit == true) {
               UserModel? userModel =
-                  await FireStoreUtils.getUserProfile(userCredential.user!.uid);
+                  await UserUtils.getUserProfile(userCredential.user!.uid);
               if (userModel != null) {
                 if (userModel.isActive == true) {
                   // Save user ID to local storage
-                  await FireStoreUtils.setCurrentUid(userModel.id!);
+                  await AuthUtils.setCurrentUid(userModel.id!);
 
                   // Update FCM token for existing user on Apple login with error handling
                   try {
                     String fcmToken = await NotificationService.getToken();
                     userModel.fcmToken = fcmToken;
-                    await FireStoreUtils.updateUser(userModel);
+                    await UserUtils.updateUser(userModel);
                     debugPrint(
                         "FCM token updated for existing Apple user: $fcmToken");
                   } catch (e) {
@@ -247,7 +248,7 @@ class LoginController extends GetxController {
         if (googleUser == null) return null;
 
         // Obtain the auth details from the request
-        final GoogleSignInAuthentication? googleAuth =
+        final GoogleSignInAuthentication googleAuth =
             await googleUser.authentication;
 
         // Create a new credential

@@ -11,7 +11,8 @@ import 'package:poolmate/themes/app_them_data.dart';
 import 'package:poolmate/themes/round_button_fill.dart';
 import 'package:poolmate/themes/text_field_widget.dart';
 import 'package:poolmate/utils/dark_theme_provider.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/user_utils.dart';
+import 'package:poolmate/utils/firestore/review_utils.dart';
 import 'package:provider/provider.dart';
 
 class ReviewScreen extends StatelessWidget {
@@ -148,7 +149,7 @@ class ReviewScreen extends StatelessWidget {
                                 1)
                             .toString();
                     log("reciverUserModel :: ${controller.reciverUserModel.value.id} :: reviewSum :: ${controller.reciverUserModel.value.reviewSum} :: reviewCount :: ${controller.reciverUserModel.value.reviewCount} ");
-                    await FireStoreUtils.updateUser(
+                    await UserUtils.updateUser(
                         controller.reciverUserModel.value);
 
                     controller.reviewModel.value.bookingId =
@@ -163,7 +164,7 @@ class ReviewScreen extends StatelessWidget {
                         controller.senderUserModel.value.id;
                     controller.reviewModel.value.date = Timestamp.now();
 
-                    await FireStoreUtils.setReview(controller.reviewModel.value)
+                    await ReviewUtils.setReview(controller.reviewModel.value)
                         .then((value) {
                       if (value != null && value == true) {
                         ShowToastDialog.closeLoader();

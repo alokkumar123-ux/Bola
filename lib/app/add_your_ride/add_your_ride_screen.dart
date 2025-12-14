@@ -107,7 +107,8 @@ class AddYourRideScreen extends StatelessWidget {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => Theme(
-                                            data: Theme.of(context).brightness ==
+                                            data: Theme.of(context)
+                                                        .brightness ==
                                                     Brightness.dark
                                                 ? ThemeData.dark().copyWith(
                                                     primaryColor:
@@ -133,17 +134,18 @@ class AddYourRideScreen extends StatelessWidget {
                                                         .text =
                                                     result.formattedAddress
                                                         .toString();
-                                                controller.pickUpLocation.value =
-                                                    CityModel(
+                                                controller.pickUpLocation
+                                                    .value = CityModel(
                                                   name: result.formattedAddress
                                                       .toString(),
                                                   placeId:
                                                       result.placeId.toString(),
                                                   geometry: Geometry(
-                                                      location: Location.fromJson(
-                                                          result
-                                                              .geometry!.location
-                                                              .toJson())),
+                                                      location:
+                                                          Location.fromJson(
+                                                              result.geometry!
+                                                                  .location
+                                                                  .toJson())),
                                                 );
                                                 print(controller
                                                     .pickUpLocation.value);
@@ -154,7 +156,8 @@ class AddYourRideScreen extends StatelessWidget {
                                                     '🔴 PlacePicker AutoComplete Failed for Pickup Location');
                                                 print(
                                                     '📍 API Endpoint: Places API Autocomplete');
-                                                print('❌ Error Details: $error');
+                                                print(
+                                                    '❌ Error Details: $error');
                                                 print(
                                                     '🔑 API Key Used: ${Constant.mapAPIKey.substring(0, 10)}...');
                                               },
@@ -163,7 +166,8 @@ class AddYourRideScreen extends StatelessWidget {
                                                     '🔴 PlacePicker Geocoding Search Failed for Pickup Location');
                                                 print(
                                                     '📍 API Endpoint: Geocoding API / Places API Reverse Geocoding');
-                                                print('❌ Error Details: $error');
+                                                print(
+                                                    '❌ Error Details: $error');
                                                 print(
                                                     '🔑 API Key Used: ${Constant.mapAPIKey.substring(0, 10)}...');
                                               },
@@ -194,8 +198,8 @@ class AddYourRideScreen extends StatelessWidget {
                                     }
                                   },
                                   child: TextFormField(
-                                    controller:
-                                        controller.pickUpLocationController.value,
+                                    controller: controller
+                                        .pickUpLocationController.value,
                                     style: TextStyle(
                                         fontSize: 16,
                                         color: themeChange.getThem()
@@ -254,7 +258,8 @@ class AddYourRideScreen extends StatelessWidget {
                                                     result.placeId.toString(),
                                                 geometry: Geometry(
                                                     location: Location.fromJson(
-                                                        result.geometry!.location
+                                                        result
+                                                            .geometry!.location
                                                             .toJson())),
                                               );
                                             },
@@ -276,7 +281,8 @@ class AddYourRideScreen extends StatelessWidget {
                                               print(
                                                   '🔑 API Key Used: ${Constant.mapAPIKey.substring(0, 10)}...');
                                             },
-                                            initialPosition: const LatLng(37.7749,
+                                            initialPosition: const LatLng(
+                                                37.7749,
                                                 -122.4194), // Default to San Francisco, you can change this to your preferred default location
                                             useCurrentLocation: true,
                                             selectInitialPosition: true,
@@ -375,11 +381,11 @@ class AddYourRideScreen extends StatelessWidget {
                                                       .location!);
                                           var listOfRide = await controller
                                               .checkPublishRideBetweenIntervalTime();
-                                          controller.newPublishRideActive.value =
-                                              listOfRide.where((ride) {
+                                          controller.newPublishRideActive
+                                              .value = listOfRide.where((ride) {
                                             DateTime intervalDepartureTime =
-                                                controller.selectedDate.value.add(
-                                                    Duration(
+                                                controller.selectedDate.value
+                                                    .add(Duration(
                                                         hours: int.parse(Constant
                                                             .intervalHoursForPublishNewRide)));
                                             DateTime intervalDurationTime =
@@ -388,8 +394,9 @@ class AddYourRideScreen extends StatelessWidget {
                                             DateTime selectedDate =
                                                 controller.selectedDate.value;
                                             log("listOfRide :: Selected Date: ${Constant.dateToString(selectedDate)} selectedDate :: Interval Duration Time: ${Constant.dateToString(intervalDurationTime)}");
-                                            DateTime rideDepartureTime =
-                                                ride.departureDateTime!.toDate();
+                                            DateTime rideDepartureTime = ride
+                                                .departureDateTime!
+                                                .toDate();
                                             return rideDepartureTime
                                                     .isAfter(selectedDate) &&
                                                 rideDepartureTime.isBefore(
@@ -398,7 +405,8 @@ class AddYourRideScreen extends StatelessWidget {
                                           if (controller
                                               .newPublishRideActive.isEmpty) {
                                             controller.OldPublishRideActive
-                                                .value = listOfRide.where((ride) {
+                                                    .value =
+                                                listOfRide.where((ride) {
                                               DateTime pickUpTime = ride
                                                   .departureDateTime!
                                                   .toDate();
@@ -412,7 +420,8 @@ class AddYourRideScreen extends StatelessWidget {
                                                           ride.estimatedTime ??
                                                               ''));
                                               log("listOfRide :: Start Date: ${Constant.dateToString(pickUpTime)} selectedDate :: End Time: ${Constant.dateToString(droffTime)} :: Selected Date :: ${Constant.dateToString(controller.selectedDate.value)}");
-                                              return controller.selectedDate.value
+                                              return controller
+                                                      .selectedDate.value
                                                       .isAfter(pickUpTime) &&
                                                   controller.selectedDate.value
                                                       .isBefore(droffTime);
@@ -432,7 +441,8 @@ class AddYourRideScreen extends StatelessWidget {
                                             ? AppThemeData.grey100
                                             : AppThemeData.grey900,
                                       ),
-                                      buttonSingleColor: AppThemeData.primary300,
+                                      buttonSingleColor:
+                                          AppThemeData.primary300,
                                     ).show(context);
                                   },
                                   child: TextFormField(
@@ -467,8 +477,10 @@ class AddYourRideScreen extends StatelessWidget {
                                 ),
                                 InkWell(
                                   onTap: () async {
-                                    if (controller.newPublishRideActive.isEmpty &&
-                                        controller.OldPublishRideActive.isEmpty) {
+                                    if (controller
+                                            .newPublishRideActive.isEmpty &&
+                                        controller
+                                            .OldPublishRideActive.isEmpty) {
                                       await addVehicleBuildBottomSheet(
                                           context, themeChange.getThem());
                                     }
@@ -510,7 +522,8 @@ class AddYourRideScreen extends StatelessWidget {
                                 const SizedBox(
                                   height: 5,
                                 ),
-                                if (controller.OldPublishRideActive.isNotEmpty ||
+                                if (controller
+                                        .OldPublishRideActive.isNotEmpty ||
                                     controller.newPublishRideActive.isNotEmpty)
                                   Text(
                                     "You cannot create a new ride at the selected time of the periods because a previous ride is active at that time.",
@@ -530,32 +543,37 @@ class AddYourRideScreen extends StatelessWidget {
                 ),
               ),
             ),
-            bottomNavigationBar: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: RoundedButtonFill(
-                title: "Next".tr,
-                color: AppThemeData.primary300,
-                textColor: AppThemeData.grey50,
-                onPress: () {
-                  if (controller.pickUpLocationController.value.text.isEmpty) {
-                    ShowToastDialog.showToast(
-                        "Please select pickup location".tr);
-                  } else if (controller
-                      .pickUpLocationController.value.text.isEmpty) {
-                    ShowToastDialog.showToast("Please select drop location".tr);
-                  } else if (controller.dateController.value.text.isEmpty) {
-                    ShowToastDialog.showToast(
-                        "Please select departure date".tr);
-                  } else if (controller
-                      .selectedVehicleController.value.text.isEmpty) {
-                    ShowToastDialog.showToast("Please select vehicle".tr);
-                  } else {
-                    if (controller.OldPublishRideActive.isEmpty &&
-                        controller.newPublishRideActive.isEmpty) {
-                      Get.to(const StepOneRoutesScreen());
+            bottomNavigationBar: SafeArea(
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: RoundedButtonFill(
+                  title: "Next".tr,
+                  color: AppThemeData.primary300,
+                  textColor: AppThemeData.grey50,
+                  onPress: () {
+                    if (controller
+                        .pickUpLocationController.value.text.isEmpty) {
+                      ShowToastDialog.showToast(
+                          "Please select pickup location".tr);
+                    } else if (controller
+                        .pickUpLocationController.value.text.isEmpty) {
+                      ShowToastDialog.showToast(
+                          "Please select drop location".tr);
+                    } else if (controller.dateController.value.text.isEmpty) {
+                      ShowToastDialog.showToast(
+                          "Please select departure date".tr);
+                    } else if (controller
+                        .selectedVehicleController.value.text.isEmpty) {
+                      ShowToastDialog.showToast("Please select vehicle".tr);
+                    } else {
+                      if (controller.OldPublishRideActive.isEmpty &&
+                          controller.newPublishRideActive.isEmpty) {
+                        Get.to(const StepOneRoutesScreen());
+                      }
                     }
-                  }
-                },
+                  },
+                ),
               ),
             ),
           );

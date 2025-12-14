@@ -8,12 +8,17 @@ import 'package:poolmate/model/user_model.dart';
 import 'package:poolmate/model/wallet_transaction_model.dart';
 import 'package:poolmate/model/withdraw_method_model.dart';
 import 'package:poolmate/model/withdraw_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/payment_utils.dart';
+import 'package:poolmate/utils/firestore/withdraw_utils.dart';
+import 'package:poolmate/utils/firestore/user_utils.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
+import 'package:poolmate/utils/firestore/wallet_utils.dart';
 
 class WalletController extends GetxController {
   RxBool isLoading = true.obs;
 
-  Rx<TextEditingController> withdrawalAmountController = TextEditingController().obs;
+  Rx<TextEditingController> withdrawalAmountController =
+      TextEditingController().obs;
   Rx<TextEditingController> noteController = TextEditingController().obs;
 
   RxInt selectedValue = 0.obs;
@@ -37,13 +42,13 @@ class WalletController extends GetxController {
   Rx<WithdrawMethodModel> withdrawMethodModel = WithdrawMethodModel().obs;
 
   getUserData() async {
-    await FireStoreUtils().getPayment().then((value) {
+    await PaymentUtils().getPayment().then((value) {
       if (value != null) {
         paymentModel.value = value;
       }
     });
 
-    await FireStoreUtils.getWithdrawMethod().then(
+    await WithdrawUtils.getWithdrawMethod().then(
       (value) {
         if (value != null) {
           withdrawMethodModel.value = value;
@@ -55,19 +60,19 @@ class WalletController extends GetxController {
   }
 
   getTraction() async {
-    await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid()).then((value) {
+    await UserUtils.getUserProfile(AuthUtils.getCurrentUid()).then((value) {
       if (value != null) {
         userModel.value = value;
       }
     });
 
-    await FireStoreUtils.getWalletTransaction().then((value) {
+    await WalletUtils.getWalletTransaction().then((value) {
       if (value != null) {
         transactionList.value = value;
       }
     });
 
-    await FireStoreUtils.getWithDrawRequest().then((value) {
+    await WithdrawUtils.getWithDrawRequest().then((value) {
       if (value != null) {
         withdrawList.value = value;
       }
@@ -84,13 +89,14 @@ class WalletController extends GetxController {
         createdDate: Timestamp.now(),
         paymentType: paymentType.value,
         transactionId: DateTime.now().millisecondsSinceEpoch.toString(),
-        userId: FireStoreUtils.getCurrentUid(),
+        userId: AuthUtils.getCurrentUid(),
         isCredit: true,
         note: "Wallet Topup");
 
-    await FireStoreUtils.setWalletTransaction(transactionModel).then((value) async {
+    await WalletUtils.setWalletTransaction(transactionModel)
+        .then((value) async {
       if (value == true) {
-        await FireStoreUtils.updateUserWallet(amount: amount.value).then((value) {
+        await WalletUtils.updateUserWallet(amount: amount.value).then((value) {
           getUserData();
           getTraction();
         });

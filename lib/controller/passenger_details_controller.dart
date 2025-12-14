@@ -2,7 +2,7 @@ import 'package:get/get.dart';
 import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/model/booking_model.dart';
 import 'package:poolmate/model/review_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/review_utils.dart';
 
 class PassengerDetailsController extends GetxController {
   @override
@@ -121,7 +121,7 @@ class PassengerDetailsController extends GetxController {
   Rx<ReviewModel> reviewModel = ReviewModel().obs;
 
   getReview() async {
-    await FireStoreUtils.getReview(
+    await ReviewUtils.getReview(
             bookingId: bookingModel.value.id ?? "",
             senderId: bookingUserModel.value.id ?? '')
         .then((value) {

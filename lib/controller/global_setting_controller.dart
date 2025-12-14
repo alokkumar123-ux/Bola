@@ -3,7 +3,8 @@ import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/model/currency_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
+import 'package:poolmate/utils/firestore/settings_utils.dart';
 import 'package:poolmate/utils/notification_service.dart';
 
 import '../constant/collection_name.dart';
@@ -18,7 +19,7 @@ class GlobalSettingController extends GetxController {
   }
 
   getCurrentCurrency() async {
-    FireStoreUtils.fireStore
+    AuthUtils.fireStore
         .collection(CollectionName.currency)
         .where("enable", isEqualTo: true)
         .snapshots()
@@ -37,7 +38,7 @@ class GlobalSettingController extends GetxController {
             symbolAtRight: false);
       }
     });
-    await FireStoreUtils().getSettings();
+    await SettingsUtils().getSettings();
   }
 
   NotificationService notificationService = NotificationService();

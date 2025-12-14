@@ -5,7 +5,9 @@ import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/model/conversation_admin_model.dart';
 import 'package:poolmate/model/inbox_admin_model.dart';
 import 'package:poolmate/model/user_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
+import 'package:poolmate/utils/firestore/chat_utils.dart';
+import 'package:poolmate/utils/firestore/user_utils.dart';
 import 'package:poolmate/utils/preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -23,7 +25,7 @@ class HelpSupportController extends GetxController {
 
   @override
   void onClose() {
-    FireStoreUtils.stopSeenListener();
+    ChatUtils.stopSeenListener();
     super.onClose();
   }
 
@@ -32,15 +34,20 @@ class HelpSupportController extends GetxController {
   }
 
   Future<void> setSeen() async {
-    FireStoreUtils.setSeen();
-    await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid()).then((value) {
+    ChatUtils.setSeen();
+    await UserUtils.getUserProfile(AuthUtils.getCurrentUid()).then((value) {
       if (value?.id != null) {
         userModel.value = value!;
       }
     });
   }
 
-  Future<void> sendMessage({required String message, Url? url, required String videoThumbnail, required String messageType, required HelpSupportController controller}) async {
+  Future<void> sendMessage(
+      {required String message,
+      Url? url,
+      required String videoThumbnail,
+      required String messageType,
+      required HelpSupportController controller}) async {
     InboxAdminModel inboxModel = InboxAdminModel(
       lastSenderId: controller.userModel.value.id,
       adminId: Constant.adminType,
@@ -54,12 +61,12 @@ class HelpSupportController extends GetxController {
       type: 'user',
     );
 
-    await FireStoreUtils.addInAdminBox(inboxModel);
+    await ChatUtils.addInAdminBox(inboxModel);
 
     ConversationAdminModel conversationModel = ConversationAdminModel(
         id: const Uuid().v4(),
         message: message,
-        senderId: FireStoreUtils.getCurrentUid(),
+        senderId: AuthUtils.getCurrentUid(),
         receiverId: Constant.adminType,
         createdAt: Timestamp.now(),
         url: url,
@@ -77,6 +84,6 @@ class HelpSupportController extends GetxController {
       }
     }
 
-    await FireStoreUtils.addAdminChat(conversationModel);
+    await ChatUtils.addAdminChat(conversationModel);
   }
 }

@@ -62,121 +62,126 @@ class VerificationScreen extends StatelessWidget {
                 ),
               ),
             ),
-            body: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: controller.isLoading.value
-                  ? Center(child: Constant.loader())
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Upload Required Documents".tr,
-                          style: TextStyle(
-                              color: themeChange.getThem()
-                                  ? AppThemeData.grey100
-                                  : AppThemeData.grey800,
-                              fontFamily: AppThemeData.bold,
-                              fontSize: 18),
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Text(
-                          "Complete your registration by uploading the following documents."
-                              .tr,
-                          style: TextStyle(
-                              color: themeChange.getThem()
-                                  ? AppThemeData.grey200
-                                  : AppThemeData.grey700,
-                              fontFamily: AppThemeData.regular),
-                        ),
-                        const SizedBox(
-                          height: 40,
-                        ),
-                        ListView.builder(
-                          itemCount: controller.documentList.length,
-                          shrinkWrap: true,
-                          itemBuilder: (context, index) {
-                            DocumentModel documentModel =
-                                controller.documentList[index];
-                            // ignore: unused_local_variable
-                            Documents documents = Documents();
+            body: SafeArea(
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: controller.isLoading.value
+                    ? Center(child: Constant.loader())
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Upload Required Documents".tr,
+                            style: TextStyle(
+                                color: themeChange.getThem()
+                                    ? AppThemeData.grey100
+                                    : AppThemeData.grey800,
+                                fontFamily: AppThemeData.bold,
+                                fontSize: 18),
+                          ),
+                          const SizedBox(
+                            height: 5,
+                          ),
+                          Text(
+                            "Complete your registration by uploading the following documents."
+                                .tr,
+                            style: TextStyle(
+                                color: themeChange.getThem()
+                                    ? AppThemeData.grey200
+                                    : AppThemeData.grey700,
+                                fontFamily: AppThemeData.regular),
+                          ),
+                          const SizedBox(
+                            height: 40,
+                          ),
+                          ListView.builder(
+                            itemCount: controller.documentList.length,
+                            shrinkWrap: true,
+                            itemBuilder: (context, index) {
+                              DocumentModel documentModel =
+                                  controller.documentList[index];
+                              // ignore: unused_local_variable
+                              Documents documents = Documents();
 
-                            var contain = controller.driverDocumentList.where(
-                                (element) =>
-                                    element.documentId == documentModel.id);
-                            if (contain.isNotEmpty) {
-                              documents = controller.driverDocumentList
-                                  .firstWhere((itemToCheck) =>
-                                      itemToCheck.documentId ==
-                                      documentModel.id);
-                            }
+                              var contain = controller.driverDocumentList.where(
+                                  (element) =>
+                                      element.documentId == documentModel.id);
+                              if (contain.isNotEmpty) {
+                                documents = controller.driverDocumentList
+                                    .firstWhere((itemToCheck) =>
+                                        itemToCheck.documentId ==
+                                        documentModel.id);
+                              }
 
-                            return InkWell(
-                              onTap: () {
-                                Get.to(const VerificationDetailsUploadScreen(),
-                                    arguments: {
-                                      'documentModel': documentModel
-                                    });
-                              },
-                              child: Column(
-                                children: [
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      SvgPicture.asset(
-                                          "assets/icons/ic_document.svg"),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              "${documentModel.title}",
-                                              style: TextStyle(
-                                                color: themeChange.getThem()
-                                                    ? AppThemeData.grey100
-                                                    : AppThemeData.grey800,
-                                                fontFamily: AppThemeData.bold,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                            const SizedBox(
-                                              height: 5,
-                                            ),
-                                            Text(
-                                              "${documentModel.frontSide == true ? "Front" : ""} ${documentModel.backSide == true ? "And Back" : ""} Photo",
-                                              style: TextStyle(
-                                                color: themeChange.getThem()
-                                                    ? AppThemeData.grey300
-                                                    : AppThemeData.grey600,
-                                                fontFamily:
-                                                    AppThemeData.regular,
-                                              ),
-                                            ),
-                                          ],
+                              return InkWell(
+                                onTap: () {
+                                  Get.to(
+                                      const VerificationDetailsUploadScreen(),
+                                      arguments: {
+                                        'documentModel': documentModel
+                                      });
+                                },
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        SvgPicture.asset(
+                                            "assets/icons/ic_document.svg"),
+                                        const SizedBox(
+                                          width: 10,
                                         ),
-                                      ),
-                                      const Icon(
-                                          Icons.arrow_forward_ios_rounded,
-                                          color: Colors.grey)
-                                    ],
-                                  ),
-                                  const Padding(
-                                    padding: EdgeInsets.symmetric(vertical: 10),
-                                    child: Divider(),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "${documentModel.title}",
+                                                style: TextStyle(
+                                                  color: themeChange.getThem()
+                                                      ? AppThemeData.grey100
+                                                      : AppThemeData.grey800,
+                                                  fontFamily: AppThemeData.bold,
+                                                  fontSize: 16,
+                                                ),
+                                              ),
+                                              const SizedBox(
+                                                height: 5,
+                                              ),
+                                              Text(
+                                                "${documentModel.frontSide == true ? "Front" : ""} ${documentModel.backSide == true ? "And Back" : ""} Photo",
+                                                style: TextStyle(
+                                                  color: themeChange.getThem()
+                                                      ? AppThemeData.grey300
+                                                      : AppThemeData.grey600,
+                                                  fontFamily:
+                                                      AppThemeData.regular,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const Icon(
+                                            Icons.arrow_forward_ios_rounded,
+                                            color: Colors.grey)
+                                      ],
+                                    ),
+                                    const Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 10),
+                                      child: Divider(),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+              ),
             ),
           );
         });

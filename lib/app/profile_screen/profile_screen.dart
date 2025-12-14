@@ -9,10 +9,10 @@ import 'package:poolmate/app/help_support_screen/help_support_screen.dart';
 import 'package:poolmate/app/webview_screen.dart';
 import 'package:poolmate/app/on_boarding_screen/get_started_screen.dart';
 import 'package:poolmate/app/rating_view_screen/rating_view_screen.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:poolmate/app/travel_preference/travel_preference_screen.dart';
 import 'package:poolmate/app/verification_screen/verification_screen.dart';
 import 'package:poolmate/app/withdraw_payment_setup_screen/payment_setup_screen.dart';
+import 'package:poolmate/app/referral/referral_screen.dart';
 import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/controller/profile_controller.dart';
 import 'package:poolmate/themes/app_them_data.dart';
@@ -20,22 +20,22 @@ import 'package:poolmate/themes/custom_dialog_box.dart';
 import 'package:poolmate/themes/responsive.dart';
 import 'package:poolmate/utils/dark_theme_provider.dart';
 import 'package:poolmate/utils/network_image_widget.dart';
+import 'package:poolmate/utils/firestore/user_utils.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
 import 'package:provider/provider.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
   @override
   Widget build(BuildContext context) {
-    bool isLoading = false;
     final themeChange = Provider.of<DarkThemeProvider>(context);
     return GetX(
         init: ProfileController(),
         builder: (controller) {
           WidgetsBinding.instance.addPostFrameCallback((_) async {
             // Always fetch latest user profile from Firebase
-            final user = await FireStoreUtils.getUserProfile(
-                FireStoreUtils.getCurrentUid());
+            final user =
+                await UserUtils.getUserProfile(AuthUtils.getCurrentUid());
             final sosNumbers = user?.sosWhatsAppNumbers;
             final hasValidNumber = sosNumbers != null &&
                 sosNumbers.any((n) => n.trim().isNotEmpty);
@@ -81,42 +81,6 @@ class ProfileScreen extends StatelessWidget {
                     fontFamily: AppThemeData.bold,
                     fontSize: 18),
               ),
-              actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 16.0),
-                  child: StatefulBuilder(
-                    builder: (context, setState) {
-                      return InkWell(
-                        onTap: () async {
-                          setState(() => isLoading = true);
-                          final url = Uri.parse('https://wa.me/917002729565');
-                          if (await canLaunchUrl(url)) {
-                            await launchUrl(url,
-                                mode: LaunchMode.externalApplication);
-                          }
-                          setState(() => isLoading = false);
-                        },
-                        child: isLoading == true
-                            ? SizedBox(
-                                height: 35,
-                                width: 35,
-                                child: Center(
-                                  child: CircularProgressIndicator(
-                                    color: Colors.black,
-                                    strokeWidth: 2.5,
-                                  ),
-                                ),
-                              )
-                            : Image.asset(
-                                'assets/images/whatsapp_logo.png',
-                                height: 35,
-                                width: 35,
-                              ),
-                      );
-                    },
-                  ),
-                ),
-              ],
               elevation: 0,
               bottom: PreferredSize(
                 preferredSize: const Size.fromHeight(4.0),
@@ -206,7 +170,8 @@ class ProfileScreen extends StatelessWidget {
                                       child: Text(
                                         "${double.parse(controller.userModel.value.reviewCount ?? "0").toStringAsFixed(0)} Ratings",
                                         style: TextStyle(
-                                            decoration: TextDecoration.underline,
+                                            decoration:
+                                                TextDecoration.underline,
                                             decorationColor:
                                                 AppThemeData.primary300,
                                             color: themeChange.getThem()
@@ -224,7 +189,8 @@ class ProfileScreen extends StatelessWidget {
                               splashColor: Colors.transparent,
                               highlightColor: Colors.transparent,
                               onTap: () {
-                                Get.to(const EditProfileScreen())!.then((value) {
+                                Get.to(const EditProfileScreen())!
+                                    .then((value) {
                                   if (value == true) {
                                     controller.getData();
                                   }
@@ -243,7 +209,8 @@ class ProfileScreen extends StatelessWidget {
                                             ? AppThemeData.primary300
                                             : AppThemeData.primary300,
                                         decoration: TextDecoration.underline,
-                                        decorationColor: AppThemeData.primary300),
+                                        decorationColor:
+                                            AppThemeData.primary300),
                                   ),
                                   Icon(
                                     Icons.chevron_right,
@@ -257,7 +224,7 @@ class ProfileScreen extends StatelessWidget {
                             const SizedBox(
                               height: 32,
                             ),
-              
+
                             menuItemWidget(
                               onTap: () {
                                 Get.to(const VerificationScreen());
@@ -316,7 +283,7 @@ class ProfileScreen extends StatelessWidget {
                               onTap: () {
                                 Get.to(HelpSupportScreen());
                               },
-                              title: "Help & Support".tr,
+                              title: "Help & Contact".tr,
                               subTitle:
                                   'Manage user queries and resolve issues efficiently from the admin panel.'
                                       .tr,
@@ -357,6 +324,15 @@ class ProfileScreen extends StatelessWidget {
                               svgImage: "assets/icons/ic_help_support.svg",
                               themeChange: themeChange,
                             ),
+                            menuItemWidget(
+                              onTap: () {
+                                Get.to(const ReferralScreen());
+                              },
+                              title: "Referral Program".tr,
+                              subTitle: 'Invite friends and earn rewards'.tr,
+                              svgImage: "assets/icons/ic_wallet.svg",
+                              themeChange: themeChange,
+                            ),
                             InkWell(
                               splashColor: Colors.transparent,
                               highlightColor: Colors.transparent,
@@ -373,11 +349,13 @@ class ProfileScreen extends StatelessWidget {
                                         negativeString: "Cancel".tr,
                                         positiveClick: () async {
                                           // Clear local user ID
-                                          await FireStoreUtils.clearCurrentUid();
+                                          await AuthUtils.clearCurrentUid();
                                           // Sign out from Firebase if signed in
-                                          if (FirebaseAuth.instance.currentUser !=
+                                          if (FirebaseAuth
+                                                  .instance.currentUser !=
                                               null) {
-                                            await FirebaseAuth.instance.signOut();
+                                            await FirebaseAuth.instance
+                                                .signOut();
                                           }
                                           Get.offAll(const GetStartedScreen());
                                         },

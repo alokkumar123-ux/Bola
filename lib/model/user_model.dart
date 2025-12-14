@@ -18,6 +18,21 @@ class UserModel {
   bool? isVerify;
   bool? aadharVerified;
   bool? panVerified;
+  String? referralCode;
+  String? referredBy;
+  int? referralStage; // 1,2,3 sequential tasks
+  List<String>? task1Refs; // first referred user ids (max 1 expected)
+  List<String>? task2Refs; // next 5 referred user ids that completed first ride
+  List<String>?
+      task3Refs; // additional 8 referred user ids that completed first ride
+  String?
+      commissionRate; // stored as string percentage (e.g., "0.01" or "0.03")
+  String? referralEarningsTotal; // aggregate credited to wallet
+  String? referralEarningsPending; // pending to be credited
+  bool?
+      referralPromptDismissed; // whether we already asked the user to enter a code
+  bool?
+      task2BonusGiven; // whether ₹100 bonus for Task 2 completion was already given
   TravelPreferenceModel? travelPreference;
   Timestamp? createdAt;
   String? reviewCount;
@@ -45,6 +60,17 @@ class UserModel {
     this.aadharVerified,
     this.panVerified,
     this.sosWhatsAppNumbers,
+    this.referralCode,
+    this.referredBy,
+    this.referralStage,
+    this.task1Refs,
+    this.task2Refs,
+    this.task3Refs,
+    this.commissionRate,
+    this.referralEarningsTotal,
+    this.referralEarningsPending,
+    this.referralPromptDismissed,
+    this.task2BonusGiven,
   });
 
   fullName() {
@@ -70,6 +96,20 @@ class UserModel {
     aadharVerified = json['aadharVerified'] ?? false;
     panVerified = json['panVerified'] ?? false;
     bio = json['bio'] ?? '';
+    referralCode = json['referralCode'];
+    referredBy = json['referredBy'];
+    referralStage = json['referralStage'];
+    task1Refs =
+        json['task1Refs'] != null ? List<String>.from(json['task1Refs']) : null;
+    task2Refs =
+        json['task2Refs'] != null ? List<String>.from(json['task2Refs']) : null;
+    task3Refs =
+        json['task3Refs'] != null ? List<String>.from(json['task3Refs']) : null;
+    commissionRate = json['commissionRate'];
+    referralEarningsTotal = json['referralEarningsTotal'];
+    referralEarningsPending = json['referralEarningsPending'];
+    referralPromptDismissed = json['referralPromptDismissed'] ?? false;
+    task2BonusGiven = json['task2BonusGiven'] ?? false;
     travelPreference = json['travelPreference'] != null
         ? TravelPreferenceModel.fromJson(json['travelPreference'])
         : null;
@@ -103,6 +143,17 @@ class UserModel {
     data['aadharVerified'] = aadharVerified;
     data['panVerified'] = panVerified;
     data['bio'] = bio;
+    data['referralCode'] = referralCode;
+    data['referredBy'] = referredBy;
+    data['referralStage'] = referralStage;
+    data['task1Refs'] = task1Refs;
+    data['task2Refs'] = task2Refs;
+    data['task3Refs'] = task3Refs;
+    data['commissionRate'] = commissionRate;
+    data['referralEarningsTotal'] = referralEarningsTotal;
+    data['referralEarningsPending'] = referralEarningsPending;
+    data['referralPromptDismissed'] = referralPromptDismissed;
+    data['task2BonusGiven'] = task2BonusGiven;
     data['reviewSum'] = reviewSum;
     data['reviewCount'] = reviewCount;
     data['sosWhatsAppNumbers'] = sosWhatsAppNumbers;

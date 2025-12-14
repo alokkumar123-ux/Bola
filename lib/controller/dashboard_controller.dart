@@ -8,7 +8,7 @@ import 'package:poolmate/app/profile_screen/profile_screen.dart';
 import 'package:poolmate/app/wallet_screen/wallet_screen.dart';
 import 'package:poolmate/constant/collection_name.dart';
 import 'package:poolmate/model/user_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
 
 class DashboardScreenController extends GetxController {
   RxInt selectedIndex = 0.obs;
@@ -31,7 +31,7 @@ class DashboardScreenController extends GetxController {
   Rx<UserModel> senderUserModel = UserModel().obs;
 
   getData() async {
-    final currentUid = FireStoreUtils.getCurrentUid();
+    final currentUid = AuthUtils.getCurrentUid();
     // Don't update FCM token on dashboard load - only during login/signup
     if (currentUid.isEmpty) {
       // No user logged in, redirect to get started screen
@@ -39,7 +39,7 @@ class DashboardScreenController extends GetxController {
       return;
     }
 
-    FireStoreUtils.fireStore
+    AuthUtils.fireStore
         .collection(CollectionName.users)
         .doc(currentUid)
         .snapshots()
@@ -49,7 +49,7 @@ class DashboardScreenController extends GetxController {
           senderUserModel.value = UserModel.fromJson(event.data()!);
           if (senderUserModel.value.isActive == false) {
             // Clear local user ID
-            await FireStoreUtils.clearCurrentUid();
+            await AuthUtils.clearCurrentUid();
             // Sign out from Firebase if signed in
             if (FirebaseAuth.instance.currentUser != null) {
               await FirebaseAuth.instance.signOut();
@@ -60,7 +60,7 @@ class DashboardScreenController extends GetxController {
       },
     );
 
-    FireStoreUtils.fireStore
+    AuthUtils.fireStore
         .collection(CollectionName.chat)
         .doc(currentUid)
         .collection("inbox")

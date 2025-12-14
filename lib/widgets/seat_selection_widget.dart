@@ -75,8 +75,9 @@ class _SeatSelectionWidgetState extends State<SeatSelectionWidget> {
     int totalSeatsWithDriver = widget.totalSeats!;
     _seatStatus = List.generate(totalSeatsWithDriver, (index) {
       if (index == 0 && widget.isDriverSeatVisible) return SeatStatus.driver;
-      if (widget.selectedSeats?.contains(index) == true)
+      if (widget.selectedSeats?.contains(index) == true) {
         return SeatStatus.selected;
+      }
       return SeatStatus.available;
     });
   }

@@ -56,50 +56,53 @@ class ViewAllSearchScreen extends StatelessWidget {
                 ),
               ),
             ),
-            body: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: controller.isLoading.value
-                  ? Center(child: Constant.loader())
-                  : ListView.separated(
-                      separatorBuilder: (context, index) =>
-                          const Padding(padding: EdgeInsets.only(bottom: 10)),
-                      shrinkWrap: true,
-                      itemCount: controller.recentSearch.length,
-                      itemBuilder: (context, index) {
-                        RecentSearchModel recentSearchModel =
-                            controller.recentSearch[index];
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: InkWell(
-                              onTap: () {
-                                if (recentSearchModel.bookedDate!
-                                    .toDate()
-                                    .isBefore(DateTime.now()
-                                        .subtract(const Duration(days: 1)))) {
-                                  Get.to(const DatepickerScreen(),
-                                          transition: Transition.downToUp)
-                                      ?.then((date) {
-                                    if (date is DateTime) {
-                                      Get.back(result: {
-                                        'recentSearchModel': recentSearchModel,
-                                        'date': date
-                                      });
-                                    }
-                                  });
-                                } else {
-                                  Get.back(result: {
-                                    'recentSearchModel': recentSearchModel,
-                                    'date':
-                                        recentSearchModel.bookedDate!.toDate()
-                                  });
-                                }
-                              },
-                              child: recentSearchWidget(
-                                  recentSearchModel: recentSearchModel,
-                                  themeChange: themeChange)),
-                        );
-                      },
-                    ),
+            body: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: controller.isLoading.value
+                    ? Center(child: Constant.loader())
+                    : ListView.separated(
+                        separatorBuilder: (context, index) =>
+                            const Padding(padding: EdgeInsets.only(bottom: 10)),
+                        shrinkWrap: true,
+                        itemCount: controller.recentSearch.length,
+                        itemBuilder: (context, index) {
+                          RecentSearchModel recentSearchModel =
+                              controller.recentSearch[index];
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: InkWell(
+                                onTap: () {
+                                  if (recentSearchModel.bookedDate!
+                                      .toDate()
+                                      .isBefore(DateTime.now()
+                                          .subtract(const Duration(days: 1)))) {
+                                    Get.to(const DatepickerScreen(),
+                                            transition: Transition.downToUp)
+                                        ?.then((date) {
+                                      if (date is DateTime) {
+                                        Get.back(result: {
+                                          'recentSearchModel':
+                                              recentSearchModel,
+                                          'date': date
+                                        });
+                                      }
+                                    });
+                                  } else {
+                                    Get.back(result: {
+                                      'recentSearchModel': recentSearchModel,
+                                      'date':
+                                          recentSearchModel.bookedDate!.toDate()
+                                    });
+                                  }
+                                },
+                                child: recentSearchWidget(
+                                    recentSearchModel: recentSearchModel,
+                                    themeChange: themeChange)),
+                          );
+                        },
+                      ),
+              ),
             ),
           );
         });

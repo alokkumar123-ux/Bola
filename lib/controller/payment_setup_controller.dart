@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:poolmate/model/payment_method_model.dart';
 import 'package:poolmate/model/withdraw_method_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/payment_utils.dart';
+import 'package:poolmate/utils/firestore/withdraw_utils.dart';
 
 class PaymentSetupController extends GetxController {
   final accountNumberFlutterWave = TextEditingController().obs;
@@ -33,12 +34,13 @@ class PaymentSetupController extends GetxController {
   }
 
   getPaymentSetting() async {
-    await FireStoreUtils().getPayment().then((value) {
+    await PaymentUtils().getPayment().then((value) {
       if (value != null) {
         paymentModel.value = value;
       }
     });
   }
+
   getPaymentMethod() async {
     accountNumberFlutterWave.value.clear();
     bankCodeFlutterWave.value.clear();
@@ -46,33 +48,43 @@ class PaymentSetupController extends GetxController {
     accountIdRazorPay.value.clear();
     accountIdStripe.value.clear();
 
-    await FireStoreUtils.getWithdrawMethod().then(
+    await WithdrawUtils.getWithdrawMethod().then(
       (value) {
         if (value != null) {
           withdrawMethodModel.value = value;
 
           if (withdrawMethodModel.value.flutterWave != null) {
-            accountNumberFlutterWave.value.text = withdrawMethodModel.value.flutterWave!.accountNumber.toString();
-            bankCodeFlutterWave.value.text = withdrawMethodModel.value.flutterWave!.bankCode.toString();
+            accountNumberFlutterWave.value.text =
+                withdrawMethodModel.value.flutterWave!.accountNumber.toString();
+            bankCodeFlutterWave.value.text =
+                withdrawMethodModel.value.flutterWave!.bankCode.toString();
           }
 
           if (withdrawMethodModel.value.paypal != null) {
-            emailPaypal.value.text = withdrawMethodModel.value.paypal!.email.toString();
+            emailPaypal.value.text =
+                withdrawMethodModel.value.paypal!.email.toString();
           }
 
           if (withdrawMethodModel.value.razorpay != null) {
-            accountIdRazorPay.value.text = withdrawMethodModel.value.razorpay!.accountId.toString();
+            accountIdRazorPay.value.text =
+                withdrawMethodModel.value.razorpay!.accountId.toString();
           }
           if (withdrawMethodModel.value.stripe != null) {
-            accountIdStripe.value.text = withdrawMethodModel.value.stripe!.accountId.toString();
+            accountIdStripe.value.text =
+                withdrawMethodModel.value.stripe!.accountId.toString();
           }
 
           if (withdrawMethodModel.value.bank != null) {
-            bankName.value.text = withdrawMethodModel.value.bank!.bankName.toString();
-            branchName.value.text = withdrawMethodModel.value.bank!.branchName.toString();
-            holderName.value.text = withdrawMethodModel.value.bank!.holderName.toString();
-            accountNumber.value.text = withdrawMethodModel.value.bank!.accountNumber.toString();
-            otherDetails.value.text = withdrawMethodModel.value.bank!.otherDetails.toString();
+            bankName.value.text =
+                withdrawMethodModel.value.bank!.bankName.toString();
+            branchName.value.text =
+                withdrawMethodModel.value.bank!.branchName.toString();
+            holderName.value.text =
+                withdrawMethodModel.value.bank!.holderName.toString();
+            accountNumber.value.text =
+                withdrawMethodModel.value.bank!.accountNumber.toString();
+            otherDetails.value.text =
+                withdrawMethodModel.value.bank!.otherDetails.toString();
           }
         }
       },

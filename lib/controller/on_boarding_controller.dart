@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:poolmate/model/on_boarding_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/user_utils.dart';
 
 class OnBoardingController extends GetxController {
   var selectedPageIndex = 0.obs;
@@ -20,7 +20,7 @@ class OnBoardingController extends GetxController {
 
   getOnBoardingData() async {
     try {
-      final value = await FireStoreUtils.getOnBoardingList();
+      final value = await UserUtils.getOnBoardingList();
       if (value.isNotEmpty) {
         onBoardingList.assignAll(value);
       } else {
@@ -29,9 +29,9 @@ class OnBoardingController extends GetxController {
     } catch (e) {
       onBoardingList.assignAll(_defaultSlides);
     } finally {
-    isLoading.value = false;
-    update();
-  }
+      isLoading.value = false;
+      update();
+    }
   }
 
   List<OnBoardingModel> get _defaultSlides => [

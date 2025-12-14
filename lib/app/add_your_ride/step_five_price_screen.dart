@@ -405,16 +405,18 @@ class StepFivePriceScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              bottomNavigationBar: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                child: RoundedButtonFill(
-                  title: "Publish Ride".tr,
-                  color: AppThemeData.primary300,
-                  textColor: AppThemeData.grey50,
-                  onPress: () {
-                    controller.publishRide();
-                  },
+              bottomNavigationBar: SafeArea(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  child: RoundedButtonFill(
+                    title: "Publish Ride".tr,
+                    color: AppThemeData.primary300,
+                    textColor: AppThemeData.grey50,
+                    onPress: () {
+                      controller.publishRide();
+                    },
+                  ),
                 ),
               ));
         });

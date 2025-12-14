@@ -252,7 +252,7 @@ class AadhaarVerificationService {
       log('📤 Has X-Cf-Signature: ${requestHeaders.containsKey('X-Cf-Signature')}');
       if (requestHeaders.containsKey('X-Cf-Signature')) {
         final sig = requestHeaders['X-Cf-Signature']!;
-        log('📤 Signature preview: ${sig.length > 50 ? sig.substring(0, 50) + '...' : sig}');
+        log('📤 Signature preview: ${sig.length > 50 ? '${sig.substring(0, 50)}...' : sig}');
       }
 
       final response = await http.post(

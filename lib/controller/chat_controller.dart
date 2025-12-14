@@ -9,7 +9,8 @@ import 'package:poolmate/constant/collection_name.dart';
 import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/constant/send_notification.dart';
 import 'package:poolmate/model/user_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
+import 'package:poolmate/utils/firestore/user_utils.dart';
 
 class ChatController extends GetxController {
   final messageTextEditorController = TextEditingController().obs;
@@ -22,7 +23,7 @@ class ChatController extends GetxController {
   }
 
   changeStatus() async {
-    await FireStoreUtils.fireStore
+    await AuthUtils.fireStore
         .collection(CollectionName.chat)
         .doc(senderUserModel.value.id.toString())
         .collection(receiverUserModel.value.id.toString())
@@ -34,7 +35,7 @@ class ChatController extends GetxController {
         log("----->${receiverUserModel.value.id.toString()}");
         if (documentSnapshot.docs[i]['receiverId'] ==
             senderUserModel.value.id.toString()) {
-          FireStoreUtils.fireStore
+          AuthUtils.fireStore
               .collection(CollectionName.chat)
               .doc(documentSnapshot.docs[i]['senderId'])
               .collection(documentSnapshot.docs[i]['receiverId'])
@@ -43,7 +44,7 @@ class ChatController extends GetxController {
             log("Failed : $error");
           });
 
-          FireStoreUtils.fireStore
+          AuthUtils.fireStore
               .collection(CollectionName.chat)
               .doc(documentSnapshot.docs[i]['receiverId'])
               .collection(documentSnapshot.docs[i]['senderId'])
@@ -52,7 +53,7 @@ class ChatController extends GetxController {
             log("Failed : $error");
           });
 
-          FireStoreUtils.fireStore
+          AuthUtils.fireStore
               .collection(CollectionName.chat)
               .doc(documentSnapshot.docs[i]['senderId'])
               .collection("inbox")
@@ -63,7 +64,7 @@ class ChatController extends GetxController {
             log("Failed to add: $error");
           });
 
-          FireStoreUtils.fireStore
+          AuthUtils.fireStore
               .collection(CollectionName.chat)
               .doc(documentSnapshot.docs[i]['receiverId'])
               .collection("inbox")
@@ -88,8 +89,7 @@ class ChatController extends GetxController {
       receiverUserModel.value = argumentData['receiverModel'];
       log('Receiver FCM Token: ${receiverUserModel.value.fcmToken}');
     }
-    await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid())
-        .then((value) {
+    await UserUtils.getUserProfile(AuthUtils.getCurrentUid()).then((value) {
       senderUserModel.value = value!;
       log('Sender FCM Token: ${senderUserModel.value.fcmToken}');
     });
@@ -119,14 +119,14 @@ class ChatController extends GetxController {
         timestamp: Timestamp.now(),
         type: "text");
 
-    await FireStoreUtils.fireStore
+    await AuthUtils.fireStore
         .collection(CollectionName.chat)
         .doc(senderUserModel.value.id.toString())
         .collection("inbox")
         .doc(receiverUserModel.value.id.toString())
         .set(senderInboxModel.toJson());
 
-    await FireStoreUtils.fireStore
+    await AuthUtils.fireStore
         .collection(CollectionName.chat)
         .doc(receiverUserModel.value.id.toString())
         .collection("inbox")
@@ -143,13 +143,13 @@ class ChatController extends GetxController {
         chatID: Constant.getUuid(),
         message: msg);
 
-    await FireStoreUtils.fireStore
+    await AuthUtils.fireStore
         .collection(CollectionName.chat)
         .doc(senderUserModel.value.id.toString())
         .collection(receiverUserModel.value.id.toString())
         .doc(chatModel.chatID)
         .set(chatModel.toJson());
-    await FireStoreUtils.fireStore
+    await AuthUtils.fireStore
         .collection(CollectionName.chat)
         .doc(receiverUserModel.value.id.toString())
         .collection(senderUserModel.value.id.toString())

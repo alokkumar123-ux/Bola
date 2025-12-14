@@ -8,7 +8,7 @@ import 'package:poolmate/model/user_model.dart';
 import 'package:poolmate/themes/app_them_data.dart';
 import 'package:poolmate/themes/responsive.dart';
 import 'package:poolmate/utils/dark_theme_provider.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/user_utils.dart';
 import 'package:poolmate/utils/network_image_widget.dart';
 import 'package:provider/provider.dart';
 
@@ -59,157 +59,162 @@ class RatingViewScreen extends StatelessWidget {
                 ),
               ),
             ),
-            body: controller.isLoading.value
-                ? Center(child: Constant.loader())
-                : Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 10),
-                    child: controller.ratingList.isEmpty
-                        ? Constant.showEmptyView(
-                            message: "Rating not fond",
-                            isDarkMode: themeChange.getThem())
-                        : ListView.builder(
-                            itemCount: controller.ratingList.length,
-                            itemBuilder: (context, index) {
-                              ReviewModel reviewModel =
-                                  controller.ratingList[index];
-                              return Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 10),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 10),
-                                  decoration: BoxDecoration(
-                                      color: themeChange.getThem()
-                                          ? AppThemeData.grey800
-                                          : AppThemeData.grey100,
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(10))),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          RatingBar.builder(
-                                            initialRating: double.parse(
-                                                reviewModel.rating.toString()),
-                                            minRating: 0,
-                                            ignoreGestures: true,
-                                            direction: Axis.horizontal,
-                                            itemCount: 5,
-                                            itemSize: 22,
-                                            allowHalfRating: true,
-                                            itemPadding:
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: 2.0),
-                                            itemBuilder: (context, _) =>
-                                                const Icon(
-                                              Icons.star,
-                                              color: Colors.amber,
+            body: SafeArea(
+              child: controller.isLoading.value
+                  ? Center(child: Constant.loader())
+                  : Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 10),
+                      child: controller.ratingList.isEmpty
+                          ? Constant.showEmptyView(
+                              message: "Rating not fond",
+                              isDarkMode: themeChange.getThem())
+                          : ListView.builder(
+                              itemCount: controller.ratingList.length,
+                              itemBuilder: (context, index) {
+                                ReviewModel reviewModel =
+                                    controller.ratingList[index];
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 10),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 10),
+                                    decoration: BoxDecoration(
+                                        color: themeChange.getThem()
+                                            ? AppThemeData.grey800
+                                            : AppThemeData.grey100,
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(10))),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            RatingBar.builder(
+                                              initialRating: double.parse(
+                                                  reviewModel.rating
+                                                      .toString()),
+                                              minRating: 0,
+                                              ignoreGestures: true,
+                                              direction: Axis.horizontal,
+                                              itemCount: 5,
+                                              itemSize: 22,
+                                              allowHalfRating: true,
+                                              itemPadding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 2.0),
+                                              itemBuilder: (context, _) =>
+                                                  const Icon(
+                                                Icons.star,
+                                                color: Colors.amber,
+                                              ),
+                                              onRatingUpdate: (double value) {},
                                             ),
-                                            onRatingUpdate: (double value) {},
-                                          ),
-                                          Text(
-                                            Constant.timestampToDate(
-                                                    reviewModel.date!)
-                                                .tr,
-                                            style: TextStyle(
-                                                color: themeChange.getThem()
-                                                    ? AppThemeData.grey100
-                                                    : AppThemeData.grey800,
-                                                fontFamily: AppThemeData.medium,
-                                                fontSize: 14),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(
-                                        height: 12,
-                                      ),
-                                      Text(
-                                        "${reviewModel.comment}".tr,
-                                        style: TextStyle(
-                                            color: themeChange.getThem()
-                                                ? AppThemeData.grey100
-                                                : AppThemeData.grey800,
-                                            fontFamily: AppThemeData.medium,
-                                            fontSize: 16),
-                                      ),
-                                      const SizedBox(
-                                        height: 10,
-                                      ),
-                                      FutureBuilder<UserModel?>(
-                                          future: FireStoreUtils.getUserProfile(
-                                              reviewModel.userId.toString()),
-                                          builder: (context, snapshot) {
-                                            switch (snapshot.connectionState) {
-                                              case ConnectionState.waiting:
-                                                return const SizedBox();
-                                              case ConnectionState.done:
-                                                if (snapshot.hasError) {
-                                                  return Text(snapshot.error
-                                                      .toString());
-                                                } else if (snapshot.data ==
-                                                    null) {
+                                            Text(
+                                              Constant.timestampToDate(
+                                                      reviewModel.date!)
+                                                  .tr,
+                                              style: TextStyle(
+                                                  color: themeChange.getThem()
+                                                      ? AppThemeData.grey100
+                                                      : AppThemeData.grey800,
+                                                  fontFamily:
+                                                      AppThemeData.medium,
+                                                  fontSize: 14),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(
+                                          height: 12,
+                                        ),
+                                        Text(
+                                          "${reviewModel.comment}".tr,
+                                          style: TextStyle(
+                                              color: themeChange.getThem()
+                                                  ? AppThemeData.grey100
+                                                  : AppThemeData.grey800,
+                                              fontFamily: AppThemeData.medium,
+                                              fontSize: 16),
+                                        ),
+                                        const SizedBox(
+                                          height: 10,
+                                        ),
+                                        FutureBuilder<UserModel?>(
+                                            future: UserUtils.getUserProfile(
+                                                reviewModel.userId.toString()),
+                                            builder: (context, snapshot) {
+                                              switch (
+                                                  snapshot.connectionState) {
+                                                case ConnectionState.waiting:
                                                   return const SizedBox();
-                                                } else {
-                                                  UserModel? userModel =
-                                                      snapshot.data;
-                                                  return Row(
-                                                    children: [
-                                                      ClipRRect(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(60),
-                                                        child:
-                                                            NetworkImageWidget(
-                                                          imageUrl: userModel!
-                                                              .profilePic
-                                                              .toString(),
-                                                          height:
-                                                              Responsive.width(
-                                                                  10, context),
-                                                          width:
-                                                              Responsive.width(
-                                                                  10, context),
-                                                          fit: BoxFit.cover,
+                                                case ConnectionState.done:
+                                                  if (snapshot.hasError) {
+                                                    return Text(snapshot.error
+                                                        .toString());
+                                                  } else if (snapshot.data ==
+                                                      null) {
+                                                    return const SizedBox();
+                                                  } else {
+                                                    UserModel? userModel =
+                                                        snapshot.data;
+                                                    return Row(
+                                                      children: [
+                                                        ClipRRect(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(60),
+                                                          child:
+                                                              NetworkImageWidget(
+                                                            imageUrl: userModel!
+                                                                .profilePic
+                                                                .toString(),
+                                                            height: Responsive
+                                                                .width(10,
+                                                                    context),
+                                                            width: Responsive
+                                                                .width(10,
+                                                                    context),
+                                                            fit: BoxFit.cover,
+                                                          ),
                                                         ),
-                                                      ),
-                                                      const SizedBox(
-                                                        width: 10,
-                                                      ),
-                                                      Text(
-                                                        userModel
-                                                            .fullName()
-                                                            .toString(),
-                                                        style: TextStyle(
-                                                            color: themeChange
-                                                                    .getThem()
-                                                                ? AppThemeData
-                                                                    .grey100
-                                                                : AppThemeData
-                                                                    .grey800,
-                                                            fontFamily:
-                                                                AppThemeData
-                                                                    .bold,
-                                                            fontSize: 16),
-                                                      ),
-                                                    ],
-                                                  );
-                                                }
-                                              default:
-                                                return Text('Error'.tr);
-                                            }
-                                          })
-                                    ],
+                                                        const SizedBox(
+                                                          width: 10,
+                                                        ),
+                                                        Text(
+                                                          userModel
+                                                              .fullName()
+                                                              .toString(),
+                                                          style: TextStyle(
+                                                              color: themeChange
+                                                                      .getThem()
+                                                                  ? AppThemeData
+                                                                      .grey100
+                                                                  : AppThemeData
+                                                                      .grey800,
+                                                              fontFamily:
+                                                                  AppThemeData
+                                                                      .bold,
+                                                              fontSize: 16),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  }
+                                                default:
+                                                  return Text('Error'.tr);
+                                              }
+                                            })
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
-                          ),
-                  ),
+                                );
+                              },
+                            ),
+                    ),
+            ),
           );
         });
   }

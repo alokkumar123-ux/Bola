@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/firebase_options.dart';
 import 'package:poolmate/model/notification_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/notification_utils.dart';
 
 class SendNotification {
   static final _scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
@@ -95,7 +95,7 @@ class SendNotification {
           "Access token obtained successfully (length: ${accessToken.length})");
 
       NotificationModel? notificationModel =
-          await FireStoreUtils.getNotificationContent(type);
+          await NotificationUtils.getNotificationContent(type);
 
       if (notificationModel == null) {
         debugPrint('No notification template found for type: $type');
@@ -142,7 +142,7 @@ class SendNotification {
         }
       };
 
-      debugPrint("------>"); 
+      debugPrint("------>");
       debugPrint("$notificationModel");
 
       final response = await http.post(

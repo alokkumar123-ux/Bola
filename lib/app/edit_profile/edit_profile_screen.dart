@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -115,8 +116,8 @@ class EditProfileScreen extends StatelessWidget {
                                                     BorderRadius.circular(60),
                                                 child: NetworkImageWidget(
                                                   fit: BoxFit.cover,
-                                                  imageUrl: controller
-                                                      .userModel.value.profilePic
+                                                  imageUrl: controller.userModel
+                                                      .value.profilePic
                                                       .toString(),
                                                   height: Responsive.width(
                                                       24, context),
@@ -161,7 +162,8 @@ class EditProfileScreen extends StatelessWidget {
                                 ),
                                 TextFieldWidget(
                                   hintText: 'Enter your last name'.tr,
-                                  controller: controller.lastNameController.value,
+                                  controller:
+                                      controller.lastNameController.value,
                                   title: 'Last name'.tr,
                                 ),
                                 InkWell(
@@ -203,10 +205,12 @@ class EditProfileScreen extends StatelessWidget {
                                           : AppThemeData.grey100,
                                       borderRadius: BorderRadius.circular(10)),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        "How would you like to be addressed?".tr,
+                                        "How would you like to be addressed?"
+                                            .tr,
                                         style: TextStyle(
                                           fontSize: 14,
                                           color: themeChange.getThem()
@@ -308,7 +312,8 @@ class EditProfileScreen extends StatelessWidget {
                                                   AppThemeData.primary300,
                                               onChanged: (value) {
                                                 controller.preAddressOfName
-                                                    .value = "I’d rather not say";
+                                                        .value =
+                                                    "I’d rather not say";
                                               },
                                             ),
                                           ],
@@ -487,7 +492,8 @@ class EditProfileScreen extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(8.0),
                                   ),
                                   child: Text(
-                                    "Why this needed? \nAt the time of the emergency, when you press SOS, your current location along with trip details will be shared to these numbers".tr,
+                                    "Why this needed? \nAt the time of the emergency, when you press SOS, your current location along with trip details will be shared to these numbers"
+                                        .tr,
                                     style: TextStyle(
                                         color: themeChange.getThem()
                                             ? AppThemeData.grey100
@@ -505,6 +511,11 @@ class EditProfileScreen extends StatelessWidget {
                                       .sosWhatsAppNumberController1.value,
                                   title: 'SOS WhatsApp number 1'.tr,
                                   enable: true,
+                                  textInputType: TextInputType.phone,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                    LengthLimitingTextInputFormatter(15),
+                                  ],
                                 ),
                                 const SizedBox(
                                   height: 10,
@@ -515,6 +526,11 @@ class EditProfileScreen extends StatelessWidget {
                                       .sosWhatsAppNumberController2.value,
                                   title: 'SOS WhatsApp number 2'.tr,
                                   enable: true,
+                                  textInputType: TextInputType.phone,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                    LengthLimitingTextInputFormatter(15),
+                                  ],
                                 ),
                               ],
                             ),
@@ -523,37 +539,39 @@ class EditProfileScreen extends StatelessWidget {
                       ),
                     ),
             ),
-            bottomNavigationBar: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                PreferredSize(
-                  preferredSize: const Size.fromHeight(4.0),
-                  child: Container(
-                    color: themeChange.getThem()
-                        ? AppThemeData.grey700
-                        : AppThemeData.grey200,
-                    height: 4.0,
-                  ),
-                ),
-                Container(
-                  color: themeChange.getThem()
-                      ? AppThemeData.grey900
-                      : AppThemeData.grey50,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: RoundedButtonFill(
-                      title: "Save".tr,
-                      color: AppThemeData.primary300,
-                      textColor: AppThemeData.grey50,
-                      onPress: () async {
-                        controller.saveData();
-                      },
+            bottomNavigationBar: SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  PreferredSize(
+                    preferredSize: const Size.fromHeight(4.0),
+                    child: Container(
+                      color: themeChange.getThem()
+                          ? AppThemeData.grey700
+                          : AppThemeData.grey200,
+                      height: 4.0,
                     ),
                   ),
-                ),
-              ],
+                  Container(
+                    color: themeChange.getThem()
+                        ? AppThemeData.grey900
+                        : AppThemeData.grey50,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 16),
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: RoundedButtonFill(
+                        title: "Save".tr,
+                        color: AppThemeData.primary300,
+                        textColor: AppThemeData.grey50,
+                        onPress: () async {
+                          controller.saveData();
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         });

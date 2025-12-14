@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:poolmate/constant/show_toast_dialog.dart';
 import 'package:poolmate/model/booking_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/booking_utils.dart';
 
 class OtpVerificationController extends GetxController {
   TextEditingController otpController = TextEditingController();
@@ -50,7 +50,7 @@ class OtpVerificationController extends GetxController {
       // Update the verified status in Firebase
       bookingUserModel!.verified = true;
 
-      await FireStoreUtils.setUserBooking(
+      await BookingUtils.setUserBooking(
         bookingModel!,
         bookingUserModel!,
       );

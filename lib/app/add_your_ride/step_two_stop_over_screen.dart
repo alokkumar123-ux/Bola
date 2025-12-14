@@ -195,16 +195,18 @@ class StepTwoStopOverScreen extends StatelessWidget {
                 ),
               ),
             ),
-            bottomNavigationBar: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: RoundedButtonFill(
-                title: "Next".tr,
-                color: AppThemeData.primary300,
-                textColor: AppThemeData.grey50,
-                onPress: () {
-                  controller.wayPointFilter();
-                  Get.to(const StepThreeStopOverDetailsScreen());
-                },
+            bottomNavigationBar: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: RoundedButtonFill(
+                  title: "Next".tr,
+                  color: AppThemeData.primary300,
+                  textColor: AppThemeData.grey50,
+                  onPress: () {
+                    controller.wayPointFilter();
+                    Get.to(const StepThreeStopOverDetailsScreen());
+                  },
+                ),
               ),
             ));
       },

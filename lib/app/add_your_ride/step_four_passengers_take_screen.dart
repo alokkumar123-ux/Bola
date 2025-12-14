@@ -326,25 +326,27 @@ class StepFourPassengerTakeScreen extends StatelessWidget {
                 ),
               ),
             ),
-            bottomNavigationBar: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: RoundedButtonFill(
-                title: "Next".tr,
-                color: AppThemeData.primary300,
-                textColor: AppThemeData.grey50,
-                onPress: () {
-                  if (controller.selectedSeats.isEmpty) {
-                    Get.snackbar(
-                      "Error".tr,
-                      "Please select at least one seat to offer for ride".tr,
-                      snackPosition: SnackPosition.BOTTOM,
-                      backgroundColor: AppThemeData.warning400,
-                      colorText: AppThemeData.grey50,
-                    );
-                  } else {
-                    Get.to(const StepFivePriceScreen());
-                  }
-                },
+            bottomNavigationBar: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: RoundedButtonFill(
+                  title: "Next".tr,
+                  color: AppThemeData.primary300,
+                  textColor: AppThemeData.grey50,
+                  onPress: () {
+                    if (controller.selectedSeats.isEmpty) {
+                      Get.snackbar(
+                        "Error".tr,
+                        "Please select at least one seat to offer for ride".tr,
+                        snackPosition: SnackPosition.BOTTOM,
+                        backgroundColor: AppThemeData.warning400,
+                        colorText: AppThemeData.grey50,
+                      );
+                    } else {
+                      Get.to(const StepFivePriceScreen());
+                    }
+                  },
+                ),
               ),
             ),
           );

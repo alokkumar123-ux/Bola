@@ -13,7 +13,9 @@ import 'package:poolmate/themes/app_them_data.dart';
 import 'package:poolmate/themes/responsive.dart';
 import 'package:poolmate/themes/round_button_fill.dart';
 import 'package:poolmate/utils/dark_theme_provider.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/booking_utils.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
+import 'package:poolmate/utils/firestore/user_utils.dart';
 import 'package:poolmate/utils/network_image_widget.dart';
 import 'package:provider/provider.dart';
 
@@ -124,7 +126,7 @@ class MyRideScreen extends StatelessWidget {
                                         controller.myBooking[index];
                                     return StreamBuilder<BookedUserModel?>(
                                         stream:
-                                            FireStoreUtils.getMyBookingUserStream(
+                                            BookingUtils.getMyBookingUserStream(
                                                 bookingModel),
                                         builder: (context, snapshot) {
                                           switch (snapshot.connectionState) {
@@ -167,16 +169,18 @@ class MyRideScreen extends StatelessWidget {
                                                       decoration: BoxDecoration(
                                                         color: themeChange
                                                                 .getThem()
-                                                            ? AppThemeData.grey900
-                                                            : AppThemeData.grey50,
+                                                            ? AppThemeData
+                                                                .grey900
+                                                            : AppThemeData
+                                                                .grey50,
                                                         borderRadius:
-                                                            BorderRadius.circular(
-                                                                8),
+                                                            BorderRadius
+                                                                .circular(8),
                                                       ),
                                                       child: Padding(
                                                         padding:
-                                                            const EdgeInsets.all(
-                                                                20),
+                                                            const EdgeInsets
+                                                                .all(20),
                                                         child: Column(
                                                           crossAxisAlignment:
                                                               CrossAxisAlignment
@@ -193,14 +197,12 @@ class MyRideScreen extends StatelessWidget {
                                                                       child:
                                                                           Column(
                                                                         crossAxisAlignment:
-                                                                            CrossAxisAlignment
-                                                                                .start,
+                                                                            CrossAxisAlignment.start,
                                                                         children: [
                                                                           RichText(
                                                                             text:
                                                                                 TextSpan(
-                                                                              style:
-                                                                                  Theme.of(context).textTheme.bodyLarge,
+                                                                              style: Theme.of(context).textTheme.bodyLarge,
                                                                               children: [
                                                                                 // Use address strings instead of geocoding for better web support
                                                                                 TextSpan(
@@ -221,21 +223,15 @@ class MyRideScreen extends StatelessWidget {
                                                                             ),
                                                                           ),
                                                                           Text(
-                                                                            Constant.amountShow(
-                                                                                amount: stopOverModel?.price?.toString() ?? "0"),
+                                                                            Constant.amountShow(amount: stopOverModel?.price?.toString() ?? "0"),
                                                                             maxLines:
                                                                                 1,
                                                                             style:
                                                                                 TextStyle(
-                                                                              color: themeChange.getThem()
-                                                                                  ? AppThemeData.grey100
-                                                                                  : AppThemeData.grey800,
-                                                                              fontSize:
-                                                                                  16,
-                                                                              overflow:
-                                                                                  TextOverflow.ellipsis,
-                                                                              fontFamily:
-                                                                                  AppThemeData.bold,
+                                                                              color: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800,
+                                                                              fontSize: 16,
+                                                                              overflow: TextOverflow.ellipsis,
+                                                                              fontFamily: AppThemeData.bold,
                                                                             ),
                                                                           ),
                                                                         ],
@@ -279,7 +275,8 @@ class MyRideScreen extends StatelessWidget {
                                                                 Row(
                                                                   children: [
                                                                     Expanded(
-                                                                      child: Row(
+                                                                      child:
+                                                                          Row(
                                                                         children: [
                                                                           SvgPicture
                                                                               .asset(
@@ -288,30 +285,23 @@ class MyRideScreen extends StatelessWidget {
                                                                                 18,
                                                                             width:
                                                                                 18,
-                                                                            colorFilter: ColorFilter.mode(
-                                                                                themeChange.getThem() ? AppThemeData.grey200 : AppThemeData.grey700,
-                                                                                BlendMode.srcIn),
+                                                                            colorFilter:
+                                                                                ColorFilter.mode(themeChange.getThem() ? AppThemeData.grey200 : AppThemeData.grey700, BlendMode.srcIn),
                                                                           ),
                                                                           const SizedBox(
                                                                             width:
                                                                                 10,
                                                                           ),
                                                                           Text(
-                                                                            Constant.timestampToDate(
-                                                                                bookingModel.departureDateTime!),
+                                                                            Constant.timestampToDate(bookingModel.departureDateTime!),
                                                                             maxLines:
                                                                                 1,
                                                                             style:
                                                                                 TextStyle(
-                                                                              color: themeChange.getThem()
-                                                                                  ? AppThemeData.grey200
-                                                                                  : AppThemeData.grey700,
-                                                                              fontSize:
-                                                                                  14,
-                                                                              overflow:
-                                                                                  TextOverflow.ellipsis,
-                                                                              fontFamily:
-                                                                                  AppThemeData.medium,
+                                                                              color: themeChange.getThem() ? AppThemeData.grey200 : AppThemeData.grey700,
+                                                                              fontSize: 14,
+                                                                              overflow: TextOverflow.ellipsis,
+                                                                              fontFamily: AppThemeData.medium,
                                                                             ),
                                                                           ),
                                                                         ],
@@ -321,7 +311,8 @@ class MyRideScreen extends StatelessWidget {
                                                                       width: 10,
                                                                     ),
                                                                     Expanded(
-                                                                      child: Row(
+                                                                      child:
+                                                                          Row(
                                                                         children: [
                                                                           SvgPicture
                                                                               .asset(
@@ -330,30 +321,23 @@ class MyRideScreen extends StatelessWidget {
                                                                                 18,
                                                                             width:
                                                                                 18,
-                                                                            colorFilter: ColorFilter.mode(
-                                                                                themeChange.getThem() ? AppThemeData.grey200 : AppThemeData.grey700,
-                                                                                BlendMode.srcIn),
+                                                                            colorFilter:
+                                                                                ColorFilter.mode(themeChange.getThem() ? AppThemeData.grey200 : AppThemeData.grey700, BlendMode.srcIn),
                                                                           ),
                                                                           const SizedBox(
                                                                             width:
                                                                                 10,
                                                                           ),
                                                                           Text(
-                                                                            Constant.timestampToTime(
-                                                                                bookingModel.departureDateTime!),
+                                                                            Constant.timestampToTime(bookingModel.departureDateTime!),
                                                                             maxLines:
                                                                                 1,
                                                                             style:
                                                                                 TextStyle(
-                                                                              color: themeChange.getThem()
-                                                                                  ? AppThemeData.grey200
-                                                                                  : AppThemeData.grey700,
-                                                                              fontSize:
-                                                                                  14,
-                                                                              overflow:
-                                                                                  TextOverflow.ellipsis,
-                                                                              fontFamily:
-                                                                                  AppThemeData.medium,
+                                                                              color: themeChange.getThem() ? AppThemeData.grey200 : AppThemeData.grey700,
+                                                                              fontSize: 14,
+                                                                              overflow: TextOverflow.ellipsis,
+                                                                              fontFamily: AppThemeData.medium,
                                                                             ),
                                                                           ),
                                                                         ],
@@ -367,7 +351,8 @@ class MyRideScreen extends StatelessWidget {
                                                                 Row(
                                                                   children: [
                                                                     Expanded(
-                                                                      child: Row(
+                                                                      child:
+                                                                          Row(
                                                                         children: [
                                                                           SvgPicture
                                                                               .asset(
@@ -376,9 +361,8 @@ class MyRideScreen extends StatelessWidget {
                                                                                 18,
                                                                             width:
                                                                                 18,
-                                                                            colorFilter: ColorFilter.mode(
-                                                                                themeChange.getThem() ? AppThemeData.grey200 : AppThemeData.grey700,
-                                                                                BlendMode.srcIn),
+                                                                            colorFilter:
+                                                                                ColorFilter.mode(themeChange.getThem() ? AppThemeData.grey200 : AppThemeData.grey700, BlendMode.srcIn),
                                                                           ),
                                                                           const SizedBox(
                                                                             width:
@@ -390,15 +374,10 @@ class MyRideScreen extends StatelessWidget {
                                                                                 1,
                                                                             style:
                                                                                 TextStyle(
-                                                                              color: themeChange.getThem()
-                                                                                  ? AppThemeData.grey200
-                                                                                  : AppThemeData.grey700,
-                                                                              fontSize:
-                                                                                  14,
-                                                                              overflow:
-                                                                                  TextOverflow.ellipsis,
-                                                                              fontFamily:
-                                                                                  AppThemeData.medium,
+                                                                              color: themeChange.getThem() ? AppThemeData.grey200 : AppThemeData.grey700,
+                                                                              fontSize: 14,
+                                                                              overflow: TextOverflow.ellipsis,
+                                                                              fontFamily: AppThemeData.medium,
                                                                             ),
                                                                           ),
                                                                         ],
@@ -415,26 +394,19 @@ class MyRideScreen extends StatelessWidget {
                                                                         child:
                                                                             Row(
                                                                           children: [
-                                                                            SvgPicture
-                                                                                .asset(
+                                                                            SvgPicture.asset(
                                                                               "assets/icons/ic_wallet.svg",
-                                                                              height:
-                                                                                  18,
-                                                                              width:
-                                                                                  18,
-                                                                              colorFilter:
-                                                                                  ColorFilter.mode(themeChange.getThem() ? AppThemeData.grey200 : AppThemeData.grey700, BlendMode.srcIn),
+                                                                              height: 18,
+                                                                              width: 18,
+                                                                              colorFilter: ColorFilter.mode(themeChange.getThem() ? AppThemeData.grey200 : AppThemeData.grey700, BlendMode.srcIn),
                                                                             ),
                                                                             const SizedBox(
-                                                                              width:
-                                                                                  10,
+                                                                              width: 10,
                                                                             ),
                                                                             Text(
                                                                               "${bookingUserModel.paymentType}",
-                                                                              maxLines:
-                                                                                  1,
-                                                                              style:
-                                                                                  TextStyle(
+                                                                              maxLines: 1,
+                                                                              style: TextStyle(
                                                                                 color: themeChange.getThem() ? AppThemeData.grey200 : AppThemeData.grey700,
                                                                                 fontSize: 14,
                                                                                 overflow: TextOverflow.ellipsis,
@@ -443,10 +415,7 @@ class MyRideScreen extends StatelessWidget {
                                                                             ),
                                                                             Text(
                                                                               " (${bookingUserModel.paymentStatus == true ? "Paid" : "UnPaid"})",
-                                                                              style: TextStyle(
-                                                                                  color: bookingUserModel.paymentStatus == true ? AppThemeData.success400 : AppThemeData.warning300,
-                                                                                  fontFamily: AppThemeData.bold,
-                                                                                  fontSize: 14),
+                                                                              style: TextStyle(color: bookingUserModel.paymentStatus == true ? AppThemeData.success400 : AppThemeData.warning300, fontFamily: AppThemeData.bold, fontSize: 14),
                                                                             ),
                                                                           ],
                                                                         ),
@@ -465,11 +434,10 @@ class MyRideScreen extends StatelessWidget {
                                                             ),
                                                             FutureBuilder<
                                                                     UserModel?>(
-                                                                future: FireStoreUtils
-                                                                    .getUserProfile(
-                                                                        bookingModel
-                                                                            .createdBy
-                                                                            .toString()),
+                                                                future: UserUtils.getUserProfile(
+                                                                    bookingModel
+                                                                        .createdBy
+                                                                        .toString()),
                                                                 builder: (context,
                                                                     snapshot) {
                                                                   switch (snapshot
@@ -477,8 +445,8 @@ class MyRideScreen extends StatelessWidget {
                                                                     case ConnectionState
                                                                           .waiting:
                                                                       return Center(
-                                                                          child: Constant
-                                                                              .loader());
+                                                                          child:
+                                                                              Constant.loader());
                                                                     case ConnectionState
                                                                           .done:
                                                                       if (snapshot
@@ -493,9 +461,8 @@ class MyRideScreen extends StatelessWidget {
                                                                       } else {
                                                                         UserModel?
                                                                             userModel =
-                                                                            snapshot
-                                                                                .data;
-                      
+                                                                            snapshot.data;
+
                                                                         return Row(
                                                                           children: [
                                                                             Stack(
@@ -513,12 +480,10 @@ class MyRideScreen extends StatelessWidget {
                                                                               ],
                                                                             ),
                                                                             const SizedBox(
-                                                                              width:
-                                                                                  10,
+                                                                              width: 10,
                                                                             ),
                                                                             Expanded(
-                                                                              child:
-                                                                                  Column(
+                                                                              child: Column(
                                                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                                                 children: [
                                                                                   Text(
@@ -566,8 +531,7 @@ class MyRideScreen extends StatelessWidget {
                                                                               ),
                                                                             ),
                                                                             const SizedBox(
-                                                                              width:
-                                                                                  5,
+                                                                              width: 5,
                                                                             ),
                                                                             bookingModel.womenOnly == false
                                                                                 ? const SizedBox()
@@ -576,14 +540,11 @@ class MyRideScreen extends StatelessWidget {
                                                                                     colorFilter: ColorFilter.mode(themeChange.getThem() ? Colors.pink : Colors.pink, BlendMode.srcIn),
                                                                                   ),
                                                                             const SizedBox(
-                                                                              width:
-                                                                                  10,
+                                                                              width: 10,
                                                                             ),
-                                                                            SvgPicture
-                                                                                .asset(
+                                                                            SvgPicture.asset(
                                                                               "assets/icons/ic_luggage.svg",
-                                                                              colorFilter:
-                                                                                  ColorFilter.mode(themeChange.getThem() ? AppThemeData.grey300 : AppThemeData.grey600, BlendMode.srcIn),
+                                                                              colorFilter: ColorFilter.mode(themeChange.getThem() ? AppThemeData.grey300 : AppThemeData.grey600, BlendMode.srcIn),
                                                                             )
                                                                           ],
                                                                         );
@@ -670,8 +631,7 @@ class MyRideScreen extends StatelessWidget {
                                                                     .first ??
                                                                 'Location',
                                                             style: TextStyle(
-                                                                color: themeChange
-                                                                        .getThem()
+                                                                color: themeChange.getThem()
                                                                     ? AppThemeData
                                                                         .grey100
                                                                     : AppThemeData
@@ -688,8 +648,9 @@ class MyRideScreen extends StatelessWidget {
                                                                       .symmetric(
                                                                       horizontal:
                                                                           10),
-                                                              child: SvgPicture.asset(
-                                                                  "assets/icons/ic_right_arrow.svg"),
+                                                              child: SvgPicture
+                                                                  .asset(
+                                                                      "assets/icons/ic_right_arrow.svg"),
                                                             ),
                                                           ),
                                                           TextSpan(
@@ -699,8 +660,7 @@ class MyRideScreen extends StatelessWidget {
                                                                     .first ??
                                                                 'Location',
                                                             style: TextStyle(
-                                                                color: themeChange
-                                                                        .getThem()
+                                                                color: themeChange.getThem()
                                                                     ? AppThemeData
                                                                         .grey100
                                                                     : AppThemeData
@@ -722,12 +682,13 @@ class MyRideScreen extends StatelessWidget {
                                                       style: TextStyle(
                                                         color: themeChange
                                                                 .getThem()
-                                                            ? AppThemeData.grey100
+                                                            ? AppThemeData
+                                                                .grey100
                                                             : AppThemeData
                                                                 .grey800,
                                                         fontSize: 16,
-                                                        overflow:
-                                                            TextOverflow.ellipsis,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
                                                         fontFamily:
                                                             AppThemeData.bold,
                                                       ),
@@ -757,24 +718,22 @@ class MyRideScreen extends StatelessWidget {
                                                   height: 5,
                                                 ),
                                                 Padding(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                          vertical: 4),
+                                                  padding: const EdgeInsets
+                                                      .symmetric(vertical: 4),
                                                   child: Row(
                                                     children: [
                                                       SvgPicture.asset(
                                                         "assets/icons/ic_calender.svg",
                                                         height: 18,
                                                         width: 18,
-                                                        colorFilter:
-                                                            ColorFilter.mode(
-                                                                themeChange
-                                                                        .getThem()
-                                                                    ? AppThemeData
-                                                                        .grey200
-                                                                    : AppThemeData
-                                                                        .grey700,
-                                                                BlendMode.srcIn),
+                                                        colorFilter: ColorFilter.mode(
+                                                            themeChange
+                                                                    .getThem()
+                                                                ? AppThemeData
+                                                                    .grey200
+                                                                : AppThemeData
+                                                                    .grey700,
+                                                            BlendMode.srcIn),
                                                       ),
                                                       const SizedBox(
                                                         width: 10,
@@ -795,31 +754,30 @@ class MyRideScreen extends StatelessWidget {
                                                           overflow: TextOverflow
                                                               .ellipsis,
                                                           fontFamily:
-                                                              AppThemeData.medium,
+                                                              AppThemeData
+                                                                  .medium,
                                                         ),
                                                       ),
                                                     ],
                                                   ),
                                                 ),
                                                 Padding(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                          vertical: 4),
+                                                  padding: const EdgeInsets
+                                                      .symmetric(vertical: 4),
                                                   child: Row(
                                                     children: [
                                                       SvgPicture.asset(
                                                         "assets/icons/ic_time.svg",
                                                         height: 18,
                                                         width: 18,
-                                                        colorFilter:
-                                                            ColorFilter.mode(
-                                                                themeChange
-                                                                        .getThem()
-                                                                    ? AppThemeData
-                                                                        .grey200
-                                                                    : AppThemeData
-                                                                        .grey700,
-                                                                BlendMode.srcIn),
+                                                        colorFilter: ColorFilter.mode(
+                                                            themeChange
+                                                                    .getThem()
+                                                                ? AppThemeData
+                                                                    .grey200
+                                                                : AppThemeData
+                                                                    .grey700,
+                                                            BlendMode.srcIn),
                                                       ),
                                                       const SizedBox(
                                                         width: 10,
@@ -840,31 +798,30 @@ class MyRideScreen extends StatelessWidget {
                                                           overflow: TextOverflow
                                                               .ellipsis,
                                                           fontFamily:
-                                                              AppThemeData.medium,
+                                                              AppThemeData
+                                                                  .medium,
                                                         ),
                                                       ),
                                                     ],
                                                   ),
                                                 ),
                                                 Padding(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                          vertical: 4),
+                                                  padding: const EdgeInsets
+                                                      .symmetric(vertical: 4),
                                                   child: Row(
                                                     children: [
                                                       SvgPicture.asset(
                                                         "assets/icons/ic_user_icon.svg",
                                                         height: 18,
                                                         width: 18,
-                                                        colorFilter:
-                                                            ColorFilter.mode(
-                                                                themeChange
-                                                                        .getThem()
-                                                                    ? AppThemeData
-                                                                        .grey200
-                                                                    : AppThemeData
-                                                                        .grey700,
-                                                                BlendMode.srcIn),
+                                                        colorFilter: ColorFilter.mode(
+                                                            themeChange
+                                                                    .getThem()
+                                                                ? AppThemeData
+                                                                    .grey200
+                                                                : AppThemeData
+                                                                    .grey700,
+                                                            BlendMode.srcIn),
                                                       ),
                                                       const SizedBox(
                                                         width: 10,
@@ -884,16 +841,16 @@ class MyRideScreen extends StatelessWidget {
                                                           overflow: TextOverflow
                                                               .ellipsis,
                                                           fontFamily:
-                                                              AppThemeData.medium,
+                                                              AppThemeData
+                                                                  .medium,
                                                         ),
                                                       ),
                                                     ],
                                                   ),
                                                 ),
                                                 Padding(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                          vertical: 4),
+                                                  padding: const EdgeInsets
+                                                      .symmetric(vertical: 4),
                                                   child: Row(
                                                     children: [
                                                       SvgPicture.asset(
@@ -922,8 +879,7 @@ class MyRideScreen extends StatelessWidget {
                                                             : "UnPublished",
                                                         maxLines: 1,
                                                         style: TextStyle(
-                                                          color: bookingModel
-                                                                      .publish ==
+                                                          color: bookingModel.publish ==
                                                                   true
                                                               ? AppThemeData
                                                                   .success400
@@ -933,7 +889,8 @@ class MyRideScreen extends StatelessWidget {
                                                           overflow: TextOverflow
                                                               .ellipsis,
                                                           fontFamily:
-                                                              AppThemeData.medium,
+                                                              AppThemeData
+                                                                  .medium,
                                                         ),
                                                       ),
                                                     ],
@@ -959,8 +916,9 @@ class MyRideScreen extends StatelessWidget {
                                                                   .grey700,
                                                           overflow: TextOverflow
                                                               .ellipsis,
-                                                          fontFamily: AppThemeData
-                                                              .regular,
+                                                          fontFamily:
+                                                              AppThemeData
+                                                                  .regular,
                                                         ),
                                                       ),
                                                     ),
@@ -987,7 +945,7 @@ class MyRideScreen extends StatelessWidget {
                                                     //               "You will ride departure time is ${Constant.timestampToDateTime(bookingModel.departureDateTime!)}");
                                                     //         } else {
                                                     //           bookingModel.status = Constant.onGoing;
-                                                    //           await FireStoreUtils.setBooking(bookingModel).then(
+                                                    //           await BookingUtils.setBooking(bookingModel).then(
                                                     //             (value) {
                                                     //               ShowToastDialog.showToast("Status change successfully".tr);
                                                     //               controller.getBookedRight();
@@ -999,7 +957,7 @@ class MyRideScreen extends StatelessWidget {
                                                     //
                                                     //         bookingModel.bookedUserId!.forEach(
                                                     //           (element) async {
-                                                    //             await FireStoreUtils.getUserProfile(element.toString()).then(
+                                                    //             await UserUtils.getUserProfile(element.toString()).then(
                                                     //               (value) {
                                                     //                 SendNotification.sendOneNotification(
                                                     //                     type: Constant.ride_completed, token: value!.fcmToken.toString(), payload: {});
@@ -1008,7 +966,7 @@ class MyRideScreen extends StatelessWidget {
                                                     //             );
                                                     //           },
                                                     //         );
-                                                    //         await FireStoreUtils.setBooking(bookingModel).then(
+                                                    //         await BookingUtils.setBooking(bookingModel).then(
                                                     //           (value) {
                                                     //             ShowToastDialog.showToast("Status change successfully".tr);
                                                     //             controller.getBookedRight();
@@ -1048,8 +1006,8 @@ class MyRideScreen extends StatelessWidget {
                                         // Check if this is a published ride (created by current user) or a booked ride
                                         bool isPublishedRide =
                                             bookingModel.createdBy ==
-                                                FireStoreUtils.getCurrentUid();
-                      
+                                                AuthUtils.getCurrentUid();
+
                                         if (isPublishedRide) {
                                           // Navigate to PublishedDetailsScreen for driver's cancelled rides
                                           Get.to(const PublishedDetailsScreen(),
@@ -1066,9 +1024,10 @@ class MyRideScreen extends StatelessWidget {
                                         } else {
                                           // Fetch booking user data for passenger's cancelled bookings
                                           BookedUserModel? bookingUserModel =
-                                              await FireStoreUtils
-                                                  .getMyBookingUser(bookingModel);
-                      
+                                              await BookingUtils
+                                                  .getMyBookingUser(
+                                                      bookingModel);
+
                                           Get.to(const BookedDetailsScreen(),
                                                   arguments: {
                                                 "bookingModel": bookingModel,
@@ -1109,7 +1068,7 @@ class MyRideScreen extends StatelessWidget {
                                         controller.completedBooking[index];
                                     return StreamBuilder<BookedUserModel?>(
                                         stream:
-                                            FireStoreUtils.getMyBookingUserStream(
+                                            BookingUtils.getMyBookingUserStream(
                                                 bookingModel),
                                         builder: (context, snapshot) {
                                           switch (snapshot.connectionState) {
@@ -1124,16 +1083,17 @@ class MyRideScreen extends StatelessWidget {
                                                 BookedUserModel?
                                                     bookingUserModel =
                                                     snapshot.data;
-                      
+
                                                 // For completed bookings, always use publishes-style card
                                                 return InkWell(
                                                   onTap: () {
                                                     // Check if this is a published ride (created by current user) or a booked ride
                                                     bool isPublishedRide =
-                                                        bookingModel.createdBy ==
-                                                            FireStoreUtils
+                                                        bookingModel
+                                                                .createdBy ==
+                                                            AuthUtils
                                                                 .getCurrentUid();
-                      
+
                                                     if (isPublishedRide) {
                                                       // Navigate to PublishedDetailsScreen for driver's completed rides
                                                       Get.to(const PublishedDetailsScreen(),
@@ -1167,7 +1127,8 @@ class MyRideScreen extends StatelessWidget {
                                                     }
                                                   },
                                                   // Use publishes-style visual for Completed
-                                                  child: _buildPublishesStyleCard(
+                                                  child:
+                                                      _buildPublishesStyleCard(
                                                     bookingModel,
                                                     themeChange,
                                                     context,

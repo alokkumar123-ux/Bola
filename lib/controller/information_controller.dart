@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -10,7 +9,9 @@ import 'package:poolmate/app/dashboard_screen.dart';
 import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/constant/show_toast_dialog.dart';
 import 'package:poolmate/model/user_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
+import 'package:poolmate/utils/firestore/user_utils.dart';
+import 'package:poolmate/utils/firestore/referral_utils.dart';
 import 'package:poolmate/utils/notification_service.dart';
 
 class InformationController extends GetxController {
@@ -22,6 +23,8 @@ class InformationController extends GetxController {
   Rx<TextEditingController> emailController = TextEditingController().obs;
   Rx<TextEditingController> phoneNumberController = TextEditingController().obs;
   Rx<TextEditingController> dateOfBirthController = TextEditingController().obs;
+  Rx<TextEditingController> referralCodeController =
+      TextEditingController().obs;
 
   Rx<TextEditingController> countryCode =
       TextEditingController(text: "+91").obs;
@@ -69,7 +72,7 @@ class InformationController extends GetxController {
     if (profileImage.value.isNotEmpty) {
       profileImage.value = await Constant.uploadUserImageToFireStorage(
         File(profileImage.value),
-        "profileImage/${FireStoreUtils.getCurrentUid()}",
+        "profileImage/${AuthUtils.getCurrentUid()}",
         File(profileImage.value).path.split('/').last,
       );
     }
@@ -88,12 +91,32 @@ class InformationController extends GetxController {
     userModelData.panVerified = false;
     userModelData.gender = preAddressOfName.value;
     userModelData.dateOfBirth = dateOfBirthController.value.text;
+    userModelData.referralStage = userModelData.referralStage ?? 1;
+    userModelData.commissionRate = userModelData.commissionRate ?? '0.01';
+    userModelData.referralEarningsTotal =
+        userModelData.referralEarningsTotal ?? '0';
+    userModelData.referralEarningsPending =
+        userModelData.referralEarningsPending ?? '0';
 
-    await FireStoreUtils.updateUser(userModelData).then((value) async {
+    await UserUtils.updateUser(userModelData).then((value) async {
       ShowToastDialog.closeLoader();
       if (value == true) {
+        await ReferralUtils.ensureUserReferralCode(userModelData);
+
+        // Apply referral code if provided
+        if (referralCodeController.value.text.isNotEmpty) {
+          final applied = await ReferralUtils.applyReferralCodeToUser(
+            referralCode:
+                referralCodeController.value.text.trim().toUpperCase(),
+            newUser: userModelData,
+          );
+          if (!applied) {
+            ShowToastDialog.showToast("Invalid referral code".tr);
+          }
+        }
+
         // Save user ID to local storage for session
-        await FireStoreUtils.setCurrentUid(userModelData.id!);
+        await AuthUtils.setCurrentUid(userModelData.id!);
         Get.offAll(const DashBoardScreen());
       }
     });

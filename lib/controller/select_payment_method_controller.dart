@@ -4,7 +4,6 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_paypal/flutter_paypal.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:get/get.dart';
@@ -24,13 +23,16 @@ import 'package:poolmate/model/payment_method_model.dart';
 import 'package:poolmate/model/user_model.dart';
 import 'package:poolmate/model/xendit_model.dart';
 import 'package:poolmate/themes/app_them_data.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/payment_utils.dart';
 import 'dart:math' as maths;
 import 'package:http/http.dart' as http;
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 import '../app/payment/MercadoPagoScreen.dart';
+
+import 'package:poolmate/utils/firestore/user_utils.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
 
 class SelectPaymentMethodController extends GetxController {
   Rx<PaymentModel> paymentModel = PaymentModel().obs;
@@ -79,14 +81,13 @@ class SelectPaymentMethodController extends GetxController {
   }
 
   getPaymentData() async {
-    await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid())
-        .then((value) {
+    await UserUtils.getUserProfile(AuthUtils.getCurrentUid()).then((value) {
       if (value != null) {
         userModel.value = value;
       }
     });
 
-    await FireStoreUtils().getPayment().then((value) {
+    await PaymentUtils().getPayment().then((value) {
       if (value != null) {
         paymentModel.value = value;
 
@@ -526,7 +527,7 @@ class SelectPaymentMethodController extends GetxController {
       "amount": amount.toString(),
       "currency": "INR",
       "callback_url": callback,
-      "custId": FireStoreUtils.getCurrentUid(),
+      "custId": AuthUtils.getCurrentUid(),
       "issandbox": paymentModel.value.paytm!.isSandbox == true ? "1" : "2",
     });
     log(response.body);

@@ -2,7 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:poolmate/model/booking_model.dart';
 import 'package:poolmate/model/seat_booking_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/booking_utils.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
 
 class SeatBookingController extends GetxController {
   RxList<String> selectedSeats = <String>[].obs;
@@ -41,7 +42,7 @@ class SeatBookingController extends GetxController {
         if (seatIndex != -1) {
           booking.seatBookings![seatIndex] = SeatBooking(
             seatNumber: seatNumber,
-            userId: FireStoreUtils.getCurrentUid(),
+            userId: AuthUtils.getCurrentUid(),
             bookedAt: Timestamp.now(),
             isBooked: true,
           );
@@ -49,7 +50,7 @@ class SeatBookingController extends GetxController {
       }
 
       // Update booking in Firestore
-      return await FireStoreUtils.setBooking(booking) ?? false;
+      return await BookingUtils.setBooking(booking) ?? false;
     } catch (e) {
       print('Error booking seats: $e');
       return false;

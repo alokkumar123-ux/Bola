@@ -5,7 +5,8 @@ import 'package:get/get.dart';
 import 'package:poolmate/model/booking_model.dart';
 import 'package:poolmate/model/review_model.dart';
 import 'package:poolmate/model/user_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/user_utils.dart';
+import 'package:poolmate/utils/firestore/review_utils.dart';
 
 class RatingController extends GetxController {
   RxBool isLoading = true.obs;
@@ -33,13 +34,17 @@ class RatingController extends GetxController {
     }
     log("senderUserModel :: ${senderUserModel.value.id}");
     log("reciverUserModel :: ${reciverUserModel.value.id}");
-    await FireStoreUtils.getUserProfile(senderUserModel.value.toString()).then((value) {
+    await UserUtils.getUserProfile(senderUserModel.value.toString())
+        .then((value) {
       if (value != null) {
         senderUserModel.value = value;
       }
     });
 
-    await FireStoreUtils.getReviewByReceiverId(bookingId: bookingModel.value.id ?? '', receiverId: reciverUserModel.value.id ?? '').then((value) {
+    await ReviewUtils.getReviewByReceiverId(
+            bookingId: bookingModel.value.id ?? '',
+            receiverId: reciverUserModel.value.id ?? '')
+        .then((value) {
       if (value != null) {
         reviewModel.value = value;
         rating.value = double.parse(reviewModel.value.rating.toString());

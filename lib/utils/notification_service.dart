@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 import 'package:poolmate/app/chat/inbox_screen.dart';
 import 'package:poolmate/app/help_support_screen/help_support_screen.dart';
 import 'package:poolmate/services/sos_audio_service.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
 import 'package:poolmate/utils/preferences.dart';
 
 /// Top-level function for handling Awesome Notifications action (tap)
@@ -275,7 +275,7 @@ class NotificationService {
       {required String type,
       required bool isBgApp,
       Map<String, dynamic>? data}) async {
-    final String uid = FireStoreUtils.getCurrentUid();
+    final String uid = AuthUtils.getCurrentUid();
 
     if (type == 'admin_chat' && uid.isNotEmpty) {
       await Preferences.setBoolean(Preferences.isClickOnNotification, true);

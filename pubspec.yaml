@@ -72,6 +72,8 @@ dependencies:
   razorpay_flutter: ^1.4.0
   rxdart: 0.27.7
   shared_preferences: ^2.5.3
+  share_plus: ^10.1.2
+  fluentui_system_icons:
   sign_in_with_apple: ^7.0.1
   timelines_plus: ^1.0.6
   url_launcher: ^6.3.1

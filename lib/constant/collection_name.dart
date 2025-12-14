@@ -14,6 +14,7 @@ class CollectionName {
   static const String vehicleModel = "vehicle_model";
   static const String vehicleType = "vehicle_type";
   static const String booking = "booking";
+  static const String referralEarnings = "referral_earnings";
   static const String documents = "documents";
   static const String userVerification = "user_verification";
   static const String walletTransaction = "wallet_transaction";

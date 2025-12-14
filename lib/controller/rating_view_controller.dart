@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import 'package:poolmate/model/review_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/review_utils.dart';
 
 class RatingViewController extends GetxController {
   @override
@@ -22,7 +22,7 @@ class RatingViewController extends GetxController {
   }
 
   getRating({required String receiverUserId}) async {
-    await FireStoreUtils.getRating(receiverUserId).then(
+    await ReviewUtils.getRating(receiverUserId).then(
       (value) {
         if (value != null) {
           ratingList.value = value;

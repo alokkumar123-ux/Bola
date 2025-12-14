@@ -9,8 +9,10 @@ import 'package:poolmate/controller/home_controller.dart';
 import 'package:poolmate/model/booking_model.dart';
 import 'package:poolmate/model/stop_over_model.dart';
 import 'package:poolmate/model/user_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
 import 'package:poolmate/constant/constant.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
+import 'package:poolmate/utils/firestore/booking_utils.dart';
+import 'package:poolmate/utils/firestore/user_utils.dart';
 
 class BookingDetailsController extends GetxController {
   RxBool isLoading = true.obs;
@@ -37,7 +39,7 @@ class BookingDetailsController extends GetxController {
       stopOverModel.value = argumentData['stopOverModel'];
     }
 
-    FireStoreUtils.fireStore
+    AuthUtils.fireStore
         .collection(CollectionName.booking)
         .doc(bookingModel.value.id)
         .snapshots()
@@ -48,20 +50,19 @@ class BookingDetailsController extends GetxController {
     );
 
     if (bookingModel.value.status == Constant.onGoing) {
-      await FireStoreUtils.getMyBookingUser(bookingModel.value).then((value) {
+      await BookingUtils.getMyBookingUser(bookingModel.value).then((value) {
         if (value != null) {
           bookingUserModel.value = value;
         }
       });
     }
 
-    await FireStoreUtils.getUserProfile(bookingModel.value.createdBy.toString())
+    await UserUtils.getUserProfile(bookingModel.value.createdBy.toString())
         .then((value) {
       publisherUserModel.value = value!;
     });
 
-    await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid())
-        .then((value) {
+    await UserUtils.getUserProfile(AuthUtils.getCurrentUid()).then((value) {
       userModel.value = value!;
     });
     isLoading.value = false;
@@ -142,10 +143,9 @@ class BookingDetailsController extends GetxController {
   }
 
   bookingPlace() async {
-    if (bookingModel.value.bookedUserId!
-            .contains(FireStoreUtils.getCurrentUid()) ==
+    if (bookingModel.value.bookedUserId!.contains(AuthUtils.getCurrentUid()) ==
         false) {
-      bookingModel.value.bookedUserId!.add(FireStoreUtils.getCurrentUid());
+      bookingModel.value.bookedUserId!.add(AuthUtils.getCurrentUid());
     }
     bookingModel.value.bookedSeat =
         (int.parse(bookingModel.value.bookedSeat.toString()) +
@@ -153,7 +153,7 @@ class BookingDetailsController extends GetxController {
             .toString();
 
     BookedUserModel bookingUserModel = BookedUserModel();
-    bookingUserModel.id = FireStoreUtils.getCurrentUid();
+    bookingUserModel.id = AuthUtils.getCurrentUid();
     bookingUserModel.bookedSeat = homeController.numberOfSheet.value.toString();
     bookingUserModel.paymentStatus = false;
     bookingUserModel.paymentType = paymentType.value;
@@ -170,7 +170,7 @@ class BookingDetailsController extends GetxController {
         .toString();
 
     ShowToastDialog.showLoader("Please wait..");
-    await FireStoreUtils.setUserBooking(bookingModel.value, bookingUserModel);
+    await BookingUtils.setUserBooking(bookingModel.value, bookingUserModel);
 
     // Send notification to driver
     await SendNotification.sendOneNotification(
@@ -202,7 +202,7 @@ class BookingDetailsController extends GetxController {
       );
     }
 
-    await FireStoreUtils.setBooking(bookingModel.value).then((value) {
+    await BookingUtils.setBooking(bookingModel.value).then((value) {
       ShowToastDialog.closeLoader();
       Get.off(const BookingSuccessScreen());
       clearData();

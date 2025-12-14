@@ -19,196 +19,221 @@ class OnBoardingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeChange = Provider.of<DarkThemeProvider>(context);
     return GetX<OnBoardingController>(
-      init: OnBoardingController(),
-      builder: (controller) {
-        return Scaffold(
-          backgroundColor: themeChange.getThem()
-              ? AppThemeData.grey900
-              : AppThemeData.grey50,
-          body: controller.isLoading.value
-              ? Center(child: Constant.loader())
-              : controller.onBoardingList.isEmpty
-                  ? _EmptyOnboardingState(
-                      onRetry: () => controller.getOnBoardingData(),
-                    )
-                  : Padding(
-                      padding: EdgeInsets.only(
-                        top: 20,
-                        left: 0,
-                        right: 0,
-                        bottom: MediaQuery.of(context).padding.bottom + 20,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.only(
-                                top: Responsive.height(12, context)),
-                            child: _OnboardingImage(
-                              imagePath: controller
-                                  .onBoardingList[
-                                      controller.selectedPageIndex.value]
-                                  .image,
-                              width: Responsive.width(100, context),
-                              height: Responsive.height(45, context),
-                            ),
-                          ),
-                          Expanded(
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              child: PageView.builder(
-                                  controller: controller.pageController,
-                                  onPageChanged:
-                                      controller.selectedPageIndex.call,
-                                  itemCount: controller.onBoardingList.length,
-                                  itemBuilder: (context, index) {
-                                    return Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 30),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            controller
-                                                .onBoardingList[index].title
-                                                .toString()
-                                                .tr,
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                              color: themeChange.getThem()
-                                                  ? AppThemeData.grey50
-                                                  : AppThemeData.grey900,
-                                              fontSize: 28,
-                                              fontFamily: AppThemeData.bold,
-                                              fontWeight: FontWeight.w400,
-                                            ),
-                                          ),
-                                          const SizedBox(
-                                            height: 12,
-                                          ),
-                                          Text(
-                                            controller.onBoardingList[index]
-                                                .description
-                                                .toString()
-                                                .tr,
-                                            textAlign: TextAlign.center,
-                                            style: const TextStyle(
-                                              color: AppThemeData.grey700,
-                                              fontSize: 16,
-                                              fontFamily: AppThemeData.regular,
-                                              fontWeight: FontWeight.w400,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }),
-                            ),
-                          ),
-                          SizedBox(
-                            height: Responsive.height(4, context),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: List.generate(
-                                controller.onBoardingList.length,
-                                (index) => Container(
-                                  margin:
-                                      const EdgeInsets.symmetric(horizontal: 4),
-                                  width: controller.selectedPageIndex.value ==
-                                          index
-                                      ? 38
-                                      : 10,
-                                  height: 10,
-                                  decoration: BoxDecoration(
-                                    color: controller.selectedPageIndex.value ==
-                                            index
-                                        ? Colors.black
-                                        : AppThemeData.grey300,
-                                    borderRadius: const BorderRadius.all(
-                                        Radius.circular(20.0)),
-                                  ),
-                                ),
+        init: OnBoardingController(),
+        builder: (controller) {
+          return Scaffold(
+              backgroundColor: themeChange.getThem()
+                  ? AppThemeData.grey900
+                  : AppThemeData.grey50,
+              body: SafeArea(
+                  child: controller.isLoading.value
+                      ? Center(child: Constant.loader())
+                      : controller.onBoardingList.isEmpty
+                          ? _EmptyOnboardingState(
+                              onRetry: () => controller.getOnBoardingData(),
+                            )
+                          : Padding(
+                              padding: EdgeInsets.only(
+                                top: 20,
+                                left: 0,
+                                right: 0,
+                                bottom:
+                                    MediaQuery.of(context).padding.bottom + 20,
                               ),
-                            ),
-                          ),
-                          SizedBox(
-                            height: Responsive.height(4, context),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Row(
-                              children: [
-                                controller.selectedPageIndex.value == 2
-                                    ? const SizedBox()
-                                    : Expanded(
-                                        child: RoundedButtonFill(
-                                          title: "Skip".tr,
-                                          color: AppThemeData.grey200,
-                                          textColor: AppThemeData.grey800,
-                                          onPress: () {
-                                            if (controller
-                                                    .selectedPageIndex.value ==
-                                                2) {
-                                              Preferences.setBoolean(
-                                                  Preferences
-                                                      .isFinishOnBoardingKey,
-                                                  true);
-                                              Get.offAll(
-                                                  const GetStartedScreen());
-                                            } else {
-                                              controller.pageController
-                                                  .jumpToPage(controller
-                                                          .selectedPageIndex
-                                                          .value +
-                                                      1);
-                                            }
-                                          },
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                        top: Responsive.height(12, context)),
+                                    child: _OnboardingImage(
+                                      imagePath: controller
+                                          .onBoardingList[controller
+                                              .selectedPageIndex.value]
+                                          .image,
+                                      width: Responsive.width(100, context),
+                                      height: Responsive.height(45, context),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16),
+                                      child: PageView.builder(
+                                          controller: controller.pageController,
+                                          onPageChanged:
+                                              controller.selectedPageIndex.call,
+                                          itemCount:
+                                              controller.onBoardingList.length,
+                                          itemBuilder: (context, index) {
+                                            return Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 30),
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.end,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    controller
+                                                        .onBoardingList[index]
+                                                        .title
+                                                        .toString()
+                                                        .tr,
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                      color: themeChange
+                                                              .getThem()
+                                                          ? AppThemeData.grey50
+                                                          : AppThemeData
+                                                              .grey900,
+                                                      fontSize: 28,
+                                                      fontFamily:
+                                                          AppThemeData.bold,
+                                                      fontWeight:
+                                                          FontWeight.w400,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 12,
+                                                  ),
+                                                  Text(
+                                                    controller
+                                                        .onBoardingList[index]
+                                                        .description
+                                                        .toString()
+                                                        .tr,
+                                                    textAlign: TextAlign.center,
+                                                    style: const TextStyle(
+                                                      color:
+                                                          AppThemeData.grey700,
+                                                      fontSize: 16,
+                                                      fontFamily:
+                                                          AppThemeData.regular,
+                                                      fontWeight:
+                                                          FontWeight.w400,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          }),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: Responsive.height(4, context),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: List.generate(
+                                        controller.onBoardingList.length,
+                                        (index) => Container(
+                                          margin: const EdgeInsets.symmetric(
+                                              horizontal: 4),
+                                          width: controller.selectedPageIndex
+                                                      .value ==
+                                                  index
+                                              ? 38
+                                              : 10,
+                                          height: 10,
+                                          decoration: BoxDecoration(
+                                            color: controller.selectedPageIndex
+                                                        .value ==
+                                                    index
+                                                ? Colors.black
+                                                : AppThemeData.grey300,
+                                            borderRadius:
+                                                const BorderRadius.all(
+                                                    Radius.circular(20.0)),
+                                          ),
                                         ),
                                       ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                Expanded(
-                                  child: RoundedButtonFill(
-                                    title:
-                                        controller.selectedPageIndex.value == 2
-                                            ? "Get Started".tr
-                                            : "Next".tr,
-                                    color: Colors.black,
-                                    textColor: AppThemeData.grey50,
-                                    onPress: () {
-                                      if (controller.selectedPageIndex.value ==
-                                          2) {
-                                        Preferences.setBoolean(
-                                            Preferences.isFinishOnBoardingKey,
-                                            true);
-                                        Get.offAll(const GetStartedScreen());
-                                      } else {
-                                        controller.pageController.jumpToPage(
-                                            controller.selectedPageIndex.value +
-                                                1);
-                                      }
-                                    },
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          // const SizedBox(height: 20),
-                        ],
-                      ),
-                    ),
-        );
-      },
-    );
+                                  SizedBox(
+                                    height: Responsive.height(4, context),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16),
+                                    child: Row(
+                                      children: [
+                                        controller.selectedPageIndex.value == 2
+                                            ? const SizedBox()
+                                            : Expanded(
+                                                child: RoundedButtonFill(
+                                                  title: "Skip".tr,
+                                                  color: AppThemeData.grey200,
+                                                  textColor:
+                                                      AppThemeData.grey800,
+                                                  onPress: () {
+                                                    if (controller
+                                                            .selectedPageIndex
+                                                            .value ==
+                                                        2) {
+                                                      Preferences.setBoolean(
+                                                          Preferences
+                                                              .isFinishOnBoardingKey,
+                                                          true);
+                                                      Get.offAll(
+                                                          const GetStartedScreen());
+                                                    } else {
+                                                      controller.pageController
+                                                          .jumpToPage(controller
+                                                                  .selectedPageIndex
+                                                                  .value +
+                                                              1);
+                                                    }
+                                                  },
+                                                ),
+                                              ),
+                                        const SizedBox(
+                                          width: 10,
+                                        ),
+                                        Expanded(
+                                          child: RoundedButtonFill(
+                                            title: controller.selectedPageIndex
+                                                        .value ==
+                                                    2
+                                                ? "Get Started".tr
+                                                : "Next".tr,
+                                            color: Colors.black,
+                                            textColor: AppThemeData.grey50,
+                                            onPress: () {
+                                              if (controller.selectedPageIndex
+                                                      .value ==
+                                                  2) {
+                                                Preferences.setBoolean(
+                                                    Preferences
+                                                        .isFinishOnBoardingKey,
+                                                    true);
+                                                Get.offAll(
+                                                    const GetStartedScreen());
+                                              } else {
+                                                controller.pageController
+                                                    .jumpToPage(controller
+                                                            .selectedPageIndex
+                                                            .value +
+                                                        1);
+                                              }
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  // const SizedBox(height: 20),
+                                ],
+                              ),
+                            )));
+        });
   }
 }
 

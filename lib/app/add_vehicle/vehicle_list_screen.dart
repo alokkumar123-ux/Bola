@@ -64,143 +64,146 @@ class VehicleListScreen extends StatelessWidget {
                 ),
               ),
             ),
-            body: controller.isLoading.value
-                ? Center(child: Constant.loader())
-                : Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 10),
-                    child: Column(
-                      children: [
-                        controller.userVehicleList.isEmpty
-                            ? const SizedBox()
-                            : ListView.builder(
-                                itemCount: controller.userVehicleList.length,
-                                shrinkWrap: true,
-                                padding: EdgeInsets.zero,
-                                itemBuilder: (context, index) {
-                                  VehicleInformationModel
-                                      vehicleInformationModel =
-                                      controller.userVehicleList[index];
-                                  return InkWell(
-                                    splashColor: Colors.transparent,
-                                    highlightColor: Colors.transparent,
-                                    onTap: () async {
-                                      log("CLICK::1");
-                                      await Get.to(const AddVehicleScreen(),
-                                          arguments: {
-                                            "vehicleInformationModel":
-                                                vehicleInformationModel
-                                          })?.then(
-                                        (value) async {
-                                          if (value != null) {
-                                            await controller
-                                                .getVehicleInformation();
-                                          }
-                                        },
-                                      );
-                                    },
-                                    child: Column(
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 10),
-                                          child: Row(
-                                            children: [
-                                              SvgPicture.asset(
-                                                  "assets/icons/ic_vehicle_icon.svg"),
-                                              const SizedBox(
-                                                width: 10,
-                                              ),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      "${vehicleInformationModel.licensePlatNumber}"
-                                                          .tr,
-                                                      textAlign:
-                                                          TextAlign.start,
-                                                      style: TextStyle(
-                                                          fontSize: 16,
-                                                          color: themeChange
-                                                                  .getThem()
-                                                              ? AppThemeData
-                                                                  .grey100
-                                                              : AppThemeData
-                                                                  .grey800,
-                                                          fontFamily:
-                                                              AppThemeData
-                                                                  .bold),
-                                                    ),
-                                                    Text(
-                                                      "${vehicleInformationModel.vehicleBrand!.name} (${vehicleInformationModel.vehicleModel!.name})"
-                                                          .tr,
-                                                      textAlign:
-                                                          TextAlign.start,
-                                                      style: TextStyle(
-                                                          color: themeChange
-                                                                  .getThem()
-                                                              ? AppThemeData
-                                                                  .grey100
-                                                              : AppThemeData
-                                                                  .grey800,
-                                                          fontFamily:
-                                                              AppThemeData
-                                                                  .medium),
-                                                    ),
-                                                  ],
+            body: SafeArea(
+              child: controller.isLoading.value
+                  ? Center(child: Constant.loader())
+                  : Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 10),
+                      child: Column(
+                        children: [
+                          controller.userVehicleList.isEmpty
+                              ? const SizedBox()
+                              : ListView.builder(
+                                  itemCount: controller.userVehicleList.length,
+                                  shrinkWrap: true,
+                                  padding: EdgeInsets.zero,
+                                  itemBuilder: (context, index) {
+                                    VehicleInformationModel
+                                        vehicleInformationModel =
+                                        controller.userVehicleList[index];
+                                    return InkWell(
+                                      splashColor: Colors.transparent,
+                                      highlightColor: Colors.transparent,
+                                      onTap: () async {
+                                        log("CLICK::1");
+                                        await Get.to(const AddVehicleScreen(),
+                                            arguments: {
+                                              "vehicleInformationModel":
+                                                  vehicleInformationModel
+                                            })?.then(
+                                          (value) async {
+                                            if (value != null) {
+                                              await controller
+                                                  .getVehicleInformation();
+                                            }
+                                          },
+                                        );
+                                      },
+                                      child: Column(
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 10),
+                                            child: Row(
+                                              children: [
+                                                SvgPicture.asset(
+                                                    "assets/icons/ic_vehicle_icon.svg"),
+                                                const SizedBox(
+                                                  width: 10,
                                                 ),
-                                              ),
-                                              const Icon(
-                                                  Icons.chevron_right_outlined)
-                                            ],
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        "${vehicleInformationModel.licensePlatNumber}"
+                                                            .tr,
+                                                        textAlign:
+                                                            TextAlign.start,
+                                                        style: TextStyle(
+                                                            fontSize: 16,
+                                                            color: themeChange
+                                                                    .getThem()
+                                                                ? AppThemeData
+                                                                    .grey100
+                                                                : AppThemeData
+                                                                    .grey800,
+                                                            fontFamily:
+                                                                AppThemeData
+                                                                    .bold),
+                                                      ),
+                                                      Text(
+                                                        "${vehicleInformationModel.vehicleBrand!.name} (${vehicleInformationModel.vehicleModel!.name})"
+                                                            .tr,
+                                                        textAlign:
+                                                            TextAlign.start,
+                                                        style: TextStyle(
+                                                            color: themeChange
+                                                                    .getThem()
+                                                                ? AppThemeData
+                                                                    .grey100
+                                                                : AppThemeData
+                                                                    .grey800,
+                                                            fontFamily:
+                                                                AppThemeData
+                                                                    .medium),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                const Icon(Icons
+                                                    .chevron_right_outlined)
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                        const Divider(),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        InkWell(
-                          splashColor: Colors.transparent,
-                          highlightColor: Colors.transparent,
-                          onTap: () async {
-                            await Get.to(const AddVehicleScreen())?.then(
-                              (value) async {
-                                if (value != null) {
-                                  await controller.getVehicleInformation();
-                                }
-                              },
-                            );
-                          },
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.add,
-                                color: AppThemeData.primary300,
-                              ),
-                              const SizedBox(width: 5),
-                              Text(
-                                "Add Vehicle".tr,
-                                textAlign: TextAlign.start,
-                                style: TextStyle(
-                                    color: themeChange.getThem()
-                                        ? AppThemeData.primary300
-                                        : AppThemeData.primary300,
-                                    fontFamily: AppThemeData.bold,
-                                    fontSize: 14),
-                              )
-                            ],
+                                          const Divider(),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                          const SizedBox(
+                            height: 10,
                           ),
-                        ),
-                      ],
+                          InkWell(
+                            splashColor: Colors.transparent,
+                            highlightColor: Colors.transparent,
+                            onTap: () async {
+                              await Get.to(const AddVehicleScreen())?.then(
+                                (value) async {
+                                  if (value != null) {
+                                    await controller.getVehicleInformation();
+                                  }
+                                },
+                              );
+                            },
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.add,
+                                  color: AppThemeData.primary300,
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  "Add Vehicle".tr,
+                                  textAlign: TextAlign.start,
+                                  style: TextStyle(
+                                      color: themeChange.getThem()
+                                          ? AppThemeData.primary300
+                                          : AppThemeData.primary300,
+                                      fontFamily: AppThemeData.bold,
+                                      fontSize: 14),
+                                )
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+            ),
           );
         });
   }

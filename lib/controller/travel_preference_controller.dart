@@ -1,7 +1,8 @@
 import 'package:get/get.dart';
 import 'package:poolmate/constant/show_toast_dialog.dart';
 import 'package:poolmate/model/user_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/user_utils.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
 
 class TravelPreferenceController extends GetxController {
   RxString chattiness = "".obs;
@@ -22,7 +23,7 @@ class TravelPreferenceController extends GetxController {
   }
 
   getData() async {
-    await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid()).then((value) {
+    await UserUtils.getUserProfile(AuthUtils.getCurrentUid()).then((value) {
       if (value != null) {
         userModel.value = value;
         if (userModel.value.travelPreference != null) {
@@ -44,7 +45,7 @@ class TravelPreferenceController extends GetxController {
     travelPreferenceModel.value.music = music.value;
     travelPreferenceModel.value.pets = pets.value;
     userModel.value.travelPreference = travelPreferenceModel.value;
-    await FireStoreUtils.updateUser(userModel.value).then((value) {
+    await UserUtils.updateUser(userModel.value).then((value) {
       ShowToastDialog.closeLoader();
       Get.back(result: true);
     });

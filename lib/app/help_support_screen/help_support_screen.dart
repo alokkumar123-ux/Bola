@@ -17,9 +17,11 @@ import 'package:poolmate/model/conversation_admin_model.dart';
 import 'package:poolmate/themes/app_them_data.dart';
 import 'package:poolmate/themes/responsive.dart';
 import 'package:poolmate/utils/dark_theme_provider.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
 import 'package:poolmate/utils/preferences.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
 
 class HelpSupportScreen extends StatelessWidget {
   HelpSupportScreen({super.key});
@@ -63,7 +65,7 @@ class HelpSupportScreen extends StatelessWidget {
                   ),
                 ),
                 title: Text(
-                  "Help & Support".tr,
+                  "Help & Contact".tr,
                   style: TextStyle(
                       color: themeChange.getThem()
                           ? AppThemeData.grey100
@@ -84,9 +86,78 @@ class HelpSupportScreen extends StatelessWidget {
               ),
               body: SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.only(left: 8.0, right: 8, bottom: 8),
+                  padding:
+                      const EdgeInsets.only(left: 8.0, right: 8, bottom: 8),
                   child: Column(
                     children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: themeChange.getThem()
+                                      ? AppThemeData.primary200
+                                      : AppThemeData.primary300,
+                                  foregroundColor: themeChange.getThem()
+                                      ? AppThemeData.grey900
+                                      : Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10)),
+                                ),
+                                onPressed: () {
+                                  _launchExternal(
+                                      Uri.parse('https://wa.me/917002729565'));
+                                },
+                                icon: Image.asset(
+                                  'assets/images/whatsapp_logo.png',
+                                  height: 20,
+                                  width: 20,
+                                ),
+                                label: Text(
+                                  'Chat on WhatsApp',
+                                  style: TextStyle(
+                                      fontFamily: AppThemeData.semiBold,
+                                      fontSize: 14),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: themeChange.getThem()
+                                      ? AppThemeData.grey900
+                                      : AppThemeData.grey800,
+                                  foregroundColor: AppThemeData.grey50,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10)),
+                                ),
+                                onPressed: () async {
+                                  final url = Uri.parse(
+                                      'https://bolaletsgo.com/contactus.php');
+                                  if (await canLaunchUrl(url)) {
+                                    await launchUrl(url,
+                                        mode: LaunchMode.inAppBrowserView);
+                                  }
+                                },
+                                icon: const Icon(Icons.headset_mic, size: 20),
+                                label: Text(
+                                  'Contact Us',
+                                  style: TextStyle(
+                                      fontFamily: AppThemeData.semiBold,
+                                      fontSize: 14),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                       Expanded(
                         child: GestureDetector(
                           onTap: () {
@@ -94,9 +165,9 @@ class HelpSupportScreen extends StatelessWidget {
                           },
                           child: PaginateFirestore(
                             scrollDirection: Axis.vertical,
-                            query: FireStoreUtils.fireStore
+                            query: FirebaseFirestore.instance
                                 .collection(CollectionName.adminChat)
-                                .doc(FireStoreUtils.getCurrentUid())
+                                .doc(AuthUtils.getCurrentUid())
                                 .collection("thread")
                                 .orderBy('createdAt', descending: true),
                             itemBuilderType: PaginateBuilderType.listView,
@@ -118,7 +189,7 @@ class HelpSupportScreen extends StatelessWidget {
                                           as Map<String, dynamic>);
                               return chatItemView(
                                   isMe: inboxModel.senderId ==
-                                      FireStoreUtils.getCurrentUid(),
+                                      AuthUtils.getCurrentUid(),
                                   data: inboxModel,
                                   context: context,
                                   controller: controller);
@@ -150,8 +221,8 @@ class HelpSupportScreen extends StatelessWidget {
                                     ? AppThemeData.grey900
                                     : AppThemeData.grey100,
                                 disabledBorder: OutlineInputBorder(
-                                  borderRadius:
-                                      const BorderRadius.all(Radius.circular(10)),
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(10)),
                                   borderSide: BorderSide(
                                       color: themeChange.getThem()
                                           ? AppThemeData.grey900
@@ -159,8 +230,8 @@ class HelpSupportScreen extends StatelessWidget {
                                       width: 1),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderRadius:
-                                      const BorderRadius.all(Radius.circular(10)),
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(10)),
                                   borderSide: BorderSide(
                                       color: themeChange.getThem()
                                           ? AppThemeData.primary300
@@ -168,8 +239,8 @@ class HelpSupportScreen extends StatelessWidget {
                                       width: 1),
                                 ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderRadius:
-                                      const BorderRadius.all(Radius.circular(10)),
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(10)),
                                   borderSide: BorderSide(
                                       color: themeChange.getThem()
                                           ? AppThemeData.grey900
@@ -177,8 +248,8 @@ class HelpSupportScreen extends StatelessWidget {
                                       width: 1),
                                 ),
                                 errorBorder: OutlineInputBorder(
-                                  borderRadius:
-                                      const BorderRadius.all(Radius.circular(10)),
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(10)),
                                   borderSide: BorderSide(
                                       color: themeChange.getThem()
                                           ? AppThemeData.grey900
@@ -186,8 +257,8 @@ class HelpSupportScreen extends StatelessWidget {
                                       width: 1),
                                 ),
                                 border: OutlineInputBorder(
-                                  borderRadius:
-                                      const BorderRadius.all(Radius.circular(10)),
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(10)),
                                   borderSide: BorderSide(
                                       color: themeChange.getThem()
                                           ? AppThemeData.grey900
@@ -205,7 +276,8 @@ class HelpSupportScreen extends StatelessWidget {
                                           videoThumbnail: '',
                                           messageType: 'text',
                                           controller: controller);
-                                      controller.messageController.value.clear();
+                                      controller.messageController.value
+                                          .clear();
                                     } else {
                                       ShowToastDialog.showToast(
                                           "Please enter text".tr);
@@ -240,8 +312,8 @@ class HelpSupportScreen extends StatelessWidget {
                                 if (controller
                                     .messageController.value.text.isNotEmpty) {
                                   controller.sendMessage(
-                                      message:
-                                          controller.messageController.value.text,
+                                      message: controller
+                                          .messageController.value.text,
                                       url: null,
                                       videoThumbnail: '',
                                       messageType: 'text',
@@ -571,6 +643,14 @@ class HelpSupportScreen extends StatelessWidget {
   }
 
   final ImagePicker _imagePicker = ImagePicker();
+
+  Future<void> _launchExternal(Uri uri) async {
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      ShowToastDialog.showToast('Could not open link');
+    }
+  }
 
   void _onCameraClick(
       {required DarkThemeProvider themeChange,

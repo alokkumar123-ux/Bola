@@ -4,7 +4,9 @@ import 'package:poolmate/constant/collection_name.dart';
 import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/constant/show_toast_dialog.dart';
 import 'package:poolmate/model/report_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/report_utils.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ReportHelpController extends GetxController {
   RxBool isLoading = true.obs;
@@ -38,7 +40,11 @@ class ReportHelpController extends GetxController {
   }
 
   getReportList() async {
-    await FireStoreUtils.fireStore.collection(CollectionName.settings).doc("reasons").get().then((event) {
+    await FirebaseFirestore.instance
+        .collection(CollectionName.settings)
+        .doc("reasons")
+        .get()
+        .then((event) {
       if (event.exists) {
         customerList = event.data()!["customer"];
         publisherList = event.data()!["publisher"];
@@ -46,7 +52,6 @@ class ReportHelpController extends GetxController {
       }
     });
     isLoading.value = false;
-
   }
 
   publishReport() async {
@@ -54,14 +59,16 @@ class ReportHelpController extends GetxController {
     reportModel.id = Constant.getUuid();
     reportModel.title = selectedReasons.value;
     reportModel.description = descriptionController.value.text;
-    reportModel.reportedFrom = FireStoreUtils.getCurrentUid();
+    reportModel.reportedFrom = AuthUtils.getCurrentUid();
     reportModel.reportedTo = reportedTo.value;
     reportModel.status = "Pending";
     reportModel.bookingId = bookingId.value;
 
-    await FireStoreUtils.setReport(reportModel).then((value) {
-      ShowToastDialog.showToast("Report place successfully");
-      Get.back();
-    },);
+    await ReportUtils.setReport(reportModel).then(
+      (value) {
+        ShowToastDialog.showToast("Report place successfully");
+        Get.back();
+      },
+    );
   }
 }

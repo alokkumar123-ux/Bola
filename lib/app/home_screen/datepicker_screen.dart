@@ -18,7 +18,9 @@ class DatepickerScreen extends StatelessWidget {
         builder: (controller) {
           return Scaffold(
               appBar: AppBar(
-                backgroundColor: themeChange.getThem() ? AppThemeData.grey900 : AppThemeData.grey50,
+                backgroundColor: themeChange.getThem()
+                    ? AppThemeData.grey900
+                    : AppThemeData.grey50,
                 centerTitle: true,
                 leading: InkWell(
                     onTap: () {
@@ -27,87 +29,106 @@ class DatepickerScreen extends StatelessWidget {
                     child: const Icon(Icons.close)),
                 title: Text(
                   "When are you going?".tr,
-                  style: TextStyle(color: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800, fontFamily: AppThemeData.semiBold, fontSize: 18),
+                  style: TextStyle(
+                      color: themeChange.getThem()
+                          ? AppThemeData.grey100
+                          : AppThemeData.grey800,
+                      fontFamily: AppThemeData.semiBold,
+                      fontSize: 18),
                 ),
               ),
-              body: PagedVerticalCalendar(
-                dayAspectRatio: 1,
-                dayBuilder: (context, date) {
-                  if (date.isBefore(DateTime.now().subtract(const Duration(days: 1)))) {
-                    return const SizedBox();
-                  }
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                          alignment: Alignment.center,
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(40),
-                              color: controller.selectedDay.value != date
-                                  ? Colors.transparent
-                                  : themeChange.getThem()
-                                      ? AppThemeData.primary300
-                                      : AppThemeData.grey800),
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              body: SafeArea(
+                child: PagedVerticalCalendar(
+                  dayAspectRatio: 1,
+                  dayBuilder: (context, date) {
+                    if (date.isBefore(
+                        DateTime.now().subtract(const Duration(days: 1)))) {
+                      return const SizedBox();
+                    }
+                    return Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                            alignment: Alignment.center,
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(40),
+                                color: controller.selectedDay.value != date
+                                    ? Colors.transparent
+                                    : themeChange.getThem()
+                                        ? AppThemeData.primary300
+                                        : AppThemeData.grey800),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 12),
+                            child: Text(
+                              DateFormat('d').format(date),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge!
+                                  .copyWith(
+                                    color: themeChange.getThem()
+                                        ? AppThemeData.grey100
+                                        : AppThemeData.grey800,
+                                    fontSize: 14,
+                                  ),
+                            )),
+                      ],
+                    );
+                  },
+                  monthBuilder: (context, month, year) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 16,
+                          ),
+                          margin: const EdgeInsets.symmetric(horizontal: 16),
                           child: Text(
-                            DateFormat('d').format(date),
-                            style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                                  color: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800,
-                                  fontSize: 14,
-                                ),
-                          )),
-                    ],
-                  );
-                },
-                monthBuilder: (context, month, year) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 16,
+                            DateFormat('MMMM yyyy')
+                                .format(DateTime(year, month)),
+                            style:
+                                Theme.of(context).textTheme.bodyLarge!.copyWith(
+                                      color: themeChange.getThem()
+                                          ? AppThemeData.grey100
+                                          : AppThemeData.grey800,
+                                      fontSize: 18,
+                                    ),
+                          ),
                         ),
-                        margin: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          DateFormat('MMMM yyyy').format(DateTime(year, month)),
-                          style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                                color: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800,
-                                fontSize: 18,
-                              ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.max,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              weekText('Su', themeChange),
+                              weekText('Mo', themeChange),
+                              weekText('Tu', themeChange),
+                              weekText('We', themeChange),
+                              weekText('Th', themeChange),
+                              weekText('Fr', themeChange),
+                              weekText('Sa', themeChange),
+                            ],
+                          ),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            weekText('Su', themeChange),
-                            weekText('Mo', themeChange),
-                            weekText('Tu', themeChange),
-                            weekText('We', themeChange),
-                            weekText('Th', themeChange),
-                            weekText('Fr', themeChange),
-                            weekText('Sa', themeChange),
-                          ],
-                        ),
-                      ),
-                    ],
-                  );
-                },
-                initialDate: controller.selectedDay.value,
-                minDate: DateTime.now(),
-                maxDate: DateTime.now().add(const Duration(days: 365)),
-                onDayPressed: (date) {
-                  if (!date.isBefore(DateTime.now().subtract(const Duration(days: 1)))) {
-                    controller.selectedDay.value = date;
-                    Future.delayed(const Duration(milliseconds: 500), () {
-                      Get.back(result: controller.selectedDay.value);
-                    });
-                  }
-                },
+                      ],
+                    );
+                  },
+                  initialDate: controller.selectedDay.value,
+                  minDate: DateTime.now(),
+                  maxDate: DateTime.now().add(const Duration(days: 365)),
+                  onDayPressed: (date) {
+                    if (!date.isBefore(
+                        DateTime.now().subtract(const Duration(days: 1)))) {
+                      controller.selectedDay.value = date;
+                      Future.delayed(const Duration(milliseconds: 500), () {
+                        Get.back(result: controller.selectedDay.value);
+                      });
+                    }
+                  },
+                ),
               ));
         });
   }
@@ -119,7 +140,8 @@ Widget weekText(String text, DarkThemeProvider themeChange) {
     child: Text(
       text,
       style: TextStyle(
-        color: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800,
+        color:
+            themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800,
         fontSize: 18,
         fontFamily: AppThemeData.medium,
       ),

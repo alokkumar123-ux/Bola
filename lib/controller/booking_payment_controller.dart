@@ -6,7 +6,10 @@ import 'package:http/http.dart' as http;
 import 'package:poolmate/app/payment/cashfreeScreen.dart';
 import 'package:poolmate/constant/show_toast_dialog.dart';
 import 'package:poolmate/model/payment_method_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
+import 'package:poolmate/utils/firestore/payment_utils.dart';
+import 'package:poolmate/utils/firestore/user_utils.dart';
+import 'package:poolmate/utils/firestore/wallet_utils.dart';
 
 class BookingPaymentController extends GetxController {
   RxBool isLoading = true.obs;
@@ -41,7 +44,7 @@ class BookingPaymentController extends GetxController {
   }
 
   Future<void> getPaymentData() async {
-    await FireStoreUtils().getPayment().then((value) {
+    await PaymentUtils().getPayment().then((value) {
       if (value != null) {
         paymentModel.value = value;
       }
@@ -51,8 +54,7 @@ class BookingPaymentController extends GetxController {
   }
 
   Future<void> getUserWalletBalance() async {
-    await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid())
-        .then((value) {
+    await UserUtils.getUserProfile(AuthUtils.getCurrentUid()).then((value) {
       if (value != null) {
         walletBalance.value = double.parse(value.walletAmount ?? '0');
       }
@@ -105,32 +107,24 @@ class BookingPaymentController extends GetxController {
     ShowToastDialog.showLoader("Processing wallet payment...");
 
     try {
-      // Get user profile
-      final userModel =
-          await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid());
+      // Use the proper wallet deduction function that creates transaction records
+      Map<String, dynamic> deductResult =
+          await WalletUtils.deductFromUserWallet(
+              amount: totalAmount.value.toString(),
+              userId: AuthUtils.getCurrentUid(),
+              description: "Ride booking payment - Booking ID: $bookingId");
 
-      if (userModel == null) {
-        ShowToastDialog.closeLoader();
-        ShowToastDialog.showToast("User not found");
-        return;
+      ShowToastDialog.closeLoader();
+
+      if (deductResult['success'] == true) {
+        log("Wallet payment successful - balance deducted");
+        ShowToastDialog.showToast("Payment successful!");
+        Get.back(result: {"paymentType": "Wallet", "paymentSuccess": true});
+      } else {
+        ShowToastDialog.showToast(
+            deductResult['message'] ?? "Payment failed. Please try again.");
+        Get.back(result: {"paymentType": "Wallet", "paymentSuccess": false});
       }
-
-      // Deduct amount from wallet
-      double newBalance = walletBalance.value - totalAmount.value;
-      userModel.walletAmount = newBalance.toString();
-
-      // Update user profile with new wallet balance
-      await FireStoreUtils.updateUser(userModel).then((value) {
-        ShowToastDialog.closeLoader();
-        if (value == true) {
-          log("Wallet payment successful - balance deducted");
-          ShowToastDialog.showToast("Payment successful!");
-          Get.back(result: {"paymentType": "Wallet", "paymentSuccess": true});
-        } else {
-          ShowToastDialog.showToast("Payment failed. Please try again.");
-          Get.back(result: {"paymentType": "Wallet", "paymentSuccess": false});
-        }
-      });
     } catch (e) {
       ShowToastDialog.closeLoader();
       log("Wallet payment error: $e");
@@ -221,7 +215,7 @@ class BookingPaymentController extends GetxController {
 
       // Get user data
       final userModel =
-          await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid());
+          await UserUtils.getUserProfile(AuthUtils.getCurrentUid());
 
       if (userModel == null) {
         log("User model is null");

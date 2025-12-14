@@ -8,7 +8,7 @@ import 'package:poolmate/themes/app_them_data.dart';
 import 'package:poolmate/themes/responsive.dart';
 import 'package:poolmate/themes/text_field_widget.dart';
 import 'package:poolmate/utils/dark_theme_provider.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/withdraw_utils.dart';
 import 'package:provider/provider.dart';
 
 class PaymentSetupScreen extends StatelessWidget {
@@ -62,9 +62,10 @@ class PaymentSetupScreen extends StatelessWidget {
                 ),
               ),
             ),
-            body: controller.isLoading.value
-                ? Center(child: Constant.loader())
-                : Padding(
+            body: SafeArea(
+              child: controller.isLoading.value
+                  ? Center(child: Constant.loader())
+                  : Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 10),
                     child: SingleChildScrollView(
@@ -142,7 +143,7 @@ class PaymentSetupScreen extends StatelessWidget {
                                                                     .withdrawMethodModel
                                                                     .value
                                                                     .stripe = null;
-                                                                await FireStoreUtils.setWithdrawMethod(
+                                                                await WithdrawUtils.setWithdrawMethod(
                                                                         controller
                                                                             .withdrawMethodModel
                                                                             .value)
@@ -318,7 +319,7 @@ class PaymentSetupScreen extends StatelessWidget {
                                                                     .withdrawMethodModel
                                                                     .value
                                                                     .paypal = null;
-                                                                await FireStoreUtils.setWithdrawMethod(
+                                                                await WithdrawUtils.setWithdrawMethod(
                                                                         controller
                                                                             .withdrawMethodModel
                                                                             .value)
@@ -494,7 +495,7 @@ class PaymentSetupScreen extends StatelessWidget {
                                                                     .withdrawMethodModel
                                                                     .value
                                                                     .razorpay = null;
-                                                                await FireStoreUtils.setWithdrawMethod(
+                                                                await WithdrawUtils.setWithdrawMethod(
                                                                         controller
                                                                             .withdrawMethodModel
                                                                             .value)
@@ -672,7 +673,7 @@ class PaymentSetupScreen extends StatelessWidget {
                                                                     .withdrawMethodModel
                                                                     .value
                                                                     .flutterWave = null;
-                                                                await FireStoreUtils.setWithdrawMethod(
+                                                                await WithdrawUtils.setWithdrawMethod(
                                                                         controller
                                                                             .withdrawMethodModel
                                                                             .value)
@@ -843,7 +844,7 @@ class PaymentSetupScreen extends StatelessWidget {
                                                           .withdrawMethodModel
                                                           .value
                                                           .bank = null;
-                                                      await FireStoreUtils
+                                                      await WithdrawUtils
                                                               .setWithdrawMethod(
                                                                   controller
                                                                       .withdrawMethodModel
@@ -931,7 +932,7 @@ class PaymentSetupScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-          );
+          ));
         });
   }
 
@@ -1047,7 +1048,7 @@ class PaymentSetupScreen extends StatelessWidget {
                               name: "Stripe");
                         }
                         controller.withdrawMethodModel.value.stripe = stripe;
-                        await FireStoreUtils.setWithdrawMethod(
+                        await WithdrawUtils.setWithdrawMethod(
                                 controller.withdrawMethodModel.value)
                             .then(
                           (value) async {
@@ -1206,7 +1207,7 @@ class PaymentSetupScreen extends StatelessWidget {
                               name: "PayPal");
                         }
                         controller.withdrawMethodModel.value.paypal = payPal;
-                        await FireStoreUtils.setWithdrawMethod(
+                        await WithdrawUtils.setWithdrawMethod(
                                 controller.withdrawMethodModel.value)
                             .then(
                           (value) async {
@@ -1367,7 +1368,7 @@ class PaymentSetupScreen extends StatelessWidget {
                         }
                         controller.withdrawMethodModel.value.razorpay =
                             razorPay;
-                        await FireStoreUtils.setWithdrawMethod(
+                        await WithdrawUtils.setWithdrawMethod(
                                 controller.withdrawMethodModel.value)
                             .then(
                           (value) async {
@@ -1531,7 +1532,7 @@ class PaymentSetupScreen extends StatelessWidget {
                         }
                         controller.withdrawMethodModel.value.flutterWave =
                             flutterWave;
-                        await FireStoreUtils.setWithdrawMethod(
+                        await WithdrawUtils.setWithdrawMethod(
                                 controller.withdrawMethodModel.value)
                             .then(
                           (value) async {
@@ -1720,7 +1721,7 @@ class PaymentSetupScreen extends StatelessWidget {
                                 name: "Bank");
                           }
                           controller.withdrawMethodModel.value.bank = bank;
-                          await FireStoreUtils.setWithdrawMethod(
+                          await WithdrawUtils.setWithdrawMethod(
                                   controller.withdrawMethodModel.value)
                               .then(
                             (value) async {
@@ -1766,7 +1767,8 @@ class PaymentSetupScreen extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
+            ),
+          );
+        }
   }
-}
+

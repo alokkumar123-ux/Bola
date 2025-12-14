@@ -15,9 +15,9 @@ import 'package:poolmate/themes/app_them_data.dart';
 import 'package:poolmate/themes/custom_dialog_box.dart';
 import 'package:poolmate/themes/round_button_fill.dart';
 import 'package:poolmate/utils/dark_theme_provider.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
 import 'package:poolmate/utils/preferences.dart';
 import 'package:provider/provider.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
 
 class AccessibilityScreen extends StatelessWidget {
   const AccessibilityScreen({super.key});
@@ -72,11 +72,12 @@ class AccessibilityScreen extends StatelessWidget {
                 ),
               ),
             ),
-            body: controller.isLoading.value
-                ? Center(child: Constant.loader())
-                : Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 10),
+            body: SafeArea(
+              child: controller.isLoading.value
+                  ? Center(child: Constant.loader())
+                  : Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 10),
                     child: Column(
                       children: [
                         Row(
@@ -96,7 +97,7 @@ class AccessibilityScreen extends StatelessWidget {
                               scale: 0.8,
                               child: CupertinoSwitch(
                                 value: controller.isDarkModeSwitch.value,
-                                activeColor: AppThemeData.primary300,
+                                activeTrackColor: AppThemeData.primary300,
                                 onChanged: (value) {
                                   controller.isDarkModeSwitch.value = value;
                                   if (controller.isDarkModeSwitch.value ==
@@ -268,7 +269,7 @@ class AccessibilityScreen extends StatelessWidget {
                                     positiveClick: () async {
                                       ShowToastDialog.showLoader(
                                           "Please wait".tr);
-                                      await FireStoreUtils.deleteUser()
+                                      await AuthUtils.deleteUser()
                                           .then((value) {
                                         ShowToastDialog.closeLoader();
                                         if (value == true) {
@@ -310,8 +311,10 @@ class AccessibilityScreen extends StatelessWidget {
                       ],
                     ),
                   ),
+                ),
+              );}
           );
-        });
+        }
   }
 
   languageBuildBottomSheet(BuildContext context) {
@@ -454,8 +457,7 @@ class AccessibilityScreen extends StatelessWidget {
                   ),
                 );
               });
-        },
-      ),
-    );
-  }
-}
+            },
+            ),
+          );
+        }

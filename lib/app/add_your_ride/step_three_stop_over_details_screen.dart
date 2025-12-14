@@ -220,17 +220,19 @@ class StepThreeStopOverDetailsScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              bottomNavigationBar: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                child: RoundedButtonFill(
-                  title: "Next".tr,
-                  color: AppThemeData.primary300,
-                  textColor: AppThemeData.grey50,
-                  onPress: () {
-                    controller.calculatePrice();
-                    print("=====>");
-                    Get.to(const StepFourPassengerTakeScreen());
-                  },
+              bottomNavigationBar: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  child: RoundedButtonFill(
+                    title: "Next".tr,
+                    color: AppThemeData.primary300,
+                    textColor: AppThemeData.grey50,
+                    onPress: () {
+                      controller.calculatePrice();
+                      print("=====>");
+                      Get.to(const StepFourPassengerTakeScreen());
+                    },
+                  ),
                 ),
               ));
         });

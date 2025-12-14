@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/model/language_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/settings_utils.dart';
 import 'package:poolmate/utils/preferences.dart';
 
 class AccessibilityController extends GetxController {
@@ -34,10 +34,12 @@ class AccessibilityController extends GetxController {
   }
 
   getLanguage() async {
-    await FireStoreUtils.getLanguage().then((value) {
+    await SettingsUtils.getLanguage().then((value) {
       if (value != null) {
         languageList.value = value;
-        if (Preferences.getString(Preferences.languageCodeKey).toString().isNotEmpty) {
+        if (Preferences.getString(Preferences.languageCodeKey)
+            .toString()
+            .isNotEmpty) {
           LanguageModel pref = Constant.getLanguage();
 
           for (var element in languageList) {

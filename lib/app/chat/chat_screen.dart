@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutterflow_paginate_firestore/paginate_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:poolmate/app/chat/model/chat_model.dart';
 import 'package:poolmate/app/review/review_screen.dart';
@@ -13,7 +14,6 @@ import 'package:poolmate/themes/app_them_data.dart';
 import 'package:poolmate/themes/responsive.dart';
 import 'package:poolmate/themes/round_button_fill.dart';
 import 'package:poolmate/utils/dark_theme_provider.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
 import 'package:poolmate/utils/network_image_widget.dart';
 import 'package:provider/provider.dart';
 
@@ -95,7 +95,7 @@ class ChatScreen extends StatelessWidget {
                       Expanded(
                         child: PaginateFirestore(
                           scrollDirection: Axis.vertical,
-                          query: FireStoreUtils.fireStore
+                          query: FirebaseFirestore.instance
                               .collection(CollectionName.chat)
                               .doc(controller.senderUserModel.value.id)
                               .collection(controller.receiverUserModel.value.id
@@ -167,8 +167,9 @@ class ChatScreen extends StatelessWidget {
                                       fillColor: themeChange.getThem()
                                           ? AppThemeData.grey800
                                           : AppThemeData.grey100,
-                                      contentPadding: const EdgeInsets.symmetric(
-                                          vertical: 16, horizontal: 10),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              vertical: 16, horizontal: 10),
                                       disabledBorder: OutlineInputBorder(
                                         borderRadius: const BorderRadius.all(
                                             Radius.circular(10)),
@@ -232,7 +233,9 @@ class ChatScreen extends StatelessWidget {
                                     if (controller.messageTextEditorController
                                         .value.text.isNotEmpty) {
                                       controller.sendMessage(controller
-                                          .messageTextEditorController.value.text
+                                          .messageTextEditorController
+                                          .value
+                                          .text
                                           .trim());
                                     } else {
                                       ShowToastDialog.showToast(
@@ -375,8 +378,8 @@ class ChatScreen extends StatelessWidget {
 
                                     // Fetch the booking model
                                     try {
-                                      final bookingDoc = await FireStoreUtils
-                                          .fireStore
+                                      final bookingDoc = await FirebaseFirestore
+                                          .instance
                                           .collection('booking')
                                           .doc(bookingId)
                                           .get();

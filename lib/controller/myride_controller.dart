@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:poolmate/model/booking_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/booking_utils.dart';
 
 class MyRideController extends GetxController {
   late StreamSubscription<List<BookingModel>> _myBookingSubscription;
@@ -34,7 +34,7 @@ class MyRideController extends GetxController {
     print("=== MyRideController: Initializing real-time streams ===");
 
     // Subscribe to My Bookings stream
-    _myBookingSubscription = FireStoreUtils.getMyBookingStream().listen(
+    _myBookingSubscription = BookingUtils.getMyBookingStream().listen(
       (bookings) {
         myBooking.value = bookings;
         print("REAL-TIME: MyBookings updated - Count: ${bookings.length}");
@@ -47,7 +47,7 @@ class MyRideController extends GetxController {
     );
 
     // Subscribe to Publisher Bookings stream
-    _publisherBookingSubscription = FireStoreUtils.getPublishesStream().listen(
+    _publisherBookingSubscription = BookingUtils.getPublishesStream().listen(
       (bookings) {
         publisherBooking.value = bookings;
         print(
@@ -62,7 +62,7 @@ class MyRideController extends GetxController {
 
     // Subscribe to Cancelled Bookings stream
     _cancelledBookingSubscription =
-        FireStoreUtils.getCancelledBookingsStream().listen(
+        BookingUtils.getCancelledBookingsStream().listen(
       (bookings) {
         cancelledBooking.value = bookings;
         print(
@@ -81,7 +81,7 @@ class MyRideController extends GetxController {
 
     // Subscribe to Completed Bookings stream
     _completedBookingSubscription =
-        FireStoreUtils.getCompletedBookingsStream().listen(
+        BookingUtils.getCompletedBookingsStream().listen(
       (bookings) {
         completedBooking.value = bookings;
         print(

@@ -1,5 +1,4 @@
 // Web implementation that uses dart:js
-import 'dart:js' as js;
 import 'dart:js_util' as js_util;
 
 // Re-export for use in main file

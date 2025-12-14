@@ -18,7 +18,8 @@ import 'package:poolmate/themes/custom_dialog_box.dart';
 import 'package:poolmate/themes/responsive.dart';
 import 'package:poolmate/themes/round_button_fill.dart';
 import 'package:poolmate/utils/dark_theme_provider.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
+import 'package:poolmate/utils/firestore/sos_utils.dart';
 import 'package:poolmate/utils/network_image_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:timelines_plus/timelines_plus.dart';
@@ -1433,9 +1434,9 @@ class BookedDetailsScreen extends StatelessWidget {
                                                       return;
                                                     }
                                                     String customerId =
-                                                        FireStoreUtils
+                                                        AuthUtils
                                                             .getCurrentUid();
-                                                    await FireStoreUtils.getSOS(
+                                                    await SosUtils.getSOS(
                                                             bookingId: controller
                                                                 .bookingModel
                                                                 .value
@@ -1479,8 +1480,8 @@ class BookedDetailsScreen extends StatelessWidget {
                                                                     .longitude!);
                                                         sosModel.status =
                                                             "Initiated";
-                                                        await FireStoreUtils
-                                                            .setSOS(sosModel);
+                                                        await SosUtils.setSOS(
+                                                            sosModel);
                                                         // Send WhatsApp SOS message to all user's SOS numbers
                                                         final sosNumbers =
                                                             controller

@@ -7,7 +7,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/constant/show_toast_dialog.dart';
 import 'package:poolmate/model/user_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
+import 'package:poolmate/utils/firestore/user_utils.dart';
 
 class EditProfileController extends GetxController {
   RxBool isLoading = true.obs;
@@ -34,8 +35,7 @@ class EditProfileController extends GetxController {
   }
 
   getData() async {
-    await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid())
-        .then((value) {
+    await UserUtils.getUserProfile(AuthUtils.getCurrentUid()).then((value) {
       if (value != null) {
         userModel.value = value;
         firstNameController.value.text = userModel.value.firstName.toString();
@@ -47,7 +47,7 @@ class EditProfileController extends GetxController {
         if (userModel.value.sosWhatsAppNumbers != null &&
             userModel.value.sosWhatsAppNumbers!.isNotEmpty) {
           sosWhatsAppNumberController1.value.text =
-              userModel.value.sosWhatsAppNumbers!.length > 0
+              userModel.value.sosWhatsAppNumbers!.isNotEmpty
                   ? userModel.value.sosWhatsAppNumbers![0]
                   : "";
           sosWhatsAppNumberController2.value.text =
@@ -72,12 +72,39 @@ class EditProfileController extends GetxController {
   }
 
   saveData() async {
+    // Validate SOS WhatsApp numbers
+    String sosNumber1 = sosWhatsAppNumberController1.value.text.trim();
+    String sosNumber2 = sosWhatsAppNumberController2.value.text.trim();
+
+    // Check if SOS number 1 is not empty and doesn't have exactly 10 digits
+    if (sosNumber1.isNotEmpty && sosNumber1.length != 10) {
+      ShowToastDialog.showToast(
+          "SOS WhatsApp number 1 must contain exactly 10 digits");
+      return;
+    }
+
+    // Check if SOS number 2 is not empty and doesn't have exactly 10 digits
+    if (sosNumber2.isNotEmpty && sosNumber2.length != 10) {
+      ShowToastDialog.showToast(
+          "SOS WhatsApp number 2 must contain exactly 10 digits");
+      return;
+    }
+
+    // Check if both numbers are filled and are the same
+    if (sosNumber1.isNotEmpty &&
+        sosNumber2.isNotEmpty &&
+        sosNumber1 == sosNumber2) {
+      ShowToastDialog.showToast(
+          "SOS WhatsApp number 1 and 2 cannot be the same");
+      return;
+    }
+
     ShowToastDialog.showLoader("Please wait...");
     if (Constant().hasValidUrl(profileImage.value) == false &&
         profileImage.value.isNotEmpty) {
       profileImage.value = await Constant.uploadUserImageToFireStorage(
         File(profileImage.value),
-        "profileImage/${FireStoreUtils.getCurrentUid()}",
+        "profileImage/${AuthUtils.getCurrentUid()}",
         File(profileImage.value).path.split('/').last,
       );
     }
@@ -94,7 +121,7 @@ class EditProfileController extends GetxController {
       sosWhatsAppNumberController2.value.text
     ].where((number) => number.isNotEmpty).toList();
 
-    await FireStoreUtils.updateUser(userModel.value).then((value) {
+    await UserUtils.updateUser(userModel.value).then((value) {
       ShowToastDialog.closeLoader();
       Get.back(result: true);
     });

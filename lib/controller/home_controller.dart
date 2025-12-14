@@ -18,7 +18,11 @@ import 'package:poolmate/model/recent_search_model.dart';
 import 'package:poolmate/model/ride_alert_model.dart';
 import 'package:poolmate/model/stop_over_model.dart';
 import 'package:poolmate/model/user_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/search_utils.dart';
+import 'package:poolmate/utils/firestore/user_utils.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
+import 'package:poolmate/utils/firestore/settings_utils.dart';
+import 'package:poolmate/utils/firestore/ridealert_utils.dart';
 import 'package:http/http.dart' as http;
 
 class HomeController extends GetxController {
@@ -65,7 +69,7 @@ class HomeController extends GetxController {
   }
 
   getSearchHistory() async {
-    await FireStoreUtils.getSearchHistory().then((value) {
+    await SearchUtils.getSearchHistory().then((value) {
       if (value != null) {
         recentSearch.value = value;
       }
@@ -86,7 +90,7 @@ class HomeController extends GetxController {
 
       // Get current user's details for filtering
       UserModel? currentUser =
-          await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid());
+          await UserUtils.getUserProfile(AuthUtils.getCurrentUid());
 
       // Only use geocoding on non-web platforms
       if (!kIsWeb && pickUpLocation.value.lat != null) {
@@ -103,7 +107,7 @@ class HomeController extends GetxController {
         }
       }
 
-      await FireStoreUtils().getTaxList().then((value) {
+      await UserUtils.getTaxList().then((value) {
         if (value != null) {
           Constant.taxList = value;
         }
@@ -117,13 +121,13 @@ class HomeController extends GetxController {
       }
       Timestamp endTime = Timestamp.fromDate(DateTime(selectedDate.value.year,
           selectedDate.value.month, selectedDate.value.day, 23, 59, 0));
-      await FireStoreUtils.fireStore
+      await FirebaseFirestore.instance
           .collection(CollectionName.booking)
           .where('departureDateTime', isGreaterThanOrEqualTo: startTime)
           .where('departureDateTime', isLessThanOrEqualTo: endTime)
           .where('status', isEqualTo: Constant.placed)
           .where('publish', isEqualTo: true)
-          .where('createdBy', isNotEqualTo: FireStoreUtils.getCurrentUid())
+          .where('createdBy', isNotEqualTo: AuthUtils.getCurrentUid())
           .get()
           .then((value) {
         for (var element in value.docs) {
@@ -258,14 +262,14 @@ class HomeController extends GetxController {
     recentSearchModel.dropLocation = dropLocation.value;
     recentSearchModel.person = personController.value.text;
     recentSearchModel.bookedDate = Timestamp.fromDate(selectedDate.value);
-    recentSearchModel.userId = FireStoreUtils.getCurrentUid();
+    recentSearchModel.userId = AuthUtils.getCurrentUid();
     recentSearchModel.createdAt = Timestamp.now();
     if (serachHistoryId != null) {
       recentSearchModel.id = serachHistoryId;
     } else {
       recentSearchModel.id = Constant.getUuid();
     }
-    await FireStoreUtils.setSearchHistory(recentSearchModel);
+    await SearchUtils.setSearchHistory(recentSearchModel);
   }
 
   setSearchDatatoFields(
@@ -397,12 +401,11 @@ class HomeController extends GetxController {
   RxList<String> bannerList = <String>[].obs;
 
   getAdvertisement() async {
-    await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid())
-        .then((value) {
+    await UserUtils.getUserProfile(AuthUtils.getCurrentUid()).then((value) {
       userModel.value = value!;
     });
 
-    await FireStoreUtils.getAdvertiseBannersData().then((modelList) {
+    await SettingsUtils.getAdvertiseBannersData().then((modelList) {
       bannerList.value = modelList;
     });
   }
@@ -604,14 +607,14 @@ class HomeController extends GetxController {
       log('🔔 Creating ride alert...');
 
       // Check if user already has an active alert for this route and date
-      String userId = FireStoreUtils.getCurrentUid();
+      String userId = AuthUtils.getCurrentUid();
       String pickupAddr = pickUpLocationController.value.text;
       String dropAddr = dropLocationController.value.text;
       DateTime searchDateOnly = DateTime(selectedDate.value.year,
           selectedDate.value.month, selectedDate.value.day);
 
       List<RideAlertModel> existingAlerts =
-          await FireStoreUtils.getUserActiveRideAlerts(userId) ?? [];
+          await RideAlertUtils.getUserActiveRideAlerts(userId) ?? [];
 
       // Check if similar alert already exists
       bool alertExists = existingAlerts.any((alert) {
@@ -653,7 +656,7 @@ class HomeController extends GetxController {
       log('🔔   Route: ${rideAlert.pickUpAddress} → ${rideAlert.dropAddress}');
       log('🔔   Expiry: ${rideAlert.expiryDate?.toDate()}');
 
-      bool success = await FireStoreUtils.setRideAlert(rideAlert);
+      bool success = await RideAlertUtils.setRideAlert(rideAlert);
 
       if (success) {
         log('🔔 ✅ Ride alert created successfully: ${rideAlert.id}');

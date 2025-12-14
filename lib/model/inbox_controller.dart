@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:poolmate/model/user_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
+import 'package:poolmate/utils/firestore/user_utils.dart';
 
 class InboxController extends GetxController {
   RxBool isLoading = true.obs;
@@ -13,7 +14,7 @@ class InboxController extends GetxController {
   }
 
   getUser() async {
-    await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid()).then((value) {
+    await UserUtils.getUserProfile(AuthUtils.getCurrentUid()).then((value) {
       senderUserModel.value = value!;
     });
     isLoading.value = false;

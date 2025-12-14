@@ -13,7 +13,8 @@ import 'package:poolmate/model/vehicle_brand_model.dart';
 import 'package:poolmate/model/vehicle_information_model.dart';
 import 'package:poolmate/model/vehicle_model.dart';
 import 'package:poolmate/model/vehicle_type_model.dart';
-import 'package:poolmate/utils/fire_store_utils.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
+import 'package:poolmate/utils/firestore/vehicle_utils.dart';
 
 class AddVehicleController extends GetxController {
   Rx<TextEditingController> licensePlatNumberController =
@@ -53,10 +54,10 @@ class AddVehicleController extends GetxController {
         return;
       }
 
-      final userId = FireStoreUtils.getCurrentUid();
+      final userId = AuthUtils.getCurrentUid();
 
       // Check if vehicle with this number has RC verified in user_vehicle_information
-      final querySnapshot = await FireStoreUtils.fireStore
+      final querySnapshot = await AuthUtils.fireStore
           .collection('user_vehicle_information')
           .where('userId', isEqualTo: userId)
           .where('licensePlatNumber', isEqualTo: currentVehicleNumber)
@@ -67,16 +68,17 @@ class AddVehicleController extends GetxController {
         // Load RC data from Firebase
         final doc = querySnapshot.docs.first;
         final data = doc.data();
-        
+
         // Update vehicle information model with RC data from Firebase
         vehicleInformationModel.value.rcVerified = data['rcVerified'] ?? false;
         vehicleInformationModel.value.rcStatus = data['rcStatus'];
         vehicleInformationModel.value.rcExpiryDate = data['rcExpiryDate'];
-        vehicleInformationModel.value.vehicleInsuranceUpto = data['vehicleInsuranceUpto'];
+        vehicleInformationModel.value.vehicleInsuranceUpto =
+            data['vehicleInsuranceUpto'];
         vehicleInformationModel.value.verifiedAt = data['verifiedAt'];
-        
+
         isRcVerified.value = true;
-        
+
         // Trigger update to refresh UI
         vehicleInformationModel.refresh();
         return;
@@ -92,13 +94,13 @@ class AddVehicleController extends GetxController {
   // Check if vehicle number already exists in user_vehicle_information collection
   Future<bool> checkVehicleNumberExists(String vehicleNumber) async {
     try {
-      final userId = FireStoreUtils.getCurrentUid();
+      final userId = AuthUtils.getCurrentUid();
       final vehicleNumberUpper = vehicleNumber.trim().toUpperCase();
 
       // If editing existing vehicle, exclude current vehicle from check
       final currentVehicleId = vehicleInformationModel.value.id;
 
-      final querySnapshot = await FireStoreUtils.fireStore
+      final querySnapshot = await AuthUtils.fireStore
           .collection('user_vehicle_information')
           .where('userId', isEqualTo: userId)
           .where('licensePlatNumber', isEqualTo: vehicleNumberUpper)
@@ -190,13 +192,13 @@ class AddVehicleController extends GetxController {
   }
 
   getVehicleData() async {
-    await FireStoreUtils.getVehicleBrand().then((value) {
+    await VehicleUtils.getVehicleBrand().then((value) {
       if (value != null) {
         vehicleBrandModelList.value = value;
       }
     });
 
-    await FireStoreUtils.getVehicleType().then((value) {
+    await VehicleUtils.getVehicleType().then((value) {
       if (value != null) {
         vehicleTypeModelList.value = value;
       }
@@ -217,7 +219,7 @@ class AddVehicleController extends GetxController {
         }
       }
 
-      await FireStoreUtils.getVehicleModel(
+      await VehicleUtils.getVehicleModel(
               selectedVehicleBrand.value.id.toString())
           .then((value) {
         if (value != null) {
@@ -264,7 +266,7 @@ class AddVehicleController extends GetxController {
 
   getVehicleModel(String brandId) async {
     selectedVehicleModel.value = VehicleModel();
-    await FireStoreUtils.getVehicleModel(brandId).then((value) {
+    await VehicleUtils.getVehicleModel(brandId).then((value) {
       if (value != null) {
         vehicleModelList.value = value;
       }
@@ -284,12 +286,12 @@ class AddVehicleController extends GetxController {
     vehicleInformationModel.value.vehicleModel = selectedVehicleModel.value;
     vehicleInformationModel.value.vehicleType = selectedVehicleType.value;
     vehicleInformationModel.value.vehicleColor = selectedColor.value;
-    vehicleInformationModel.value.userId = FireStoreUtils.getCurrentUid();
+    vehicleInformationModel.value.userId = AuthUtils.getCurrentUid();
     for (int i = 0; i < images.length; i++) {
       if (images[i].runtimeType == XFile) {
         String url = await Constant.uploadUserImageToFireStorage(
           File(images[i].path),
-          "profileImage/${FireStoreUtils.getCurrentUid()}",
+          "profileImage/${AuthUtils.getCurrentUid()}",
           File(images[i].path).path.split('/').last,
         );
         images.removeAt(i);
@@ -297,15 +299,14 @@ class AddVehicleController extends GetxController {
       }
     }
     vehicleInformationModel.value.vehicleImages = images;
-    await FireStoreUtils.setUserVehicleInformation(
-        vehicleInformationModel.value);
+    await VehicleUtils.setUserVehicleInformation(vehicleInformationModel.value);
     ShowToastDialog.closeLoader();
     Get.back(result: vehicleInformationModel.value.id);
   }
 
   deleteVehicle() async {
     ShowToastDialog.showLoader("Please wait..");
-    await FireStoreUtils.deleteVehicleInformation(vehicleInformationModel.value)
+    await VehicleUtils.deleteVehicleInformation(vehicleInformationModel.value)
         .then(
       (value) {
         ShowToastDialog.showToast("Vehicle delete successfully");

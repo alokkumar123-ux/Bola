@@ -19,7 +19,9 @@ class DashBoardScreen extends StatelessWidget {
             backgroundColor: themeChange.getThem()
                 ? AppThemeData.grey800
                 : AppThemeData.grey100,
-            body: controller.pageList[controller.selectedIndex.value],
+            body: SafeArea(
+              child: controller.pageList[controller.selectedIndex.value],
+            ),
             bottomNavigationBar: BottomNavigationBar(
               type: BottomNavigationBarType.fixed,
               showUnselectedLabels: true,

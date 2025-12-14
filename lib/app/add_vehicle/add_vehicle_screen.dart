@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -14,7 +12,6 @@ import 'package:poolmate/themes/responsive.dart';
 import 'package:poolmate/themes/round_button_fill.dart';
 import 'package:poolmate/themes/text_field_widget.dart';
 import 'package:poolmate/utils/dark_theme_provider.dart';
-import 'package:poolmate/utils/network_image_widget.dart';
 import 'package:provider/provider.dart';
 
 class AddVehicleScreen extends StatefulWidget {
@@ -396,7 +393,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                                             width: 1),
                                       ),
                                     ),
-                                    value: controller
+                                    initialValue: controller
                                                 .selectedVehicleType.value.id ==
                                             null
                                         ? null
@@ -506,7 +503,9 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                                             width: 1),
                                       ),
                                     ),
-                                    value: controller.selectedVehicleBrand.value
+                                    initialValue: controller
+                                                .selectedVehicleBrand
+                                                .value
                                                 .id ==
                                             null
                                         ? null
@@ -620,7 +619,9 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                                             width: 1),
                                       ),
                                     ),
-                                    value: controller.selectedVehicleModel.value
+                                    initialValue: controller
+                                                .selectedVehicleModel
+                                                .value
                                                 .id ==
                                             null
                                         ? null
@@ -730,7 +731,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                                             width: 1),
                                       ),
                                     ),
-                                    value:
+                                    initialValue:
                                         controller.selectedColor.value.isEmpty
                                             ? null
                                             : controller.selectedColor.value,
@@ -848,10 +849,11 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                                             width: 1),
                                       ),
                                     ),
-                                    value: controller.selectedSeatCount.value ==
-                                            0
-                                        ? null
-                                        : controller.selectedSeatCount.value,
+                                    initialValue:
+                                        controller.selectedSeatCount.value == 0
+                                            ? null
+                                            : controller
+                                                .selectedSeatCount.value,
                                     onChanged: (value) {
                                       controller.selectedSeatCount.value =
                                           value!;
