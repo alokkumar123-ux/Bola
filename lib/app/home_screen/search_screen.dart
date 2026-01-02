@@ -15,7 +15,7 @@ import 'package:poolmate/themes/responsive.dart';
 import 'package:poolmate/themes/round_button_fill.dart';
 import 'package:poolmate/utils/dark_theme_provider.dart';
 import 'package:poolmate/utils/network_image_widget.dart';
-import 'package:poolmate/app/home_screen/ride_dialog.dart';
+import 'package:poolmate/app/home_screen/ride_details.dart';
 import 'package:poolmate/app/profile_screen/profile_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:poolmate/utils/firestore/vehicle_utils.dart';
@@ -1367,15 +1367,14 @@ class _SearchScreenState extends State<SearchScreen> {
       }
 
       // User is verified and can access the ride - show ride dialog
-      final result = await showDialog(
-        context: context,
-        barrierDismissible: true,
-        builder: (BuildContext context) {
-          return RideDialog(
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => RidePage(
             bookingModel: bookingModel,
             stopOverModel: stopOverModel,
-          );
-        },
+          ),
+        ),
       );
 
       // If booking was successful, reload the search results

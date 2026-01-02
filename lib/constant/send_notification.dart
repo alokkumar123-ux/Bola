@@ -9,6 +9,7 @@ import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/firebase_options.dart';
 import 'package:poolmate/model/notification_model.dart';
 import 'package:poolmate/utils/firestore/notification_utils.dart';
+import 'package:poolmate/utils/firestore/fcm_token_utils.dart';
 
 class SendNotification {
   static final _scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
@@ -80,19 +81,11 @@ class SendNotification {
       required String token,
       required Map<String, dynamic> payload}) async {
     try {
-      debugPrint("Attempting to send notification...");
-      debugPrint("Type: $type, Token: $token");
-      debugPrint("Payload: $payload");
-
       final String accessToken = await getAccessToken();
       if (accessToken.isEmpty) {
         debugPrint('Failed to get access token');
         return false;
       }
-
-      debugPrint("accessToken=======>");
-      debugPrint(
-          "Access token obtained successfully (length: ${accessToken.length})");
 
       NotificationModel? notificationModel =
           await NotificationUtils.getNotificationContent(type);
@@ -166,6 +159,18 @@ class SendNotification {
       } else {
         debugPrint(
             'Failed to send notification. Status: ${response.statusCode}');
+
+        // Handle invalid token errors
+        if (response.statusCode == 404 || response.statusCode == 400) {
+          final responseBody = response.body.toLowerCase();
+          if (responseBody.contains('unregistered') ||
+              responseBody.contains('invalid') ||
+              responseBody.contains('not a valid fcm')) {
+            debugPrint('🔔 Invalid FCM token detected, should be removed');
+            // Token is invalid - caller should handle removal
+          }
+        }
+
         return false;
       }
     } catch (e) {

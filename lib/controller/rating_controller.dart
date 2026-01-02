@@ -32,8 +32,8 @@ class RatingController extends GetxController {
       senderUserModel.value = argumentData['senderUserModel'];
       reciverUserModel.value = argumentData['reciverUserModel'];
     }
-    log("senderUserModel :: ${senderUserModel.value.id}");
-    log("reciverUserModel :: ${reciverUserModel.value.id}");
+    print("senderUserModel :: ${senderUserModel.value.id}");
+    print("reciverUserModel :: ${reciverUserModel.value.id}");
     await UserUtils.getUserProfile(senderUserModel.value.toString())
         .then((value) {
       if (value != null) {

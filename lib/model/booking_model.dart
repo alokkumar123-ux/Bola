@@ -197,6 +197,7 @@ class BookedUserModel {
   String? paymentType;
   String? otp;
   bool? verified;
+  String? pnrNumber;
   StopOverModel? stopOver;
   Location? pickupLocation;
   Location? dropLocation;
@@ -204,21 +205,31 @@ class BookedUserModel {
   AdminCommission? adminCommission;
 
   List<String>? selectedSeats;
+  Map<String, String?>?
+      passengerNames; // Map of seat index (as string) to passenger name
+  Map<String, String?>?
+      passengerGenders; // Map of seat index (as string) to gender (Male/Female)
+  Map<String, int?>? passengerAges; // Map of seat index (as string) to age
 
   BookedUserModel({
     this.createdAt,
     this.id,
     this.bookedSeat,
     this.paymentStatus,
+    this.subTotal,
     this.stopOver,
     this.paymentType,
     this.otp,
     this.verified,
+    this.pnrNumber,
     this.pickupLocation,
     this.dropLocation,
     this.taxList,
     this.adminCommission,
     this.selectedSeats,
+    this.passengerNames,
+    this.passengerGenders,
+    this.passengerAges,
   });
 
   BookedUserModel.fromJson(Map<String, dynamic> json) {
@@ -228,6 +239,7 @@ class BookedUserModel {
     subTotal = json['subTotal'];
     paymentStatus = json['paymentStatus'];
     paymentType = json['paymentType'];
+    pnrNumber = json['pnrNumber'];
     otp = json['otp'];
     verified = json['verified'] ?? false;
     stopOver = json['stopOver'] != null
@@ -251,6 +263,24 @@ class BookedUserModel {
     if (json['selectedSeats'] != null) {
       selectedSeats = List<String>.from(json['selectedSeats']);
     }
+    if (json['passengerNames'] != null) {
+      passengerNames = Map<String, String?>.from(
+        json['passengerNames']
+            .map((key, value) => MapEntry(key.toString(), value)),
+      );
+    }
+    if (json['passengerGenders'] != null) {
+      passengerGenders = Map<String, String?>.from(
+        json['passengerGenders']
+            .map((key, value) => MapEntry(key.toString(), value)),
+      );
+    }
+    if (json['passengerAges'] != null) {
+      passengerAges = Map<String, int?>.from(
+        json['passengerAges'].map((key, value) => MapEntry(key.toString(),
+            value is int ? value : int.tryParse(value?.toString() ?? ''))),
+      );
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -261,6 +291,7 @@ class BookedUserModel {
     data['subTotal'] = subTotal;
     data['paymentStatus'] = paymentStatus;
     data['paymentType'] = paymentType;
+    data['pnrNumber'] = pnrNumber;
     if (otp != null) {
       data['otp'] = otp;
     }
@@ -282,6 +313,15 @@ class BookedUserModel {
     }
     if (selectedSeats != null) {
       data['selectedSeats'] = selectedSeats;
+    }
+    if (passengerNames != null) {
+      data['passengerNames'] = passengerNames;
+    }
+    if (passengerGenders != null) {
+      data['passengerGenders'] = passengerGenders;
+    }
+    if (passengerAges != null) {
+      data['passengerAges'] = passengerAges;
     }
     return data;
   }

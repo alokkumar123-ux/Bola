@@ -48,9 +48,9 @@ class GlobalSettingController extends GetxController {
     // FCM token should only be updated during login/signup
     try {
       await notificationService.initInfo();
-      log("Notification service initialized successfully");
+      print("Notification service initialized successfully");
     } catch (error) {
-      log("Failed to initialize notification service: $error");
+      print("Failed to initialize notification service: $error");
     }
   }
 }

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/controller/verification_controller.dart';
 import 'package:poolmate/model/document_model.dart';
+import 'package:poolmate/model/user_model.dart';
 import 'package:poolmate/model/user_verification_model.dart';
 import 'package:poolmate/themes/app_them_data.dart';
 import 'package:poolmate/utils/dark_theme_provider.dart';
@@ -11,9 +12,16 @@ import 'package:provider/provider.dart';
 
 import 'verification_details_upload_screen.dart';
 
-class VerificationScreen extends StatelessWidget {
-  const VerificationScreen({super.key});
+class VerificationScreen extends StatefulWidget {
+  const VerificationScreen({super.key,  this.usermodel});
 
+  final UserModel? usermodel;
+
+  @override
+  State<VerificationScreen> createState() => _VerificationScreenState();
+}
+
+class _VerificationScreenState extends State<VerificationScreen> {
   @override
   Widget build(BuildContext context) {
     final themeChange = Provider.of<DarkThemeProvider>(context);
@@ -117,7 +125,7 @@ class VerificationScreen extends StatelessWidget {
                               return InkWell(
                                 onTap: () {
                                   Get.to(
-                                      const VerificationDetailsUploadScreen(),
+                                      VerificationDetailsUploadScreen(usermodel: widget.usermodel ?? UserModel(id: "")),
                                       arguments: {
                                         'documentModel': documentModel
                                       });

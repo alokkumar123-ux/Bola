@@ -9,6 +9,7 @@ class InboxModel {
   String? type;
   Timestamp? timestamp;
   bool? archive;
+  int? unreadCount;
 
   InboxModel(
       {this.lastMessage,
@@ -18,7 +19,8 @@ class InboxModel {
       this.seen,
       this.type,
       this.timestamp,
-      this.archive});
+      this.archive,
+      this.unreadCount});
 
   InboxModel.fromJson(Map<String, dynamic> json) {
     lastMessage = json['lastMessage'];
@@ -36,6 +38,7 @@ class InboxModel {
     }
 
     archive = json['archive'];
+    unreadCount = json['unreadCount'] ?? 0;
   }
 
   Map<String, dynamic> toJson() {
@@ -48,6 +51,7 @@ class InboxModel {
     data['type'] = type;
     data['timestamp'] = timestamp;
     data['archive'] = archive;
+    data['unreadCount'] = unreadCount ?? 0;
     return data;
   }
 }

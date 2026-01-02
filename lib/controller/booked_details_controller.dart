@@ -1,7 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
-import 'package:poolmate/app/chat/model/chat_model.dart';
-import 'package:poolmate/app/chat/model/inbox_model.dart';
 import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/constant/send_notification.dart';
 import 'package:poolmate/services/whatsapp_service.dart';
@@ -16,6 +14,7 @@ import 'package:poolmate/utils/firestore/user_utils.dart';
 import 'package:poolmate/utils/firestore/wallet_utils.dart';
 
 import '../constant/collection_name.dart';
+import '../controller/chat_controller.dart';
 import '../model/review_model.dart';
 
 class BookedDetailsController extends GetxController {
@@ -220,82 +219,14 @@ class BookedDetailsController extends GetxController {
         double.parse(taxAmount.value);
   }
 
+  /// Send a chat message using the centralized ChatController static method
   _sendChatMessage(UserModel receiverUser, String message) async {
-    try {
-      print("🔄 Starting to send chat message to: ${receiverUser.fullName()}");
-      print(
-          "📝 Message content: ${message.substring(0, message.length > 100 ? 100 : message.length)}...");
-
-      // Create inbox models using existing InboxModel class
-      InboxModel receiverInboxModel = InboxModel(
-          archive: false,
-          lastMessage: message,
-          mediaUrl: '',
-          receiverId: receiverUser.id.toString(),
-          seen: false,
-          senderId: userModel.value.id.toString(),
-          timestamp: Timestamp.now(),
-          type: 'text');
-
-      InboxModel senderInboxModel = InboxModel(
-          archive: false,
-          lastMessage: message,
-          mediaUrl: '',
-          receiverId: receiverUser.id.toString(),
-          seen: true,
-          senderId: userModel.value.id.toString(),
-          timestamp: Timestamp.now(),
-          type: 'text');
-
-      print("📬 Updating inbox for sender: ${userModel.value.id}");
-      // Update inbox for both users
-      await AuthUtils.fireStore
-          .collection(CollectionName.chat)
-          .doc(userModel.value.id.toString())
-          .collection("inbox")
-          .doc(receiverUser.id.toString())
-          .set(senderInboxModel.toJson());
-
-      print("📬 Updating inbox for receiver: ${receiverUser.id}");
-      await AuthUtils.fireStore
-          .collection(CollectionName.chat)
-          .doc(receiverUser.id.toString())
-          .collection("inbox")
-          .doc(userModel.value.id.toString())
-          .set(receiverInboxModel.toJson());
-
-      // Create chat message using existing ChatModel class
-      ChatModel chatModel = ChatModel(
-          type: 'text',
-          timestamp: Timestamp.now(),
-          senderId: userModel.value.id.toString(),
-          seen: false,
-          receiverId: receiverUser.id.toString(),
-          mediaUrl: '',
-          chatID: Constant.getUuid(),
-          message: message);
-
-      print("💬 Saving chat message with ID: ${chatModel.chatID}");
-      // Save chat message to both user conversations
-      await AuthUtils.fireStore
-          .collection(CollectionName.chat)
-          .doc(userModel.value.id.toString())
-          .collection(receiverUser.id.toString())
-          .doc(chatModel.chatID!)
-          .set(chatModel.toJson());
-
-      await AuthUtils.fireStore
-          .collection(CollectionName.chat)
-          .doc(receiverUser.id.toString())
-          .collection(userModel.value.id.toString())
-          .doc(chatModel.chatID!)
-          .set(chatModel.toJson());
-
-      print("✅ Chat message sent successfully to ${receiverUser.fullName()}");
-    } catch (e) {
-      print("❌ Error sending chat message to ${receiverUser.fullName()}: $e");
-      rethrow; // Re-throw to let the caller handle it
-    }
+    await ChatController.sendMessageStatic(
+      senderUser: userModel.value,
+      receiverUser: receiverUser,
+      message: message,
+      sendNotification: true,
+    );
   }
 
   Future<bool> cancelBooking() async {

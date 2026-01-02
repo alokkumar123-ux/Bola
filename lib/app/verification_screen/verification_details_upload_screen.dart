@@ -8,10 +8,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:poolmate/app/verification_screen/aadhaar_webview_screen.dart';
 import 'package:poolmate/app/verification_screen/pan_webview_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/constant/show_toast_dialog.dart';
 import 'package:poolmate/controller/verification_details_upload_controller.dart';
+import 'package:poolmate/model/user_model.dart';
 import 'package:poolmate/themes/app_them_data.dart';
 import 'package:poolmate/themes/responsive.dart';
 import 'package:poolmate/themes/round_button_fill.dart';
@@ -19,12 +19,20 @@ import 'package:poolmate/themes/text_field_widget.dart';
 import 'package:poolmate/utils/dark_theme_provider.dart';
 import 'package:provider/provider.dart';
 
-class VerificationDetailsUploadScreen extends StatelessWidget {
-  const VerificationDetailsUploadScreen({super.key});
+class VerificationDetailsUploadScreen extends StatefulWidget {
+  const VerificationDetailsUploadScreen({super.key, required this.usermodel});
 
+  final UserModel usermodel;
+  @override
+  State<VerificationDetailsUploadScreen> createState() =>
+      _VerificationDetailsUploadScreenState();
+}
+
+class _VerificationDetailsUploadScreenState
+    extends State<VerificationDetailsUploadScreen> {
   Future<bool> _checkKycStatus() async {
     try {
-      final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+      final userId = widget.usermodel.id ?? '';
       if (userId.isEmpty) return false;
 
       final doc = await FirebaseFirestore.instance
@@ -40,7 +48,7 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
 
   Future<bool> _checkPanKycStatus() async {
     try {
-      final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+      final userId = widget.usermodel.id ?? '';
       if (userId.isEmpty) return false;
 
       final doc = await FirebaseFirestore.instance
@@ -56,7 +64,7 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
 
   Future<String> _getAadhaarNumber() async {
     try {
-      final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+      final userId = widget.usermodel.id ?? '';
       if (userId.isEmpty) return '';
 
       final doc = await FirebaseFirestore.instance
@@ -72,7 +80,7 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
 
   Future<String> _getPanNumber() async {
     try {
-      final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+      final userId = widget.usermodel.id ?? '';
       if (userId.isEmpty) return '';
 
       final doc = await FirebaseFirestore.instance
@@ -109,6 +117,7 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
               true;
 
           return Scaffold(
+            backgroundColor: AppThemeData.grey50,
             appBar: AppBar(
               backgroundColor: themeChange.getThem()
                   ? AppThemeData.grey900
@@ -222,7 +231,13 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
             color: AppThemeData.primary300,
             textColor: AppThemeData.grey50,
             onPress: () async {
-              final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+              final userId = widget.usermodel.id ?? '';
+              print('User ID: $userId');
+              // Check if userId is valid
+              if (userId.isEmpty) {
+                Get.snackbar('Error', 'Please login to verify Aadhaar');
+                return;
+              }
 
               // Get user's name from Firebase
               String userName = '';
@@ -295,7 +310,13 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
             color: AppThemeData.primary300,
             textColor: AppThemeData.grey50,
             onPress: () async {
-              final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+              final userId = widget.usermodel.id ?? '';
+
+              // Check if userId is valid
+              if (userId.isEmpty) {
+                Get.snackbar('Error', 'Please login to verify PAN');
+                return;
+              }
 
               // Get user's name from Firebase
               String userName = '';

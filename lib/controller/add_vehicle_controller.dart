@@ -29,7 +29,7 @@ class AddVehicleController extends GetxController {
 
   @override
   void onInit() {
-    log("CLICK::33");
+    print("CLICK::33");
     // TODO: implement onInit
     getVehicleData();
     // Load argument first (if editing existing vehicle)
@@ -86,7 +86,7 @@ class AddVehicleController extends GetxController {
 
       isRcVerified.value = false;
     } catch (e) {
-      log("Error checking RC verification: $e");
+      print("Error checking RC verification: $e");
       isRcVerified.value = false;
     }
   }
@@ -118,7 +118,7 @@ class AddVehicleController extends GetxController {
 
       return false;
     } catch (e) {
-      log("Error checking vehicle number exists: $e");
+      print("Error checking vehicle number exists: $e");
       return false;
     }
   }
@@ -160,7 +160,7 @@ class AddVehicleController extends GetxController {
         return null;
       }
     } catch (e) {
-      log("Error verifying RC: $e");
+      print("Error verifying RC: $e");
       ShowToastDialog.showToast("Error verifying RC: ${e.toString()}".tr);
       return null;
     }

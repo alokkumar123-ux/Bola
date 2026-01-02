@@ -17,22 +17,19 @@ class DatepickerScreen extends StatelessWidget {
         init: CalenderController(),
         builder: (controller) {
           return Scaffold(
+              backgroundColor: Colors.white,
               appBar: AppBar(
-                backgroundColor: themeChange.getThem()
-                    ? AppThemeData.grey900
-                    : AppThemeData.grey50,
+                backgroundColor: AppThemeData.grey50,
                 centerTitle: true,
                 leading: InkWell(
                     onTap: () {
                       Get.back();
                     },
-                    child: const Icon(Icons.close)),
+                    child: const Icon(Icons.close,color: AppThemeData.grey800,)),
                 title: Text(
                   "When are you going?".tr,
                   style: TextStyle(
-                      color: themeChange.getThem()
-                          ? AppThemeData.grey100
-                          : AppThemeData.grey800,
+                      color: AppThemeData.grey800,
                       fontFamily: AppThemeData.semiBold,
                       fontSize: 18),
                 ),
@@ -56,9 +53,7 @@ class DatepickerScreen extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(40),
                                 color: controller.selectedDay.value != date
                                     ? Colors.transparent
-                                    : themeChange.getThem()
-                                        ? AppThemeData.primary300
-                                        : AppThemeData.grey800),
+                                    : AppThemeData.grey800),
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 12),
                             child: Text(
@@ -67,9 +62,7 @@ class DatepickerScreen extends StatelessWidget {
                                   .textTheme
                                   .bodyLarge!
                                   .copyWith(
-                                    color: themeChange.getThem()
-                                        ? AppThemeData.grey100
-                                        : AppThemeData.grey800,
+                                    color: AppThemeData.grey800,
                                     fontSize: 14,
                                   ),
                             )),
@@ -90,9 +83,7 @@ class DatepickerScreen extends StatelessWidget {
                                 .format(DateTime(year, month)),
                             style:
                                 Theme.of(context).textTheme.bodyLarge!.copyWith(
-                                      color: themeChange.getThem()
-                                          ? AppThemeData.grey100
-                                          : AppThemeData.grey800,
+                                      color: AppThemeData.grey800,
                                       fontSize: 18,
                                     ),
                           ),
@@ -140,8 +131,7 @@ Widget weekText(String text, DarkThemeProvider themeChange) {
     child: Text(
       text,
       style: TextStyle(
-        color:
-            themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800,
+        color: AppThemeData.grey800,
         fontSize: 18,
         fontFamily: AppThemeData.medium,
       ),

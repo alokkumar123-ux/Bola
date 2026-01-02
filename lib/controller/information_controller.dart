@@ -12,7 +12,7 @@ import 'package:poolmate/model/user_model.dart';
 import 'package:poolmate/utils/firestore/auth_utils.dart';
 import 'package:poolmate/utils/firestore/user_utils.dart';
 import 'package:poolmate/utils/firestore/referral_utils.dart';
-import 'package:poolmate/utils/notification_service.dart';
+import 'package:poolmate/services/fcm_token_manager.dart';
 
 class InformationController extends GetxController {
   RxInt currentPage = 1.obs;
@@ -61,14 +61,6 @@ class InformationController extends GetxController {
   }
 
   createAccount() async {
-    String fcmToken = '';
-    try {
-      fcmToken = await NotificationService.getToken();
-    } catch (e) {
-      debugPrint("Failed to get FCM token during account creation: $e");
-      // Continue with account creation even if FCM token fails
-    }
-
     if (profileImage.value.isNotEmpty) {
       profileImage.value = await Constant.uploadUserImageToFireStorage(
         File(profileImage.value),
@@ -84,7 +76,7 @@ class InformationController extends GetxController {
     userModelData.countryCode = countryCode.value.text;
     userModelData.phoneNumber = phoneNumberController.value.text;
     userModelData.profilePic = profileImage.value;
-    userModelData.fcmToken = fcmToken;
+    // FCM token will be saved after account creation via FcmTokenManager
     userModelData.createdAt = Timestamp.now();
     userModelData.isActive = true;
     userModelData.aadharVerified = false;
@@ -117,6 +109,15 @@ class InformationController extends GetxController {
 
         // Save user ID to local storage for session
         await AuthUtils.setCurrentUid(userModelData.id!);
+
+        // Initialize FCM token manager after account creation
+        try {
+          await FcmTokenManager.saveCurrentToken();
+          debugPrint("FCM token saved for new account");
+        } catch (e) {
+          debugPrint("Failed to save FCM token: $e");
+        }
+
         Get.offAll(const DashBoardScreen());
       }
     });

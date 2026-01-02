@@ -62,7 +62,8 @@ class BookingPaymentScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 12),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     "Number of Seats".tr,
@@ -71,19 +72,21 @@ class BookingPaymentScreen extends StatelessWidget {
                                       fontSize: 14,
                                     ),
                                   ),
-                                  Text(
-                                    controller.numberOfSeats.value.toString(),
-                                    style: const TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 14,
-                                    ),
-                                  ),
+                                  Obx(() => Text(
+                                        controller.numberOfSeats.value
+                                            .toString(),
+                                        style: const TextStyle(
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
+                                        ),
+                                      )),
                                 ],
                               ),
                               const SizedBox(height: 8),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     "Price per Seat".tr,
@@ -92,21 +95,23 @@ class BookingPaymentScreen extends StatelessWidget {
                                       fontSize: 14,
                                     ),
                                   ),
-                                  Text(
-                                    Constant.amountShow(
-                                        amount: controller.pricePerSeat.value
-                                            .toString()),
-                                    style: const TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 14,
-                                    ),
-                                  ),
+                                  Obx(() => Text(
+                                        Constant.amountShow(
+                                            amount: controller
+                                                .pricePerSeat.value
+                                                .toString()),
+                                        style: const TextStyle(
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
+                                        ),
+                                      )),
                                 ],
                               ),
                               const Divider(height: 24),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     "Total Amount".tr,
@@ -116,16 +121,16 @@ class BookingPaymentScreen extends StatelessWidget {
                                       color: Colors.black,
                                     ),
                                   ),
-                                  Text(
-                                    Constant.amountShow(
-                                        amount: controller.totalAmount.value
-                                            .toString()),
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
-                                    ),
-                                  ),
+                                  Obx(() => Text(
+                                        Constant.amountShow(
+                                            amount: controller.totalAmount.value
+                                                .toString()),
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
+                                      )),
                                 ],
                               ),
                             ],
@@ -159,7 +164,7 @@ class BookingPaymentScreen extends StatelessWidget {
                                 isDisabled: controller.walletBalance.value <
                                     controller.totalAmount.value,
                               ),
-            
+
                               // Cashfree Payment Option
                               if (controller
                                       .paymentModel.value.cashfree?.enable ==
@@ -173,7 +178,7 @@ class BookingPaymentScreen extends StatelessWidget {
                                   icon: Icons.payment,
                                   paymentMethod: "Cashfree",
                                 ),
-            
+
                               // Add more payment methods as needed
                               // You can add Stripe, PayPal, etc. here
                             ],
@@ -183,27 +188,29 @@ class BookingPaymentScreen extends StatelessWidget {
                     ),
                   ),
           ),
-          bottomNavigationBar: Padding(
-            padding: const EdgeInsets.all(16),
-            child: ElevatedButton(
-              onPressed: controller.selectedPaymentMethod.value.isEmpty
-                  ? null
-                  : () => controller.processPayment(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppThemeData.primary300,
-                disabledBackgroundColor: Colors.grey.shade300,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+          bottomNavigationBar: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: ElevatedButton(
+                onPressed: controller.selectedPaymentMethod.value.isEmpty
+                    ? null
+                    : () => controller.processPayment(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppThemeData.primary300,
+                  disabledBackgroundColor: Colors.grey.shade300,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-              ),
-              child: Text(
-                _getButtonText(controller),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
+                child: Obx(() => Text(
+                      _getButtonText(controller),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    )),
               ),
             ),
           ),
@@ -316,7 +323,7 @@ class BookingPaymentScreen extends StatelessWidget {
 
   String _getButtonText(BookingPaymentController controller) {
     if (controller.selectedPaymentMethod.value.isEmpty) {
-      return "Select Payment Method";
+      return "Proceed to Pay";
     }
 
     final amount =

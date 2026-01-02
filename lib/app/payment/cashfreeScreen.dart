@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:poolmate/app/dashboard_screen.dart';
 import 'package:poolmate/constant/show_toast_dialog.dart';
 import 'package:flutter_cashfree_pg_sdk/api/cfpaymentgateway/cfpaymentgatewayservice.dart';
 import 'package:flutter_cashfree_pg_sdk/api/cfpayment/cfwebcheckoutpayment.dart';
@@ -37,11 +38,11 @@ class _CashfreeScreenState extends State<CashfreeScreen> {
   @override
   void initState() {
     super.initState();
-    log("=== CASHFREE NATIVE SDK INITIALIZATION ===");
-    log("Order ID: ${widget.orderId}");
-    log("Payment Session ID: ${widget.paymentSessionId}");
-    log("Is Sandbox: ${widget.isSandbox}");
-    log("==========================================");
+    print("=== CASHFREE NATIVE SDK INITIALIZATION ===");
+    print("Order ID: ${widget.orderId}");
+    print("Payment Session ID: ${widget.paymentSessionId}");
+    print("Is Sandbox: ${widget.isSandbox}");
+    print("==========================================");
 
     // Set payment callbacks
     cfPaymentGatewayService.setCallback(verifyPayment, onError);
@@ -52,7 +53,7 @@ class _CashfreeScreenState extends State<CashfreeScreen> {
 
   // ✅ Payment Success Callback
   void verifyPayment(String orderId) {
-    log("✅ Payment successful for Order ID: $orderId");
+    print("✅ Payment successful for Order ID: $orderId");
     if (!hasNavigated && mounted) {
       setState(() {
         hasNavigated = true;
@@ -68,14 +69,15 @@ class _CashfreeScreenState extends State<CashfreeScreen> {
         }
       });
     } else if (!mounted) {
-      log("⚠️ Payment success callback received but widget is already disposed");
+      print(
+          "⚠️ Payment success callback received but widget is already disposed");
     }
   }
 
   // ✅ Payment Error Callback
   void onError(CFErrorResponse errorResponse, String orderId) {
-    log("❌ Payment error for Order ID: $orderId");
-    log("Error: ${errorResponse.getMessage()}");
+    print("❌ Payment error for Order ID: $orderId");
+    print("Error: ${errorResponse.getMessage()}");
 
     if (!hasNavigated && mounted) {
       setState(() {
@@ -93,7 +95,8 @@ class _CashfreeScreenState extends State<CashfreeScreen> {
         }
       });
     } else if (!mounted) {
-      log("⚠️ Payment error callback received but widget is already disposed");
+      print(
+          "⚠️ Payment error callback received but widget is already disposed");
     }
   }
 
@@ -102,19 +105,20 @@ class _CashfreeScreenState extends State<CashfreeScreen> {
     try {
       CFEnvironment environment =
           widget.isSandbox ? CFEnvironment.SANDBOX : CFEnvironment.PRODUCTION;
-      log("🌍 Using environment: ${widget.isSandbox ? 'SANDBOX' : 'PRODUCTION'}");
-      log("📋 Order ID: ${widget.orderId}");
-      log("🔑 Payment Session ID: ${widget.paymentSessionId}");
+      print(
+          "🌍 Using environment: ${widget.isSandbox ? 'SANDBOX' : 'PRODUCTION'}");
+      print("📋 Order ID: ${widget.orderId}");
+      print("🔑 Payment Session ID: ${widget.paymentSessionId}");
       var session = CFSessionBuilder()
           .setEnvironment(environment)
           .setOrderId(widget.orderId)
           .setPaymentSessionId(widget.paymentSessionId)
           .build();
 
-      log("✅ Cashfree session created successfully");
+      print("✅ Cashfree session created successfully");
       return session;
     } on CFException catch (e) {
-      log("❌ Error creating Cashfree session: ${e.message}");
+      print("❌ Error creating Cashfree session: ${e.message}");
       return null;
     }
   }
@@ -129,7 +133,7 @@ class _CashfreeScreenState extends State<CashfreeScreen> {
       // Create session
       var session = createSession();
       if (session == null) {
-        _handlePaymentFailure("Failed to create payment session");
+        _handlePaymentFailure("Failed to create payment session 1");
         return;
       }
 
@@ -137,15 +141,15 @@ class _CashfreeScreenState extends State<CashfreeScreen> {
       var cfWebCheckout =
           CFWebCheckoutPaymentBuilder().setSession(session).build();
 
-      log("🚀 Starting Cashfree payment...");
+      print("🚀 Starting Cashfree payment...");
 
       // Start payment - this will open the Cashfree payment UI
       await cfPaymentGatewayService.doPayment(cfWebCheckout);
     } on CFException catch (e) {
-      log("❌ CFException: ${e.message}");
+      print("❌ CFException: ${e.message}");
       _handlePaymentFailure("Payment initialization failed: ${e.message}");
     } catch (e) {
-      log("❌ General error: $e");
+      print("❌ General error: $e");
       _handlePaymentFailure("Unexpected error: $e");
     }
   }
@@ -176,7 +180,7 @@ class _CashfreeScreenState extends State<CashfreeScreen> {
 
   @override
   void dispose() {
-    log("🧹 Disposing CashfreeScreen - cleaning up callbacks");
+    print("🧹 Disposing CashfreeScreen - cleaning up callbacks");
     // Note: The Cashfree SDK doesn't provide a way to remove callbacks
     // but we've added mounted checks in the callbacks to prevent setState errors
     super.dispose();

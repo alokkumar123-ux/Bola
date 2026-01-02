@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 class AadhaarWebViewScreen extends StatefulWidget {
   final String userId;
@@ -15,20 +15,17 @@ class AadhaarWebViewScreen extends StatefulWidget {
 }
 
 class _AadhaarWebViewScreenState extends State<AadhaarWebViewScreen> {
-  late final WebViewController _controller;
   StreamSubscription<DocumentSnapshot>? _sub;
   bool _completed = false;
+  late String _url;
 
   @override
   void initState() {
     super.initState();
-    final String url =
+    _url =
         'https://bolaletsgo.com/aadhar/?user=${widget.userId}&name=${Uri.encodeComponent(widget.name)}';
+    print('WebView URL: $_url');
 
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..loadRequest(Uri.parse(url));
-    print('WebView URL: $url');
     _sub = FirebaseFirestore.instance
         .collection('users')
         .doc(widget.userId)
@@ -59,7 +56,26 @@ class _AadhaarWebViewScreenState extends State<AadhaarWebViewScreen> {
           onPressed: () => Get.back(result: false),
         ),
       ),
-      body: WebViewWidget(controller: _controller),
+      body: InAppWebView(
+        initialUrlRequest: URLRequest(url: WebUri(_url)),
+        initialSettings: InAppWebViewSettings(
+          javaScriptEnabled: true,
+          domStorageEnabled: true,
+          useHybridComposition: true,
+        ),
+        onWebViewCreated: (controller) {
+          print('WebView created');
+        },
+        onLoadStart: (controller, url) {
+          print('Loading: $url');
+        },
+        onLoadStop: (controller, url) {
+          print('Loaded: $url');
+        },
+        onReceivedError: (controller, request, error) {
+          print('WebView error: ${error.description}');
+        },
+      ),
     );
   }
 }

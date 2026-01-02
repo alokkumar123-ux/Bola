@@ -148,7 +148,8 @@ class ReviewScreen extends StatelessWidget {
                                     .toString()) +
                                 1)
                             .toString();
-                    log("reciverUserModel :: ${controller.reciverUserModel.value.id} :: reviewSum :: ${controller.reciverUserModel.value.reviewSum} :: reviewCount :: ${controller.reciverUserModel.value.reviewCount} ");
+                    print(
+                        "reciverUserModel :: ${controller.reciverUserModel.value.id} :: reviewSum :: ${controller.reciverUserModel.value.reviewSum} :: reviewCount :: ${controller.reciverUserModel.value.reviewCount} ");
                     await UserUtils.updateUser(
                         controller.reciverUserModel.value);
 

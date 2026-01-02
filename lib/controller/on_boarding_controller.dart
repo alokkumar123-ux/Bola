@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:poolmate/model/on_boarding_model.dart';
-import 'package:poolmate/utils/firestore/user_utils.dart';
 
 class OnBoardingController extends GetxController {
   var selectedPageIndex = 0.obs;
@@ -18,40 +17,30 @@ class OnBoardingController extends GetxController {
   RxBool isLoading = true.obs;
   RxList<OnBoardingModel> onBoardingList = <OnBoardingModel>[].obs;
 
-  getOnBoardingData() async {
-    try {
-      final value = await UserUtils.getOnBoardingList();
-      if (value.isNotEmpty) {
-        onBoardingList.assignAll(value);
-      } else {
-        onBoardingList.assignAll(_defaultSlides);
-      }
-    } catch (e) {
-      onBoardingList.assignAll(_defaultSlides);
-    } finally {
-      isLoading.value = false;
-      update();
-    }
+  getOnBoardingData() {
+    onBoardingList.assignAll(_defaultSlides);
+    isLoading.value = false;
+    update();
   }
 
   List<OnBoardingModel> get _defaultSlides => [
         OnBoardingModel(
-          title: "Welcome to JourneyMate",
+          title: "Welcome to Bola",
           description: "Your Trusted Companion for Hassle-Free Travel",
           id: "slide_1",
-          image: "assets/images/onboarding_1.png",
+          image: "assets/images/onboarding_1.svg",
         ),
         OnBoardingModel(
           title: "Discover Ride sharing",
-          description: "Find or Offer Rides to Your Destination",
+          description: "Find or Offer Rides to Your Destination at Bola",
           id: "slide_2",
-          image: "assets/images/onboarding_2.png",
+          image: "assets/images/onboarding_2.svg",
         ),
         OnBoardingModel(
           title: "Connect with Fellow Travelers",
-          description: "Share Your Journey, Share the Fun",
+          description: "Share Your Journey, Share the Fun, use Bola",
           id: "slide_3",
-          image: "assets/images/onboarding_3.png",
+          image: "assets/images/onboarding_3.svg",
         ),
       ];
 }

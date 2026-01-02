@@ -53,7 +53,8 @@ class AadhaarVerificationService {
   // Headers with signature generation
   static Map<String, String> get _headers {
     if (_clientId.isEmpty || _clientSecret.isEmpty) {
-      log('❌ Cashfree config missing: clientId/clientSecret must be set via configure().');
+      print(
+          '❌ Cashfree config missing: clientId/clientSecret must be set via configure().');
       throw StateError('Cashfree credentials not configured');
     }
 
@@ -76,17 +77,18 @@ class AadhaarVerificationService {
         final signature = _generateSignature();
         baseHeaders['X-Cf-Signature'] = signature;
         baseHeaders['x-cf-signature'] = signature;
-        log('✅ X-Cf-Signature generated and added to headers');
+        print('✅ X-Cf-Signature generated and added to headers');
       } catch (e) {
-        log('❌ CRITICAL: Failed to generate X-Cf-Signature: $e');
-        log('💡 Ensure: correct public key, valid clientId, device time accurate');
+        print('❌ CRITICAL: Failed to generate X-Cf-Signature: $e');
+        print(
+            '💡 Ensure: correct public key, valid clientId, device time accurate');
         throw StateError('Failed to generate Cashfree X-Cf-Signature: $e');
       }
     } else {
-      log('ℹ️ Using IP Whitelist mode: Skipping X-Cf-Signature');
+      print('ℹ️ Using IP Whitelist mode: Skipping X-Cf-Signature');
     }
 
-    log('📋 Final headers: ${baseHeaders.keys.toList()}');
+    print('📋 Final headers: ${baseHeaders.keys.toList()}');
     return baseHeaders;
   }
 
@@ -100,7 +102,7 @@ class AadhaarVerificationService {
       final int timestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       final String dataToEncrypt = '$_clientId.$timestamp';
 
-      log('🔐 Generating signature for: $dataToEncrypt');
+      print('🔐 Generating signature for: $dataToEncrypt');
 
       // Step 2: Parse the RSA public key
       final RSAPublicKey publicKey = _parsePublicKey(_publicKeyPem);
@@ -119,10 +121,10 @@ class AadhaarVerificationService {
       // Step 4: Return base64 encoded signature
       final String signature = base64.encode(encryptedBytes);
 
-      log('🔐 Signature generated - Length: ${signature.length}');
+      print('🔐 Signature generated - Length: ${signature.length}');
       return signature;
     } catch (e) {
-      log('❌ Error generating signature: $e');
+      print('❌ Error generating signature: $e');
       throw Exception('Failed to generate Cashfree signature: $e');
     }
   }
@@ -178,7 +180,8 @@ class AadhaarVerificationService {
         final keyContent = v.replaceAll(RegExp(r'\s+'), '');
         final der = base64.decode(keyContent);
         if (der.isEmpty || der[0] != 0x30) {
-          log('❌ Public key DER invalid: first byte=${der.isEmpty ? 'EMPTY' : '0x${der[0].toRadixString(16)}'} (expected 0x30). Ensure you pasted the exact PEM contents between BEGIN/END PUBLIC KEY.');
+          print(
+              '❌ Public key DER invalid: first byte=${der.isEmpty ? 'EMPTY' : '0x${der[0].toRadixString(16)}'} (expected 0x30). Ensure you pasted the exact PEM contents between BEGIN/END PUBLIC KEY.');
         }
         final top = ASN1Parser(der).nextObject();
         final key = extractFromAsn1(top);
@@ -197,12 +200,13 @@ class AadhaarVerificationService {
     try {
       final headers = _headers;
       final sig = headers['X-Cf-Signature'] ?? headers['x-cf-signature'] ?? '';
-      log('🧪 Headers OK. Keys: ${headers.keys.toList()}');
+      print('🧪 Headers OK. Keys: ${headers.keys.toList()}');
       if (sig.isNotEmpty) {
-        log('🧪 Signature preview: ${sig.substring(0, sig.length > 50 ? 50 : sig.length)}...');
+        print(
+            '🧪 Signature preview: ${sig.substring(0, sig.length > 50 ? 50 : sig.length)}...');
       }
     } catch (e) {
-      log('🧪 Header debug failed: $e');
+      print('🧪 Header debug failed: $e');
     }
   }
 
@@ -211,17 +215,17 @@ class AadhaarVerificationService {
   static Future<bool> verifyCredentials() async {
     try {
       final url = Uri.parse(_rootUrl + _credentialsVerifyPath);
-      log('🔎 Verifying Cashfree credentials at: $url');
+      print('🔎 Verifying Cashfree credentials at: $url');
       final response =
           await http.post(url, headers: _headers, body: jsonEncode({}));
-      log('📊 Credentials Verify Status: ${response.statusCode}');
-      log('📋 Credentials Verify Body: ${response.body}');
+      print('📊 Credentials Verify Status: ${response.statusCode}');
+      print('📋 Credentials Verify Body: ${response.body}');
       if (response.statusCode == 200) {
         return true;
       }
       return false;
     } catch (e) {
-      log('❌ Error verifying credentials: $e');
+      print('❌ Error verifying credentials: $e');
       return false;
     }
   }
@@ -246,13 +250,15 @@ class AadhaarVerificationService {
 
       final requestHeaders = _headers;
 
-      log('🔄 Generating OTP for Aadhaar: ${_maskAadhaar(aadhaarNumber)}');
-      log('🌐 Request URL: $url');
-      log('📤 Request Headers: ${requestHeaders.keys.toList()}');
-      log('📤 Has X-Cf-Signature: ${requestHeaders.containsKey('X-Cf-Signature')}');
+      print('🔄 Generating OTP for Aadhaar: ${_maskAadhaar(aadhaarNumber)}');
+      print('🌐 Request URL: $url');
+      print('📤 Request Headers: ${requestHeaders.keys.toList()}');
+      print(
+          '📤 Has X-Cf-Signature: ${requestHeaders.containsKey('X-Cf-Signature')}');
       if (requestHeaders.containsKey('X-Cf-Signature')) {
         final sig = requestHeaders['X-Cf-Signature']!;
-        log('📤 Signature preview: ${sig.length > 50 ? '${sig.substring(0, 50)}...' : sig}');
+        print(
+            '📤 Signature preview: ${sig.length > 50 ? '${sig.substring(0, 50)}...' : sig}');
       }
 
       final response = await http.post(
@@ -261,8 +267,8 @@ class AadhaarVerificationService {
         body: jsonEncode(requestBody),
       );
 
-      log('📊 Response Status: ${response.statusCode}');
-      log('📋 Response Body: ${response.body}');
+      print('📊 Response Status: ${response.statusCode}');
+      print('📋 Response Body: ${response.body}');
 
       final Map<String, dynamic> responseData = _safeJson(response.body);
       if (response.statusCode == 200) {
@@ -280,7 +286,7 @@ class AadhaarVerificationService {
         refId: null,
       );
     } catch (e) {
-      log('❌ Error generating OTP: $e');
+      print('❌ Error generating OTP: $e');
       return AadhaarOtpResponse(
         status: 'ERROR',
         message: 'Network error: ${e.toString()}',
@@ -317,7 +323,7 @@ class AadhaarVerificationService {
         'otp': otp,
       };
 
-      log('🔄 Verifying OTP for refId: $refId');
+      print('🔄 Verifying OTP for refId: $refId');
 
       final response = await http.post(
         url,
@@ -325,8 +331,8 @@ class AadhaarVerificationService {
         body: jsonEncode(requestBody),
       );
 
-      log('📊 Response Status: ${response.statusCode}');
-      log('📋 Response Body: ${response.body}');
+      print('📊 Response Status: ${response.statusCode}');
+      print('📋 Response Body: ${response.body}');
 
       final Map<String, dynamic> responseData = _safeJson(response.body);
       if (response.statusCode == 200) {
@@ -349,7 +355,7 @@ class AadhaarVerificationService {
         data: null,
       );
     } catch (e) {
-      log('❌ Error verifying OTP: $e');
+      print('❌ Error verifying OTP: $e');
       return AadhaarVerifyResponse(
         status: 'ERROR',
         message: 'Network error: ${e.toString()}',
@@ -402,32 +408,33 @@ class AadhaarVerificationService {
   /// Call this before using the service in production
   static void testSignatureGeneration() {
     try {
-      log('🧪 Testing signature generation...');
+      print('🧪 Testing signature generation...');
 
       // Test parsing the public key
       final publicKey = _parsePublicKey(_publicKeyPem);
-      log('✅ Public key parsed successfully');
-      log('   Modulus bits: ${publicKey.modulus!.bitLength}');
-      log('   Exponent: ${publicKey.exponent}');
+      print('✅ Public key parsed successfully');
+      print('   Modulus bits: ${publicKey.modulus!.bitLength}');
+      print('   Exponent: ${publicKey.exponent}');
 
       // Test signature generation
       final signature = _generateSignature();
-      log('✅ Signature generated successfully');
-      log('   Length: ${signature.length} characters');
-      log('   Sample: ${signature.substring(0, signature.length > 50 ? 50 : signature.length)}...');
+      print('✅ Signature generated successfully');
+      print('   Length: ${signature.length} characters');
+      print(
+          '   Sample: ${signature.substring(0, signature.length > 50 ? 50 : signature.length)}...');
 
       // Test headers generation
       final headers = _headers;
       if (headers.containsKey('X-Cf-Signature')) {
-        log('✅ Headers generated with X-Cf-Signature');
+        print('✅ Headers generated with X-Cf-Signature');
       } else {
-        log('❌ X-Cf-Signature missing from headers');
+        print('❌ X-Cf-Signature missing from headers');
       }
 
-      log('🎉 All signature tests passed!');
+      print('🎉 All signature tests passed!');
     } catch (e) {
-      log('❌ Signature test failed: $e');
-      log('💡 Check your public key format and dependencies');
+      print('❌ Signature test failed: $e');
+      print('💡 Check your public key format and dependencies');
     }
   }
 }

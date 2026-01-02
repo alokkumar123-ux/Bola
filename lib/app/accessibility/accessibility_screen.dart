@@ -80,46 +80,46 @@ class AccessibilityScreen extends StatelessWidget {
                           horizontal: 16, vertical: 10),
                     child: Column(
                       children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                "Dark Mode".tr,
-                                style: TextStyle(
-                                    color: themeChange.getThem()
-                                        ? AppThemeData.grey200
-                                        : AppThemeData.grey700,
-                                    fontFamily: AppThemeData.medium,
-                                    fontSize: 14),
-                              ),
-                            ),
-                            Transform.scale(
-                              scale: 0.8,
-                              child: CupertinoSwitch(
-                                value: controller.isDarkModeSwitch.value,
-                                activeTrackColor: AppThemeData.primary300,
-                                onChanged: (value) {
-                                  controller.isDarkModeSwitch.value = value;
-                                  if (controller.isDarkModeSwitch.value ==
-                                      true) {
-                                    Preferences.setString(
-                                        Preferences.themKey, "Dark");
-                                    themeChange.darkTheme = 0;
-                                  } else if (controller.isDarkMode.value ==
-                                      "Light") {
-                                    Preferences.setString(
-                                        Preferences.themKey, "Light");
-                                    themeChange.darkTheme = 1;
-                                  } else {
-                                    Preferences.setString(
-                                        Preferences.themKey, "");
-                                    themeChange.darkTheme = 2;
-                                  }
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
+                        // Row(
+                        //   children: [
+                        //     Expanded(
+                        //       child: Text(
+                        //         "Dark Mode".tr,
+                        //         style: TextStyle(
+                        //             color: themeChange.getThem()
+                        //                 ? AppThemeData.grey200
+                        //                 : AppThemeData.grey700,
+                        //             fontFamily: AppThemeData.medium,
+                        //             fontSize: 14),
+                        //       ),
+                        //     ),
+                        //     Transform.scale(
+                        //       scale: 0.8,
+                        //       child: CupertinoSwitch(
+                        //         value: controller.isDarkModeSwitch.value,
+                        //         activeTrackColor: AppThemeData.primary300,
+                        //         onChanged: (value) {
+                        //           controller.isDarkModeSwitch.value = value;
+                        //           if (controller.isDarkModeSwitch.value ==
+                        //               true) {
+                        //             Preferences.setString(
+                        //                 Preferences.themKey, "Dark");
+                        //             themeChange.darkTheme = 0;
+                        //           } else if (controller.isDarkMode.value ==
+                        //               "Light") {
+                        //             Preferences.setString(
+                        //                 Preferences.themKey, "Light");
+                        //             themeChange.darkTheme = 1;
+                        //           } else {
+                        //             Preferences.setString(
+                        //                 Preferences.themKey, "");
+                        //             themeChange.darkTheme = 2;
+                        //           }
+                        //         },
+                        //       ),
+                        //     ),
+                        //   ],
+                        // ),
                         const SizedBox(
                           height: 10,
                         ),

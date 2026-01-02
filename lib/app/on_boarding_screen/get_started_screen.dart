@@ -20,14 +20,14 @@ class GetStartedScreen extends StatelessWidget {
           themeChange.getThem() ? AppThemeData.grey900 : AppThemeData.grey50,
       body: Column(
         children: [
-          NetworkImageWidget(
-            filterQuality: FilterQuality.high,
-            imageUrl: themeChange.getThem()
-                ? Constant.appBannerImageDark
-                : Constant.appBannerImageLight,
-            fit: BoxFit.fill,
-            width: Responsive.width(100, context),
-            height: Responsive.height(50, context),
+          const SizedBox(
+            height: 20,
+          ),
+          SafeArea(
+            child: Image.asset(
+              Constant.getStartedImage,
+              fit: BoxFit.fill,
+            ),
           ),
           Expanded(
             child: Padding(
@@ -61,7 +61,7 @@ class GetStartedScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(
-                    height: 30,
+                    height: 40,
                   ),
                   RoundedButtonFill(
                     title: "Sign up".tr,

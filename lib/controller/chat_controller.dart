@@ -31,8 +31,8 @@ class ChatController extends GetxController {
         .get()
         .then((documentSnapshot) {
       for (int i = 0; i < documentSnapshot.docs.length; i++) {
-        log("----->${senderUserModel.value.id.toString()}");
-        log("----->${receiverUserModel.value.id.toString()}");
+        print("----->${senderUserModel.value.id.toString()}");
+        print("----->${receiverUserModel.value.id.toString()}");
         if (documentSnapshot.docs[i]['receiverId'] ==
             senderUserModel.value.id.toString()) {
           AuthUtils.fireStore
@@ -41,7 +41,7 @@ class ChatController extends GetxController {
               .collection(documentSnapshot.docs[i]['receiverId'])
               .doc(documentSnapshot.docs[i]['chatID'])
               .update({'seen': true}).catchError((error) {
-            log("Failed : $error");
+            print("Failed : $error");
           });
 
           AuthUtils.fireStore
@@ -50,7 +50,7 @@ class ChatController extends GetxController {
               .collection(documentSnapshot.docs[i]['senderId'])
               .doc(documentSnapshot.docs[i]['chatID'])
               .update({'seen': true}).catchError((error) {
-            log("Failed : $error");
+            print("Failed : $error");
           });
 
           AuthUtils.fireStore
@@ -60,8 +60,9 @@ class ChatController extends GetxController {
               .doc(documentSnapshot.docs[i]['receiverId'])
               .update({
             'seen': true,
+            'unreadCount': 0,
           }).catchError((error) {
-            log("Failed to add: $error");
+            print("Failed to add: $error");
           });
 
           AuthUtils.fireStore
@@ -71,8 +72,9 @@ class ChatController extends GetxController {
               .doc(documentSnapshot.docs[i]['senderId'])
               .update({
             'seen': true,
+            'unreadCount': 0,
           }).catchError((error) {
-            log("Failed to add: $error");
+            print("Failed to add: $error");
           });
         }
       }
@@ -87,11 +89,11 @@ class ChatController extends GetxController {
     dynamic argumentData = Get.arguments;
     if (argumentData != null) {
       receiverUserModel.value = argumentData['receiverModel'];
-      log('Receiver FCM Token: ${receiverUserModel.value.fcmToken}');
+      print('Receiver FCM Token: ${receiverUserModel.value.fcmToken}');
     }
     await UserUtils.getUserProfile(AuthUtils.getCurrentUid()).then((value) {
       senderUserModel.value = value!;
-      log('Sender FCM Token: ${senderUserModel.value.fcmToken}');
+      print('Sender FCM Token: ${senderUserModel.value.fcmToken}');
     });
     changeStatus();
     isLoading.value = false;
@@ -99,86 +101,135 @@ class ChatController extends GetxController {
 
   sendMessage(String msg) async {
     messageTextEditorController.value.clear();
-    InboxModel inboxModel = InboxModel(
-        archive: false,
-        lastMessage: msg,
-        mediaUrl: "",
-        receiverId: receiverUserModel.value.id.toString(),
-        seen: false,
-        senderId: senderUserModel.value.id.toString(),
-        timestamp: Timestamp.now(),
-        type: "text");
 
-    InboxModel senderInboxModel = InboxModel(
-        archive: false,
-        lastMessage: msg,
-        mediaUrl: "",
-        receiverId: receiverUserModel.value.id.toString(),
-        seen: true,
-        senderId: senderUserModel.value.id.toString(),
-        timestamp: Timestamp.now(),
-        type: "text");
-
-    await AuthUtils.fireStore
-        .collection(CollectionName.chat)
-        .doc(senderUserModel.value.id.toString())
-        .collection("inbox")
-        .doc(receiverUserModel.value.id.toString())
-        .set(senderInboxModel.toJson());
-
-    await AuthUtils.fireStore
-        .collection(CollectionName.chat)
-        .doc(receiverUserModel.value.id.toString())
-        .collection("inbox")
-        .doc(senderUserModel.value.id.toString())
-        .set(inboxModel.toJson());
-
-    ChatModel chatModel = ChatModel(
-        type: "text",
-        timestamp: Timestamp.now(),
-        senderId: senderUserModel.value.id.toString(),
-        seen: false,
-        receiverId: receiverUserModel.value.id.toString(),
-        mediaUrl: "",
-        chatID: Constant.getUuid(),
-        message: msg);
-
-    await AuthUtils.fireStore
-        .collection(CollectionName.chat)
-        .doc(senderUserModel.value.id.toString())
-        .collection(receiverUserModel.value.id.toString())
-        .doc(chatModel.chatID)
-        .set(chatModel.toJson());
-    await AuthUtils.fireStore
-        .collection(CollectionName.chat)
-        .doc(receiverUserModel.value.id.toString())
-        .collection(senderUserModel.value.id.toString())
-        .doc(chatModel.chatID)
-        .set(chatModel.toJson());
-
-    Map<String, dynamic> playLoad = <String, dynamic>{
-      "type": "chat",
-      "senderId": senderUserModel.value.id.toString(),
-      "receiverId": receiverUserModel.value.id.toString(),
-    };
-
-    if (receiverUserModel.value.fcmToken != null &&
-        receiverUserModel.value.fcmToken!.isNotEmpty) {
-      log("Sending notification to token: ${receiverUserModel.value.fcmToken}");
-      log("Notification payload: $playLoad");
-      await SendNotification.sendChatNotification(
-          token: receiverUserModel.value.fcmToken.toString(),
-          title: "New message from ${senderUserModel.value.fullName()}",
-          body: msg,
-          payload: playLoad);
-    } else {
-      log("No FCM token found for receiver: ${receiverUserModel.value.id}");
-    }
+    // Reuse the static method to avoid code duplication
+    await sendMessageStatic(
+      senderUser: senderUserModel.value,
+      receiverUser: receiverUserModel.value,
+      message: msg,
+      sendNotification: true,
+    );
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
     super.dispose();
+  }
+
+  /// Static method to send a chat message from any controller
+  /// This allows reusing the chat logic without instantiating ChatController
+  static Future<void> sendMessageStatic({
+    required UserModel senderUser,
+    required UserModel receiverUser,
+    required String message,
+    bool sendNotification = true,
+  }) async {
+    try {
+      // Get current unread count for the receiver
+      int currentUnreadCount = 0;
+      try {
+        DocumentSnapshot inboxDoc = await AuthUtils.fireStore
+            .collection(CollectionName.chat)
+            .doc(receiverUser.id.toString())
+            .collection("inbox")
+            .doc(senderUser.id.toString())
+            .get();
+        if (inboxDoc.exists) {
+          Map<String, dynamic>? data = inboxDoc.data() as Map<String, dynamic>?;
+          currentUnreadCount = data?['unreadCount'] ?? 0;
+        }
+      } catch (e) {
+        log('Error getting current unread count: $e');
+      }
+
+      // Create inbox model for receiver (unread)
+      InboxModel receiverInboxModel = InboxModel(
+          archive: false,
+          lastMessage: message,
+          mediaUrl: "",
+          receiverId: receiverUser.id.toString(),
+          seen: false,
+          senderId: senderUser.id.toString(),
+          timestamp: Timestamp.now(),
+          type: "text",
+          unreadCount: currentUnreadCount + 1);
+
+      // Create inbox model for sender (read)
+      InboxModel senderInboxModel = InboxModel(
+          archive: false,
+          lastMessage: message,
+          mediaUrl: "",
+          receiverId: receiverUser.id.toString(),
+          seen: true,
+          senderId: senderUser.id.toString(),
+          timestamp: Timestamp.now(),
+          type: "text",
+          unreadCount: 0);
+
+      // Update sender's inbox
+      await AuthUtils.fireStore
+          .collection(CollectionName.chat)
+          .doc(senderUser.id.toString())
+          .collection("inbox")
+          .doc(receiverUser.id.toString())
+          .set(senderInboxModel.toJson());
+
+      // Update receiver's inbox
+      await AuthUtils.fireStore
+          .collection(CollectionName.chat)
+          .doc(receiverUser.id.toString())
+          .collection("inbox")
+          .doc(senderUser.id.toString())
+          .set(receiverInboxModel.toJson());
+
+      // Create and save chat message
+      ChatModel chatModel = ChatModel(
+          type: "text",
+          timestamp: Timestamp.now(),
+          senderId: senderUser.id.toString(),
+          seen: false,
+          receiverId: receiverUser.id.toString(),
+          mediaUrl: "",
+          chatID: Constant.getUuid(),
+          message: message);
+
+      // Save to sender's conversation
+      await AuthUtils.fireStore
+          .collection(CollectionName.chat)
+          .doc(senderUser.id.toString())
+          .collection(receiverUser.id.toString())
+          .doc(chatModel.chatID)
+          .set(chatModel.toJson());
+
+      // Save to receiver's conversation
+      await AuthUtils.fireStore
+          .collection(CollectionName.chat)
+          .doc(receiverUser.id.toString())
+          .collection(senderUser.id.toString())
+          .doc(chatModel.chatID)
+          .set(chatModel.toJson());
+
+      // Send push notification if enabled
+      if (sendNotification &&
+          receiverUser.fcmToken != null &&
+          receiverUser.fcmToken!.isNotEmpty) {
+        Map<String, dynamic> payload = <String, dynamic>{
+          "type": "chat",
+          "senderId": senderUser.id.toString(),
+          "receiverId": receiverUser.id.toString(),
+        };
+        await SendNotification.sendChatNotification(
+            token: receiverUser.fcmToken.toString(),
+            title: "New message from ${senderUser.fullName()}",
+            body: message,
+            payload: payload);
+      }
+
+      print("✅ Chat message sent successfully to ${receiverUser.fullName()}");
+    } catch (e) {
+      print("❌ Error sending chat message: $e");
+      rethrow;
+    }
   }
 }

@@ -3,49 +3,45 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'dart:async';
 import 'package:poolmate/app/booking/booking_payment_screen.dart';
-import 'package:poolmate/app/wallet_screen/wallet_screen.dart';
-import 'package:poolmate/app/profile_screen/profile_screen.dart';
 import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/constant/show_toast_dialog.dart';
-import 'package:poolmate/constant/send_notification.dart';
-import 'package:poolmate/services/whatsapp_service.dart';
 import 'package:poolmate/model/booking_model.dart';
 import 'package:poolmate/model/stop_over_model.dart';
 import 'package:poolmate/model/user_model.dart';
-import 'package:poolmate/model/map/geometry.dart';
+import 'package:poolmate/themes/app_them_data.dart';
 import 'widgets/seat_widgets.dart';
 import 'package:poolmate/utils/firestore/user_utils.dart';
 import 'package:poolmate/utils/firestore/auth_utils.dart';
-import 'package:poolmate/utils/firestore/wallet_utils.dart';
-import 'package:poolmate/utils/firestore/booking_utils.dart';
+
+import 'package:poolmate/app/home_screen/passenger_names_screen.dart';
+import 'package:poolmate/controller/booking_payment_controller.dart';
 
 // Enum to represent the different states a seat can be in
 enum SeatStatus { available, unavailable, reservedForLadies, selected, driver }
 
-// The main dialog widget, implemented as a StatefulWidget to manage state
-class RideDialog extends StatefulWidget {
+// The main page widget, implemented as a StatefulWidget to manage state
+class RidePage extends StatefulWidget {
   final BookingModel bookingModel;
   final StopOverModel stopOverModel;
 
-  const RideDialog({
+  const RidePage({
     super.key,
     required this.bookingModel,
     required this.stopOverModel,
   });
 
   @override
-  State<RideDialog> createState() => _RideDialogState();
+  State<RidePage> createState() => _RidePageState();
 }
 
-class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
+class _RidePageState extends State<RidePage> with WidgetsBindingObserver {
   // Use a List to track multiple selected seats.
   final List<int> _selectedSeatIndices = [];
 
+  final controller = Get.put(BookingPaymentController());
+
   // Initialize seat status based on actual booking data
   late List<SeatStatus> _seatStatus;
-
-  // Loading state for booking process
-  bool _isProcessingBooking = false;
 
   // Payment method selection
   String _selectedPaymentMethod = ''; // Empty initially, user must select
@@ -68,9 +64,16 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
   final ValueNotifier<int> _timerNotifier = ValueNotifier<int>(0);
   Timer? _countdownTimer;
 
+  // Store passenger names for each seat
+  Map<int, String?>? _passengerNames;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.bookingModel.value = widget.bookingModel;
+      controller.stopOverModel.value = widget.stopOverModel;
+    });
     WidgetsBinding.instance.addObserver(this);
     _initializeSeatStatus();
     _setupRealtimeListener();
@@ -102,12 +105,12 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
     super.didChangeAppLifecycleState(state);
 
     // Release seats when app goes to background (minimized) or inactive
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
-      print('🔴 App going to background - releasing temporary seats');
-
-      Navigator.of(context).pop();
-    }
+    // if (state == AppLifecycleState.paused ||
+    //     state == AppLifecycleState.inactive) {
+    //   print('🔴 App going to background - releasing temporary seats');
+    //   // Do not pop explicitly; let the user decide or timer expire
+    //   // Navigator.of(context).pop();
+    // }
   }
 
   // Setup real-time listener for booking changes
@@ -338,52 +341,29 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
-      elevation: 8.0,
-      backgroundColor: Colors.white,
-      insetPadding: EdgeInsets.symmetric(
-        horizontal:
-            MediaQuery.of(context).size.width * 0.05, // 5% margin on each side
-        vertical:
-            MediaQuery.of(context).size.height * 0.1, // 10% margin top/bottom
-      ),
-      child: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.9, // 90% of screen width
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            _buildDialogContent(context),
-            _buildCloseButton(context),
-          ],
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Ride Details',
+          style: TextStyle(fontFamily: AppThemeData.semiBold),
         ),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        elevation: 0,
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
       ),
-    );
-  }
-
-  // Builds the close button positioned at the top right corner
-  Widget _buildCloseButton(BuildContext context) {
-    return Positioned(
-      right: -10.0,
-      top: -10.0,
-      child: GestureDetector(
-        onTap: () {
-          Navigator.of(context).pop();
-        },
-        child: Container(
-          padding: const EdgeInsets.all(4),
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black26,
-                blurRadius: 6.0,
-                offset: Offset(0, 2),
-              ),
-            ],
-          ),
-          child: const Icon(Icons.close, color: Colors.black),
+      backgroundColor: Colors.white,
+      body: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 600),
+        child: _buildDialogContent(context),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: _buildActionButtons(context),
         ),
       ),
     );
@@ -392,7 +372,7 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
   // Builds the main content of the dialog
   Widget _buildDialogContent(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.all(15.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -416,9 +396,8 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
           _buildAdditionalRequirements(),
           _buildSummary(),
           const SizedBox(height: 24),
-          _buildPaymentMethodSelection(),
-          const SizedBox(height: 24),
-          _buildActionButtons(context),
+          // _buildPaymentMethodSelection(),
+          // const SizedBox(height: 24),
         ],
       ),
     );
@@ -1053,105 +1032,16 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
 
   // Helper method to determine if this is a full route booking
   // Compares the stopOverModel locations with the booking's main pickup/drop locations
-  bool _isFullRouteBooking() {
-    // Get the main booking pickup and drop locations
-    final bookingPickupLat =
-        widget.bookingModel.pickupLocation?.geometry?.location?.lat;
-    final bookingPickupLng =
-        widget.bookingModel.pickupLocation?.geometry?.location?.lng;
-    final bookingDropLat =
-        widget.bookingModel.dropLocation?.geometry?.location?.lat;
-    final bookingDropLng =
-        widget.bookingModel.dropLocation?.geometry?.location?.lng;
-
-    // Get the stopOver start and end locations
-    final stopOverStartLat = widget.stopOverModel.startLocation?.lat;
-    final stopOverStartLng = widget.stopOverModel.startLocation?.lng;
-    final stopOverEndLat = widget.stopOverModel.endLocation?.lat;
-    final stopOverEndLng = widget.stopOverModel.endLocation?.lng;
-
-    // If any location is null, default to using stopOverModel price
-    if (bookingPickupLat == null ||
-        bookingPickupLng == null ||
-        bookingDropLat == null ||
-        bookingDropLng == null ||
-        stopOverStartLat == null ||
-        stopOverStartLng == null ||
-        stopOverEndLat == null ||
-        stopOverEndLng == null) {
-      return false;
-    }
-
-    // Check if stopOver start matches booking pickup (within small tolerance for floating point)
-    bool startMatches = (bookingPickupLat - stopOverStartLat).abs() < 0.001 &&
-        (bookingPickupLng - stopOverStartLng).abs() < 0.001;
-
-    // Check if stopOver end matches booking drop (within small tolerance)
-    bool endMatches = (bookingDropLat - stopOverEndLat).abs() < 0.001 &&
-        (bookingDropLng - stopOverEndLng).abs() < 0.001;
-
-    // It's a full route if both start and end match
-    return startMatches && endMatches;
-  }
-
-  // Helper method to get the correct price
-  // Checks if the route matches a preset stopover and uses that price, otherwise calculates
-  double _getCorrectPrice() {
-    // First check if it's a full route
-    if (_isFullRouteBooking()) {
-      return double.tryParse(widget.bookingModel.pricePerSeat ?? '0') ?? 0.0;
-    }
-
-    // Check if this stopOverModel matches any of the preset stopovers in stopOverList
-    final stopOverList = widget.bookingModel.stopOverList;
-    if (stopOverList != null && stopOverList.isNotEmpty) {
-      final stopOverStartLat = widget.stopOverModel.startLocation?.lat;
-      final stopOverStartLng = widget.stopOverModel.startLocation?.lng;
-      final stopOverEndLat = widget.stopOverModel.endLocation?.lat;
-      final stopOverEndLng = widget.stopOverModel.endLocation?.lng;
-
-      if (stopOverStartLat != null &&
-          stopOverStartLng != null &&
-          stopOverEndLat != null &&
-          stopOverEndLng != null) {
-        // Find matching preset stopover
-        for (var presetStopOver in stopOverList) {
-          final presetStartLat = presetStopOver.startLocation?.lat;
-          final presetStartLng = presetStopOver.startLocation?.lng;
-          final presetEndLat = presetStopOver.endLocation?.lat;
-          final presetEndLng = presetStopOver.endLocation?.lng;
-
-          if (presetStartLat != null &&
-              presetStartLng != null &&
-              presetEndLat != null &&
-              presetEndLng != null) {
-            // Check if locations match (within small tolerance)
-            bool startMatches =
-                (presetStartLat - stopOverStartLat).abs() < 0.001 &&
-                    (presetStartLng - stopOverStartLng).abs() < 0.001;
-            bool endMatches = (presetEndLat - stopOverEndLat).abs() < 0.001 &&
-                (presetEndLng - stopOverEndLng).abs() < 0.001;
-
-            if (startMatches && endMatches) {
-              // Found matching preset stopover, use its price (not recommendedPrice)
-              return double.tryParse(presetStopOver.price ?? '0') ?? 0.0;
-            }
-          }
-        }
-      }
-    }
-
-    // No matching preset found, use the calculated stopOverModel price
-    return double.tryParse(widget.stopOverModel.price ?? '0') ?? 0.0;
-  }
 
   // Widget for the trip cost summary
   Widget _buildSummary() {
     // Get the number of seats from the list's length.
     final int numberOfSeats = _selectedSeatIndices.length;
 
+    controller.bookingModel.value = widget.bookingModel;
+    controller.stopOverModel.value = widget.stopOverModel;
     // Use the helper method to get the correct price
-    final double pricePerSeat = _getCorrectPrice();
+    final double pricePerSeat = controller.getCorrectPrice();
     final double totalAmount = numberOfSeats * pricePerSeat;
 
     return Column(
@@ -1191,44 +1081,85 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
 
   // Widget for the Back and Proceed to Pay buttons
   Widget _buildActionButtons(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        TextButton.icon(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          icon: const Icon(Icons.arrow_back_ios, size: 16),
-          label: const Text('Back'),
-          style: TextButton.styleFrom(foregroundColor: Colors.black),
+    final bool canBook = _selectedSeatIndices.isNotEmpty;
+    return ElevatedButton(
+      onPressed: canBook
+          ? () {
+              // Check if user is already booked
+              if (widget.bookingModel.bookedUserId != null &&
+                  widget.bookingModel.bookedUserId!
+                      .contains(AuthUtils.getCurrentUid())) {
+                ShowToastDialog.showToast("You have already booked this ride");
+                return;
+              }
+              // Calculate booking details
+              final int numberOfSeats = _selectedSeatIndices.length;
+              controller.bookingModel.value = widget.bookingModel;
+              controller.stopOverModel.value = widget.stopOverModel;
+              final double pricePerSeat = controller.getCorrectPrice();
+              final double totalAmount = pricePerSeat * numberOfSeats;
+
+              // Navigate to passenger names screen
+              Get.to(
+                PassengerNamesScreen(
+                  selectedSeatIndices: _selectedSeatIndices,
+                  numberOfSeats: numberOfSeats,
+                  pricePerSeat: pricePerSeat,
+                  totalAmount: totalAmount,
+                  bookingId: widget.bookingModel.id ?? '',
+                  driverPaymentMethod: widget.bookingModel.driverPaymentMethod,
+                ),
+              )?.then((result) {
+                // Handle result from passenger names + payment screen
+                if (result != null) {
+                  // Store passenger names
+                  if (result['passengerNames'] != null) {
+                    final passengerNamesData = result['passengerNames'];
+                    if (passengerNamesData is Map) {
+                      // Convert to Map<int, String?>
+                      setState(() {
+                        _passengerNames = passengerNamesData.map(
+                          (key, value) => MapEntry(
+                            key is int ? key : int.parse(key.toString()),
+                            value as String?,
+                          ),
+                        );
+                      });
+                    }
+                  }
+
+                  // Store payment method and status
+                  setState(() {
+                    _selectedPaymentMethod = result['paymentType'] ?? '';
+                    _isPaymentCompleted = result['paymentSuccess'] == true;
+                  });
+
+                  // If payment was successful, proceed with booking
+                  if (result['paymentSuccess'] == true) {
+                    // Update controller state
+                    controller.bookingModel.value = widget.bookingModel;
+                    controller.selectedSeatIndices.value = _selectedSeatIndices;
+                    controller.passengerNames.value = _passengerNames ?? {};
+                    controller.stopOverModel.value = widget.stopOverModel;
+
+                    controller.processBooking(_selectedPaymentMethod);
+                  }
+                }
+              });
+            }
+          : () {
+              ShowToastDialog.showToast("Please select at least one seat");
+            },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: canBook ? Colors.black : Colors.grey,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
         ),
-        ElevatedButton(
-          onPressed: _selectedSeatIndices.isEmpty ||
-                  _selectedPaymentMethod.isEmpty ||
-                  !_isPaymentCompleted ||
-                  _isProcessingBooking
-              ? null
-              : _processBooking,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.black,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-          ),
-          child: _isProcessingBooking
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-              : const Text('Proceed to Book', style: TextStyle(fontSize: 16)),
-        ),
-      ],
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 15),
+      ),
+      child: Text('Proceed to Book',
+          style: TextStyle(fontSize: 18, fontFamily: AppThemeData.semiBold)),
     );
   }
 
@@ -1344,7 +1275,9 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
         // Driver prefers online, go to payment method selection but restrict to online options
         // Calculate total amount for payment
         final int numberOfSeats = _selectedSeatIndices.length;
-        final double pricePerSeat = _getCorrectPrice();
+        controller.bookingModel.value = widget.bookingModel;
+        controller.stopOverModel.value = widget.stopOverModel;
+        final double pricePerSeat = controller.getCorrectPrice();
         final double totalAmount = numberOfSeats * pricePerSeat;
 
         Get.to(
@@ -1365,7 +1298,12 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
 
             // If payment was successful, proceed with booking automatically
             if (value['paymentSuccess'] == true) {
-              _processBooking();
+              controller.bookingModel.value = widget.bookingModel;
+              controller.selectedSeatIndices.value = _selectedSeatIndices;
+              controller.passengerNames.value = _passengerNames ?? {};
+              controller.stopOverModel.value = widget.stopOverModel;
+              controller.isPaymentCompleted.value = _isPaymentCompleted;
+              controller.processBooking(_selectedPaymentMethod);
             }
           }
         });
@@ -1376,8 +1314,14 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
     // No driver preference set, allow all payment methods
     // Calculate total amount for payment
     final int numberOfSeats = _selectedSeatIndices.length;
-    final double pricePerSeat = _getCorrectPrice();
+    controller.bookingModel.value = widget.bookingModel;
+    controller.stopOverModel.value = widget.stopOverModel;
+    final double pricePerSeat = controller.getCorrectPrice();
     final double totalAmount = numberOfSeats * pricePerSeat;
+
+    controller.numberOfSeats.value = numberOfSeats;
+    controller.pricePerSeat.value = pricePerSeat;
+    controller.totalAmount.value = totalAmount;
 
     Get.to(
       const BookingPaymentScreen(),
@@ -1395,613 +1339,15 @@ class _RideDialogState extends State<RideDialog> with WidgetsBindingObserver {
           _isPaymentCompleted = value['paymentSuccess'] == true;
         });
 
-        // If payment was successful, proceed with booking automatically
         if (value['paymentSuccess'] == true) {
-          _processBooking();
+          controller.bookingModel.value = widget.bookingModel;
+          controller.selectedSeatIndices.value = _selectedSeatIndices;
+          controller.passengerNames.value = _passengerNames ?? {};
+          controller.stopOverModel.value = widget.stopOverModel;
+          controller.isPaymentCompleted.value = _isPaymentCompleted;
+          controller.processBooking(_selectedPaymentMethod);
         }
       }
     });
-  }
-
-  // Complete booking processing method
-  Future<void> _processBooking() async {
-    if (_selectedSeatIndices.isEmpty) {
-      ShowToastDialog.showToast("Please select at least one seat");
-      return;
-    }
-
-    if (_selectedPaymentMethod.isEmpty) {
-      ShowToastDialog.showToast("Please select payment method");
-      return;
-    }
-
-    setState(() {
-      _isProcessingBooking = true;
-    });
-
-    try {
-      // Get current user
-      UserModel? currentUser =
-          await UserUtils.getUserProfile(AuthUtils.getCurrentUid());
-      if (currentUser == null) {
-        ShowToastDialog.showToast("User not found");
-        return;
-      }
-
-      // Check if ride requires verification and user is not verified
-      if (widget.bookingModel.onlyVerifiedPassenger == true) {
-        if (currentUser.aadharVerified != true) {
-          setState(() {
-            _isProcessingBooking = false;
-          });
-          _showVerificationRequiredDialog();
-          return;
-        }
-      }
-
-      // Check women only requirement
-      if (widget.bookingModel.womenOnly == true) {
-        if (currentUser.gender?.toLowerCase() != 'female' &&
-            currentUser.gender?.toLowerCase() != 'woman') {
-          setState(() {
-            _isProcessingBooking = false;
-          });
-          ShowToastDialog.showToast("This ride is only for women");
-          return;
-        }
-      }
-
-      // Get publisher user
-      UserModel? publisherUser = await UserUtils.getUserProfile(
-          widget.bookingModel.createdBy.toString());
-      if (publisherUser == null) {
-        ShowToastDialog.showToast("Driver not found");
-        return;
-      }
-
-      // Check if user is already booked
-      if (widget.bookingModel.bookedUserId!
-          .contains(AuthUtils.getCurrentUid())) {
-        ShowToastDialog.showToast("You have already booked this ride");
-        return;
-      }
-
-      // Initialize lists if null
-      if (widget.bookingModel.bookedUserId == null) {
-        widget.bookingModel.bookedUserId = [];
-      }
-
-      // Add user to booked list
-      widget.bookingModel.bookedUserId!.add(AuthUtils.getCurrentUid());
-
-      // Update the bookedSeat field to store the actual seat numbers
-      String currentBookedSeats = widget.bookingModel.bookedSeat ?? "";
-      List<String> bookedSeatsList =
-          currentBookedSeats.isEmpty ? [] : currentBookedSeats.split(',');
-
-      // Add newly selected seats
-      bookedSeatsList
-          .addAll(_selectedSeatIndices.map((index) => index.toString()));
-
-      // Update booked seats in booking model
-      widget.bookingModel.bookedSeat = bookedSeatsList.join(',');
-
-      // Create booking user model
-      BookedUserModel bookingUserModel = BookedUserModel();
-      bookingUserModel.id = AuthUtils.getCurrentUid();
-      // Generate 6-digit OTP for trip verification
-      final String otp =
-          (100000 + (DateTime.now().microsecondsSinceEpoch % 900000))
-              .toString()
-              .substring(0, 6);
-      bookingUserModel.otp = otp;
-      // Store the actual seat numbers that were booked
-      bookingUserModel.bookedSeat =
-          _selectedSeatIndices.map((index) => index.toString()).join(',');
-      // Set payment status based on payment method
-      // True for wallet and successful online payments (like Cashfree), false for cash
-      bookingUserModel.paymentStatus =
-          _selectedPaymentMethod.toLowerCase() == 'wallet' ||
-              _selectedPaymentMethod.toLowerCase() == 'cashfree' ||
-              _selectedPaymentMethod.toLowerCase() == 'razorpay' ||
-              _selectedPaymentMethod.toLowerCase() == 'stripe' ||
-              _selectedPaymentMethod.toLowerCase() == 'paypal' ||
-              _selectedPaymentMethod.toLowerCase() == 'paystack' ||
-              _selectedPaymentMethod.toLowerCase() == 'flutterwave' ||
-              _selectedPaymentMethod.toLowerCase() == 'payfast' ||
-              _selectedPaymentMethod.toLowerCase() == 'paytm' ||
-              _selectedPaymentMethod.toLowerCase() == 'xendit' ||
-              _selectedPaymentMethod.toLowerCase() == 'orangepay' ||
-              _selectedPaymentMethod.toLowerCase() == 'midtrans' ||
-              _selectedPaymentMethod.toLowerCase() == 'mercadopago';
-      bookingUserModel.paymentType = _selectedPaymentMethod;
-      bookingUserModel.stopOver = widget.stopOverModel;
-      bookingUserModel.createdAt = Timestamp.now();
-      // Convert CityModel to Location for BookedUserModel
-      if (widget.bookingModel.pickupLocation != null &&
-          widget.bookingModel.pickupLocation!.geometry?.location != null) {
-        bookingUserModel.pickupLocation = Location(
-          lat: widget.bookingModel.pickupLocation!.geometry!.location!.lat,
-          lng: widget.bookingModel.pickupLocation!.geometry!.location!.lng,
-        );
-      }
-      if (widget.bookingModel.dropLocation != null &&
-          widget.bookingModel.dropLocation!.geometry?.location != null) {
-        bookingUserModel.dropLocation = Location(
-          lat: widget.bookingModel.dropLocation!.geometry!.location!.lat,
-          lng: widget.bookingModel.dropLocation!.geometry!.location!.lng,
-        );
-      }
-      bookingUserModel.adminCommission = Constant.adminCommission;
-      bookingUserModel.taxList = Constant.taxList;
-
-      // Calculate subtotal
-      double pricePerSeat = _getCorrectPrice();
-      double totalAmount = pricePerSeat * _selectedSeatIndices.length;
-      bookingUserModel.subTotal = totalAmount.toString();
-
-      // Process payment if wallet is selected
-      // NOTE: Only process wallet payment if it wasn't already processed in BookingPaymentScreen
-      // The _isPaymentCompleted flag indicates payment was already done
-      Map<String, dynamic>? paymentResult;
-      if ((_selectedPaymentMethod.toLowerCase() == 'wallet' ||
-              _selectedPaymentMethod.toLowerCase() == 'my wallet') &&
-          !_isPaymentCompleted) {
-        // Payment not yet processed, deduct from wallet now
-        ShowToastDialog.showLoader("Processing payment...");
-
-        paymentResult = await WalletUtils.deductFromUserWallet(
-            amount: totalAmount.toString(),
-            userId: AuthUtils.getCurrentUid(),
-            description:
-                "Ride booking payment - ${widget.bookingModel.pickUpAddress ?? 'Pickup'} to ${widget.bookingModel.dropAddress ?? 'Drop'}");
-
-        ShowToastDialog.closeLoader();
-
-        if (paymentResult['success'] != true) {
-          setState(() {
-            _isProcessingBooking = false;
-          });
-
-          if (paymentResult['code'] == 'INSUFFICIENT_BALANCE') {
-            _showInsufficientBalanceDialog(
-                required: totalAmount,
-                available: paymentResult['availableBalance'] ?? 0.0);
-          } else {
-            ShowToastDialog.showToast(
-                paymentResult['message'] ?? 'Payment failed');
-          }
-          return;
-        }
-      }
-
-      // Only transfer to driver and record commission if wallet payment was used
-      if (_selectedPaymentMethod.toLowerCase() == 'wallet' ||
-          _selectedPaymentMethod.toLowerCase() == 'my wallet') {
-        // Payment successful, now transfer money to driver after commission
-        ShowToastDialog.showLoader("Transferring payment to driver...");
-
-        // Calculate admin commission (from your Firebase settings: 10%)
-        double adminCommissionRate =
-            double.parse(Constant.adminCommission?.amount ?? '10');
-        double adminCommissionAmount =
-            (totalAmount * adminCommissionRate) / 100;
-        double driverAmount = totalAmount - adminCommissionAmount;
-
-        // Transfer money to driver's wallet
-        Map<String, dynamic> driverPaymentResult =
-            await WalletUtils.addToDriverWallet(
-                amount: driverAmount.toString(),
-                driverId: widget.bookingModel.createdBy.toString(),
-                bookingId: widget.bookingModel.id ?? '',
-                description:
-                    "Ride booking payment received - ${widget.bookingModel.pickUpAddress ?? 'Pickup'} to ${widget.bookingModel.dropAddress ?? 'Drop'} (After $adminCommissionRate% commission)");
-
-        // Record admin commission
-        await WalletUtils.recordAdminCommission(
-          amount: adminCommissionAmount.toString(),
-          bookingId: widget.bookingModel.id ?? '',
-          description:
-              "Platform commission ($adminCommissionRate%) from ride booking",
-          passengerId: AuthUtils.getCurrentUid(),
-          driverId: widget.bookingModel.createdBy.toString(),
-        );
-
-        ShowToastDialog.closeLoader();
-
-        if (driverPaymentResult['success'] == true) {
-          ShowToastDialog.showToast(
-              "Payment successful! ₹${totalAmount.toStringAsFixed(2)} paid. Driver receives ₹${driverAmount.toStringAsFixed(2)} (₹${adminCommissionAmount.toStringAsFixed(2)} platform fee)");
-        } else {
-          // If driver payment fails, we should ideally refund the passenger
-          ShowToastDialog.showToast(
-              "Payment deducted but transfer to driver failed. Contact support.");
-        }
-      }
-
-      ShowToastDialog.showLoader("Processing booking...");
-
-      // Move seats from tempSeatSelection to bookedSeat in Firebase
-      if (widget.bookingModel.id != null) {
-        final docRef = FirebaseFirestore.instance
-            .collection('booking')
-            .doc(widget.bookingModel.id);
-
-        await FirebaseFirestore.instance.runTransaction((transaction) async {
-          final snapshot = await transaction.get(docRef);
-
-          if (snapshot.exists) {
-            final data = snapshot.data();
-
-            // Get current temp seats
-            final currentTempSeats =
-                List<int>.from(data?['tempSeatSelection'] ?? []);
-
-            // Get current booked seats
-            final currentBookedSeatsString = data?['bookedSeat'] ?? "0";
-            List<String> currentBookedSeatsList =
-                currentBookedSeatsString.isEmpty ||
-                        currentBookedSeatsString == "0"
-                    ? []
-                    : currentBookedSeatsString.toString().split(',');
-
-            // Add newly selected seats to booked seats
-            currentBookedSeatsList
-                .addAll(_selectedSeatIndices.map((index) => index.toString()));
-
-            // Remove booked seats from temp selection
-            currentTempSeats
-                .removeWhere((seat) => _selectedSeatIndices.contains(seat));
-
-            // Update both fields in the same transaction
-            transaction.update(docRef, {
-              'tempSeatSelection': currentTempSeats,
-              'bookedSeat': currentBookedSeatsList.join(','),
-              'bookedUserId': widget.bookingModel.bookedUserId,
-            });
-          }
-        });
-      }
-
-      // Save user booking
-      await BookingUtils.setUserBooking(widget.bookingModel, bookingUserModel);
-
-      // Send notification to driver
-      await SendNotification.sendOneNotification(
-        type: Constant.booking_confirmed,
-        token: publisherUser.fcmToken.toString(),
-        payload: {},
-      );
-
-      // Send notification to passenger (user who booked) confirming their booking
-      if (currentUser.fcmToken != null && currentUser.fcmToken!.isNotEmpty) {
-        await SendNotification.sendOneNotification(
-          type: Constant.booking_confirmed_by_passager,
-          token: currentUser.fcmToken.toString(),
-          payload: {},
-        );
-      }
-
-      // Send WhatsApp notifications
-      // Get current user profile for phone number
-      UserModel? currentUserphone =
-          await UserUtils.getUserProfile(AuthUtils.getCurrentUid());
-
-      // To passenger: booking confirmed
-      if (currentUserphone?.phoneNumber != null) {
-        await WhatsAppService.sendRiderBookingConfirmed(
-          phoneNumber: currentUserphone!.phoneNumber!,
-        );
-      }
-
-      // To driver: seat booked
-      if (publisherUser.phoneNumber != null) {
-        await WhatsAppService.sendDriverSeatBook(
-          phoneNumber: publisherUser.phoneNumber!,
-        );
-      }
-
-      // Update main booking
-      await BookingUtils.setBooking(widget.bookingModel);
-
-      ShowToastDialog.closeLoader();
-
-      // Show success message
-      ShowToastDialog.showToast("Booking confirmed successfully!");
-
-      // Close dialog
-      Navigator.of(context)
-          .pop(true); // Return true to indicate successful booking
-    } catch (e) {
-      ShowToastDialog.closeLoader();
-      ShowToastDialog.showToast("Error processing booking: ${e.toString()}");
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isProcessingBooking = false;
-        });
-      }
-    }
-  }
-
-  // Show verification required dialog
-  void _showVerificationRequiredDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Row(
-            children: [
-              Icon(
-                Icons.verified_user_outlined,
-                color: Colors.orange,
-                size: 28,
-              ),
-              const SizedBox(width: 12),
-              const Text(
-                'Verification Required',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'This ride requires verified passengers only.',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.orange.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: Colors.orange.shade200,
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.info_outline,
-                      color: Colors.orange.shade700,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    const Expanded(
-                      child: Text(
-                        'Please verify yourself first by uploading your documents to book this ride.',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text(
-                'Cancel',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 16,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                // Navigate to profile screen for verification
-                Get.to(const ProfileScreen());
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              ),
-              child: const Text(
-                'Verify Now',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // Show insufficient balance dialog
-  void _showInsufficientBalanceDialog({
-    required double required,
-    required double available,
-  }) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        double shortfall = required - available;
-
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Row(
-            children: [
-              Icon(
-                Icons.account_balance_wallet_outlined,
-                color: Colors.red,
-                size: 28,
-              ),
-              const SizedBox(width: 12),
-              const Text(
-                'Insufficient Balance',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'You don\'t have enough balance in your wallet to book this ride.',
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.red.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: Colors.red.shade200,
-                    width: 1,
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Required amount:',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        Text(
-                          '₹${required.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Available balance:',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        Text(
-                          '₹${available.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Divider(),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Need to add:',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red,
-                          ),
-                        ),
-                        Text(
-                          '₹${shortfall.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text(
-                'Cancel',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 16,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                // Navigate to wallet screen to add money
-                Get.to(() => const WalletScreen());
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              ),
-              child: const Text(
-                'Add Money',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
   }
 }

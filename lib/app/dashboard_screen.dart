@@ -13,7 +13,9 @@ class DashBoardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeChange = Provider.of<DarkThemeProvider>(context);
     return GetX<DashboardScreenController>(
-        init: DashboardScreenController(),
+        init: Get.isRegistered<DashboardScreenController>()
+            ? null
+            : DashboardScreenController(),
         builder: (controller) {
           return Scaffold(
             backgroundColor: themeChange.getThem()
@@ -35,9 +37,7 @@ class DashBoardScreen extends StatelessWidget {
               backgroundColor: themeChange.getThem()
                   ? AppThemeData.grey900
                   : AppThemeData.grey50,
-              selectedItemColor: themeChange.getThem()
-                  ? AppThemeData.primary300
-                  : AppThemeData.primary300,
+              selectedItemColor: Colors.black,
               unselectedItemColor: themeChange.getThem()
                   ? AppThemeData.grey300
                   : AppThemeData.grey600,
@@ -93,7 +93,7 @@ class DashBoardScreen extends StatelessWidget {
       required DashboardScreenController controller}) {
     // Cap the unread count for display (e.g., 99+)
     final int unread = int.tryParse(controller.count.value) ?? 0;
-    final int unreadble = unread - 1;
+    final int unreadble = unread;
     final String unreadLabel = unreadble > 99 ? "99+" : unreadble.toString();
     return BottomNavigationBarItem(
       icon: Padding(
@@ -112,9 +112,7 @@ class DashBoardScreen extends StatelessWidget {
                   height: 22,
                   width: 22,
                   color: controller.selectedIndex.value == index
-                      ? themeChange.getThem()
-                          ? AppThemeData.primary300
-                          : AppThemeData.primary300
+                      ? Colors.black
                       : themeChange.getThem()
                           ? AppThemeData.grey300
                           : AppThemeData.grey600,
@@ -129,7 +127,7 @@ class DashBoardScreen extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 5, vertical: 2),
                             decoration: BoxDecoration(
-                              color: AppThemeData.primary300,
+                              color: Colors.black,
                               borderRadius: BorderRadius.circular(12),
                               border:
                                   Border.all(color: Colors.white, width: 1.2),

@@ -11,11 +11,10 @@ import 'package:poolmate/model/user_model.dart';
 import 'package:poolmate/themes/app_them_data.dart';
 import 'package:poolmate/themes/round_button_fill.dart';
 import 'package:poolmate/utils/dark_theme_provider.dart';
-import 'package:poolmate/utils/notification_service.dart';
+import 'package:poolmate/services/fcm_token_manager.dart';
 import 'package:provider/provider.dart';
 
 import 'package:poolmate/utils/firestore/auth_utils.dart';
-import 'package:poolmate/utils/firestore/user_utils.dart';
 
 class OtpScreen extends StatelessWidget {
   const OtpScreen({super.key});
@@ -133,8 +132,8 @@ class OtpScreen extends StatelessWidget {
                             ),
                             RoundedButtonFill(
                               title: "Verify & Next".tr,
-                              color: AppThemeData.primary300,
-                              textColor: AppThemeData.grey50,
+                              color: Colors.black,
+                              textColor: Colors.white,
                               onPress: () async {
                                 if (controller
                                         .otpController.value.text.length ==
@@ -145,15 +144,6 @@ class OtpScreen extends StatelessWidget {
                                   if (controller.verifyOTP(
                                       controller.otpController.value.text)) {
                                     // OTP is correct
-                                    String fcmToken = '';
-                                    try {
-                                      fcmToken =
-                                          await NotificationService.getToken();
-                                    } catch (e) {
-                                      debugPrint(
-                                          "Failed to get FCM token during phone verification: $e");
-                                    }
-
                                     ShowToastDialog.closeLoader();
 
                                     if (controller.isLogin.value) {
@@ -168,19 +158,15 @@ class OtpScreen extends StatelessWidget {
                                           await AuthUtils.setCurrentUid(
                                               userModel.id!);
 
-                                          // Update FCM token for existing user
+                                          // Initialize FCM token manager
                                           try {
-                                            String fcmToken =
-                                                await NotificationService
-                                                    .getToken();
-                                            userModel.fcmToken = fcmToken;
-                                            await UserUtils.updateUser(
-                                                userModel);
+                                            await FcmTokenManager
+                                                .saveCurrentToken();
                                             debugPrint(
-                                                "FCM token updated for existing phone user: $fcmToken");
+                                                "FCM token saved for existing phone user");
                                           } catch (e) {
                                             debugPrint(
-                                                "Failed to update FCM token for existing phone user: $e");
+                                                "Failed to save FCM token: $e");
                                           }
 
                                           Get.offAll(const DashBoardScreen());
@@ -197,19 +183,19 @@ class OtpScreen extends StatelessWidget {
                                       // Signup flow - create new user with secure UUID
                                       String generatedUserId =
                                           controller.generateUserId();
-                                      UserModel userModel = UserModel();
-                                      userModel.id = generatedUserId;
-                                      userModel.countryCode =
+                                      UserModel newUserModel = UserModel();
+                                      newUserModel.id = generatedUserId;
+                                      newUserModel.countryCode =
                                           controller.countryCode.value;
-                                      userModel.phoneNumber =
+                                      newUserModel.phoneNumber =
                                           controller.phoneNumber.value;
-                                      userModel.loginType =
+                                      newUserModel.loginType =
                                           Constant.phoneLoginType;
-                                      userModel.fcmToken = fcmToken;
+                                      // FCM token will be saved after account creation
 
                                       Get.off(const InformationScreen(),
                                           arguments: {
-                                            "userModel": userModel,
+                                            "userModel": newUserModel,
                                           });
                                     }
                                   } else {

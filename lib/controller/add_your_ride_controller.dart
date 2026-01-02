@@ -10,7 +10,6 @@ import 'package:poolmate/app/dashboard_screen.dart';
 import 'package:poolmate/app/wallet_screen/wallet_screen.dart';
 import 'package:poolmate/controller/dashboard_controller.dart';
 import 'package:poolmate/constant/constant.dart';
-import 'package:poolmate/constant/show_toast_dialog.dart';
 import 'package:poolmate/model/booking_model.dart';
 import 'package:poolmate/model/map/city_list_model.dart';
 import 'package:poolmate/model/map/direction_api_model.dart';
@@ -27,8 +26,10 @@ import 'package:poolmate/utils/firestore/booking_utils.dart';
 import 'package:poolmate/utils/firestore/ridealert_utils.dart';
 import 'package:poolmate/utils/firestore/user_utils.dart';
 import 'package:poolmate/utils/firestore/vehicle_utils.dart';
+import 'package:poolmate/utils/notification_service.dart';
 import '../themes/app_them_data.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 class AddYourRideController extends GetxController {
   Rx<TextEditingController> pickUpLocationController =
@@ -115,7 +116,7 @@ class AddYourRideController extends GetxController {
           'https://maps.googleapis.com/maps/api/directions/json?origin=${pickUpLocation.value.geometry!.location!.lat},${pickUpLocation.value.geometry!.location!.lng}&destination=${dropLocation.value.geometry!.location!.lat},${dropLocation.value.geometry!.location!.lng}&alternatives=true&key=${Constant.mapAPIKey}'));
       print("===>${response.request}");
       if (response.statusCode == 200) {
-        log("======>");
+        print("======>");
         log(response.body);
         final data = json.decode(response.body);
         DirectionAPIModel directionAPIModel = DirectionAPIModel.fromJson(data);
@@ -191,7 +192,7 @@ class AddYourRideController extends GetxController {
         'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
         '?location=${(lat1 + lat2) / 2},${(lng1 + lng2) / 2}&radius=50000&type=locality&key=${Constant.mapAPIKey}');
     final response = await http.get(url);
-    log("==========>");
+    print("==========>");
     log(response.body);
     cityList.clear();
     if (response.statusCode == 200) {
@@ -310,20 +311,25 @@ class AddYourRideController extends GetxController {
     if (isIncrement) {
       price.value += 10.0;
     } else {
-      price.value -= 10.0;
+      if (price.value > 0) {
+        price.value -= 10.0;
+        if (price.value < 0) price.value = 0.0;
+      }
     }
   }
 
   changeStopOverPrice(int index, bool isIncrement) {
     StopOverModel stopOverModel = stopOverList[index];
+    double currentPrice =
+        double.parse((stopOverModel.price ?? '0.0').toString());
+
     if (isIncrement) {
-      stopOverModel.price =
-          (double.parse((stopOverModel.price ?? '0.0').toString()) + 10.0)
-              .toString();
+      stopOverModel.price = (currentPrice + 10.0).toString();
     } else {
-      stopOverModel.price =
-          (double.parse((stopOverModel.price ?? '0.0').toString()) - 10.0)
-              .toString();
+      if (currentPrice > 0) {
+        double newPrice = currentPrice - 10.0;
+        stopOverModel.price = (newPrice < 0 ? 0.0 : newPrice).toString();
+      }
     }
     stopOverList.removeAt(index);
     stopOverList.insert(index, stopOverModel);
@@ -331,15 +337,12 @@ class AddYourRideController extends GetxController {
   }
 
   publishRide() async {
-    ShowToastDialog.showLoader("Please wait");
-
     // Check wallet balance before publishing ride
     double walletBalance =
         double.tryParse(userModel.value.walletAmount ?? "0.0") ?? 0.0;
     const double minAllowedBalance = -500.0;
 
     if (walletBalance < minAllowedBalance) {
-      ShowToastDialog.closeLoader();
       _showWalletTopUpDialog();
       return;
     }
@@ -380,13 +383,97 @@ class AddYourRideController extends GetxController {
         selectedSeats.map((seat) => seat.toString()).toList();
 
     await BookingUtils.setBooking(bookingModel).then((value) async {
-      ShowToastDialog.closeLoader();
-
       // Send WhatsApp notification to driver about ride published
       if (userModel.value.phoneNumber != null &&
           userModel.value.phoneNumber!.isNotEmpty) {
-        WhatsAppService.sendDriverRidePublished(
-          phoneNumber: userModel.value.phoneNumber!,
+        await WhatsAppService.sendDriverRidePublished(
+            phoneNumber: userModel.value.phoneNumber!,
+            rideDetails: [
+              {
+                "type": "body",
+                "parameters": [
+                  {"type": "text", "text": bookingModel.pickUpAddress ?? ''},
+                  {"type": "text", "text": bookingModel.dropAddress ?? ''},
+                  {
+                    "type": "text",
+                    "text": Constant.dateCustomizationShow(
+                            bookingModel.departureDateTime!.toDate()) ??
+                        ''
+                  },
+                  {
+                    "type": "text",
+                    "text": DateFormat('hh:mm aa')
+                            .format(bookingModel.departureDateTime!.toDate()) ??
+                        ''
+                  },
+                ]
+              }
+            ]);
+      }
+      print(
+          'whatsapp message sent successfully to ${userModel.value.phoneNumber}');
+
+      // Send push notification to ride publisher
+      String? publisherFcmToken = userModel.value.fcmToken;
+      if (publisherFcmToken != null && publisherFcmToken.isNotEmpty) {
+        String formattedDate = Constant.dateCustomizationShow(
+            bookingModel.departureDateTime!.toDate());
+        String formattedTime = DateFormat('hh:mm aa')
+            .format(bookingModel.departureDateTime!.toDate());
+
+        String notificationTitle = '🚗 Ride Published Successfully! 🎉';
+        String notificationBody =
+            '📍 ${bookingModel.pickUpAddress} ➡️ ${bookingModel.dropAddress}\n'
+            '📅 $formattedDate at 🕐 $formattedTime\n\n'
+            '✨ We will update you once someone books any seats! 🙌';
+
+        Map<String, dynamic> notificationData = {
+          'type': 'ride_published',
+          'bookingId': bookingModel.id ?? '',
+          'pickUpAddress': bookingModel.pickUpAddress ?? '',
+          'dropAddress': bookingModel.dropAddress ?? '',
+          'departureTime':
+              bookingModel.departureDateTime?.toDate().toIso8601String() ?? '',
+        };
+
+        await _sendFCMMessage(
+          publisherFcmToken,
+          notificationTitle,
+          notificationBody,
+          notificationData,
+        );
+        await _sendFCMMessage(
+          publisherFcmToken,
+          notificationTitle,
+          notificationBody,
+          notificationData,
+        );
+        print('📤 Ride published notification sent to driver');
+      }
+
+      // Schedule local reminder for driver (30 mins before ride)
+      if (bookingModel.departureDateTime != null) {
+        DateTime rideTime = bookingModel.departureDateTime!.toDate();
+        DateTime scheduleTime = rideTime.subtract(const Duration(minutes: 30));
+
+        // Generate a unique ID for notification based on booking ID hash
+        int notificationId = bookingModel.id.hashCode;
+
+        await NotificationService.scheduleNotification(
+          id: notificationId,
+          title: '🚗 Ride Starting Soon!',
+          body: 'You are about to start the trip from '
+              '${bookingModel.pickUpAddress} to ${bookingModel.dropAddress} at '
+              '${DateFormat('hh:mm a').format(rideTime)}.\n\n'
+              'Please be ready and contact the rider 📞.\n\n'
+              'Please remember the following points while riding:\n\n'
+              '1. 👉 Press the Start button before riding and ask the rider to share the OTP before boarding to verify the passenger.\n'
+              '2. 📍 Always keep your mobile location ON during the trip.\n'
+              '3. 🆘 Make sure your SOS number is updated in the app and use it in case of any emergency.\n'
+              '4. ⭐ After completing the trip, press the Complete button and leave a review for the rider. Also, please share a review for the app on the Google Play Store.\n\n'
+              'Happy journey 🛣️\n'
+              'Bola – let’s move together 🤝',
+          scheduledTime: scheduleTime,
         );
       }
 

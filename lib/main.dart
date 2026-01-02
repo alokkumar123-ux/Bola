@@ -49,69 +49,85 @@ void main() async {
       );
     }
 
-    await FirebaseAppCheck.instance.activate(
-      androidProvider: AndroidProvider.playIntegrity,
-      appleProvider: AppleProvider.appAttest,
-    );
+    // Wrap App Check in try-catch - PlayIntegrity can fail on some devices
+    try {
+      await FirebaseAppCheck.instance.activate(
+        androidProvider: AndroidProvider.playIntegrity,
+        appleProvider: AppleProvider.appAttest,
+      );
+    } catch (e) {
+      print('Firebase App Check failed to initialize: $e');
+      // Continue without App Check - better than black screen
+    }
   }
-  await Preferences.initPref();
+
+  // Wrap Preferences init in try-catch
+  try {
+    await Preferences.initPref();
+  } catch (e) {
+    print('Preferences init failed: $e');
+  }
 
   if (!kIsWeb) {
     // Initialize Awesome Notifications for mobile platforms
-    await AwesomeNotifications().initialize(
-      null, // Use default app icon
-      [
-        NotificationChannel(
-          channelKey: 'default',
-          channelName: 'Default Notifications',
-          channelDescription: 'Default notification channel',
-          defaultColor: const Color(0xFF060606),
-          ledColor: Colors.white,
-          importance: NotificationImportance.High,
-          playSound: true,
-        ),
-        // This channel matches FCM's channel_id for regular notifications
-        NotificationChannel(
-          channelKey: 'high_importance_channel',
-          channelName: 'High Importance',
-          channelDescription: 'High importance notifications',
-          defaultColor: const Color(0xFF060606),
-          ledColor: Colors.white,
-          importance: NotificationImportance.High,
-          playSound: true,
-        ),
-        NotificationChannel(
-          channelGroupKey: 'sos_channel_group',
-          channelKey: 'sos_channel',
-          channelName: 'SOS Alerts',
-          channelDescription: 'Notification channel for SOS emergency alerts',
-          defaultColor: const Color(0xFFFF0000),
-          ledColor: Colors.red,
-          importance: NotificationImportance.Max,
-          criticalAlerts: true,
-          playSound: false, // suppress channel sound; we play alarm ourselves
-          enableVibration: true,
-        ),
-        NotificationChannel(
-          channelKey: 'ride_alert_channel',
-          channelName: 'Ride Alerts',
-          channelDescription:
-              'Notifications for new rides matching your search',
-          defaultColor: const Color(0xFF060606),
-          ledColor: Colors.blue,
-          importance: NotificationImportance.High,
-          playSound: true,
-          enableVibration: true,
-        ),
-      ],
-      channelGroups: [
-        NotificationChannelGroup(
-          channelGroupKey: 'sos_channel_group',
-          channelGroupName: 'SOS Group',
-        ),
-      ],
-      debug: true,
-    );
+    try {
+      await AwesomeNotifications().initialize(
+        null, // Use default app icon
+        [
+          NotificationChannel(
+            channelKey: 'default',
+            channelName: 'Default Notifications',
+            channelDescription: 'Default notification channel',
+            defaultColor: const Color(0xFF060606),
+            ledColor: Colors.white,
+            importance: NotificationImportance.High,
+            playSound: true,
+          ),
+          // This channel matches FCM's channel_id for regular notifications
+          NotificationChannel(
+            channelKey: 'high_importance_channel',
+            channelName: 'High Importance',
+            channelDescription: 'High importance notifications',
+            defaultColor: const Color(0xFF060606),
+            ledColor: Colors.white,
+            importance: NotificationImportance.High,
+            playSound: true,
+          ),
+          NotificationChannel(
+            channelGroupKey: 'sos_channel_group',
+            channelKey: 'sos_channel',
+            channelName: 'SOS Alerts',
+            channelDescription: 'Notification channel for SOS emergency alerts',
+            defaultColor: const Color(0xFFFF0000),
+            ledColor: Colors.red,
+            importance: NotificationImportance.Max,
+            criticalAlerts: true,
+            playSound: false, // suppress channel sound; we play alarm ourselves
+            enableVibration: true,
+          ),
+          NotificationChannel(
+            channelKey: 'ride_alert_channel',
+            channelName: 'Ride Alerts',
+            channelDescription:
+                'Notifications for new rides matching your search',
+            defaultColor: const Color(0xFF060606),
+            ledColor: Colors.blue,
+            importance: NotificationImportance.High,
+            playSound: true,
+            enableVibration: true,
+          ),
+        ],
+        channelGroups: [
+          NotificationChannelGroup(
+            channelGroupKey: 'sos_channel_group',
+            channelGroupName: 'SOS Group',
+          ),
+        ],
+        debug: false, // Set to false for production!
+      );
+    } catch (e) {
+      print('Awesome Notifications failed to initialize: $e');
+    }
 
     // Request notification permissions if not already granted
     AwesomeNotifications().isNotificationAllowed().then((isAllowed) {

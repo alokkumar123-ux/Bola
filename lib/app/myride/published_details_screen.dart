@@ -1586,7 +1586,7 @@ class PublishedDetailsScreen extends StatelessWidget {
                       ),
                       InkWell(
                         onTap: () async {
-                          log("CLICK::4");
+                          print("CLICK::4");
                           await Get.to(const AddVehicleScreen())?.then((value) {
                             if (value != null) {
                               controller.getVehicleInformation();

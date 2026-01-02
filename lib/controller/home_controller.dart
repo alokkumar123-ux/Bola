@@ -179,6 +179,10 @@ class HomeController extends GetxController {
     bool isPickUp = false;
     bool isDropOff = false;
 
+    // Calculate dynamic radius as 10% of the distance between user's pickup and drop
+    double dynamicRadius = Constant.calculateDynamicRadius(
+        pickUpLocation.value, dropLocation.value);
+
     for (var element in bookingModel.stopOverList!) {
       double distancePickup = Constant.calculateDistance(
           Location(
@@ -189,10 +193,10 @@ class HomeController extends GetxController {
               lat: element.endLocation!.lat, lng: element.endLocation!.lng),
           dropLocation.value);
 
-      if (distancePickup <= int.parse(Constant.radius)) {
+      if (distancePickup <= dynamicRadius) {
         isPickUp = true;
       }
-      if (distanceDrop <= int.parse(Constant.radius)) {
+      if (distanceDrop <= dynamicRadius) {
         isDropOff = true;
       }
 
@@ -225,8 +229,9 @@ class HomeController extends GetxController {
           Location(
               lat: element.endLocation!.lat, lng: element.endLocation!.lng),
           dropLocation.value);
-      log("DistanceData :: pickUp :: ${element.startAddress} :: $distancePickup");
-      log("DistanceData :: droff ::${element.endAddress} :: $distanceDrop");
+      print(
+          "DistanceData :: pickUp :: ${element.startAddress} :: $distancePickup");
+      print("DistanceData :: droff ::${element.endAddress} :: $distanceDrop");
       pickUpDistanceData.add(LocationDistance(
           radius: distancePickup,
           location: LatLng(element.startLocation?.lat ?? 0.0,
@@ -604,7 +609,7 @@ class HomeController extends GetxController {
   /// Create a ride alert for the current search
   Future<void> createRideAlert() async {
     try {
-      log('🔔 Creating ride alert...');
+      print('🔔 Creating ride alert...');
 
       // Check if user already has an active alert for this route and date
       String userId = AuthUtils.getCurrentUid();
@@ -631,7 +636,7 @@ class HomeController extends GetxController {
       });
 
       if (alertExists) {
-        log('🔔 ⏭️ Alert already exists for this route and date - skipping');
+        print('🔔 ⏭️ Alert already exists for this route and date - skipping');
         return;
       }
 
@@ -650,35 +655,36 @@ class HomeController extends GetxController {
         isActive: true,
       );
 
-      log('🔔 Alert details:');
-      log('🔔   ID: ${rideAlert.id}');
-      log('🔔   User: ${rideAlert.userId}');
-      log('🔔   Route: ${rideAlert.pickUpAddress} → ${rideAlert.dropAddress}');
-      log('🔔   Expiry: ${rideAlert.expiryDate?.toDate()}');
+      print('🔔 Alert details:');
+      print('🔔   ID: ${rideAlert.id}');
+      print('🔔   User: ${rideAlert.userId}');
+      print(
+          '🔔   Route: ${rideAlert.pickUpAddress} → ${rideAlert.dropAddress}');
+      print('🔔   Expiry: ${rideAlert.expiryDate?.toDate()}');
 
       bool success = await RideAlertUtils.setRideAlert(rideAlert);
 
       if (success) {
-        log('🔔 ✅ Ride alert created successfully: ${rideAlert.id}');
+        print('🔔 ✅ Ride alert created successfully: ${rideAlert.id}');
       } else {
-        log('🔔 ❌ Failed to create ride alert');
+        print('🔔 ❌ Failed to create ride alert');
       }
     } catch (e) {
-      log('🔔 ❌ Error creating ride alert: $e');
+      print('🔔 ❌ Error creating ride alert: $e');
     }
   }
 
   /// Automatically create ride alert after search if no rides found or user doesn't book
   Future<void> autoCreateRideAlert() async {
-    log('🔔 Auto-create ride alert check...');
-    log('🔔 Search results count: ${searchedBookingList.length}');
+    print('🔔 Auto-create ride alert check...');
+    print('🔔 Search results count: ${searchedBookingList.length}');
 
     // Create ride alert if no matching rides were found
     if (searchedBookingList.isEmpty) {
-      log('🔔 No rides found - creating alert');
+      print('🔔 No rides found - creating alert');
       await createRideAlert();
     } else {
-      log('🔔 Rides found - not creating alert automatically');
+      print('🔔 Rides found - not creating alert automatically');
     }
   }
 }

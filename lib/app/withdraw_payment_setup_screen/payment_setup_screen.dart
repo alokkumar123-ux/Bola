@@ -71,712 +71,712 @@ class PaymentSetupScreen extends StatelessWidget {
                     child: SingleChildScrollView(
                       child: Column(
                         children: [
-                          controller.paymentModel.value.strip != null &&
-                                  controller.paymentModel.value.strip!
-                                          .isWithdrawEnabled ==
-                                      false
-                              ? const SizedBox()
-                              : Column(
-                                  children: [
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: themeChange.getThem()
-                                            ? AppThemeData.grey900
-                                            : AppThemeData.grey50,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(10),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Image.asset(
-                                                  "assets/images/stripe.png",
-                                                  width: 80,
-                                                  height: 40,
-                                                  color: themeChange.getThem()
-                                                      ? AppThemeData.grey50
-                                                      : null,
-                                                ),
-                                                const Expanded(
-                                                  child: SizedBox(
-                                                    height: 10,
-                                                  ),
-                                                ),
-                                                controller.withdrawMethodModel
-                                                            .value.stripe ==
-                                                        null
-                                                    ? const SizedBox()
-                                                    : Row(
-                                                        children: [
-                                                          InkWell(
-                                                              onTap: () {
-                                                                showDialog(
-                                                                    context:
-                                                                        context,
-                                                                    builder:
-                                                                        (BuildContext
-                                                                            context) {
-                                                                      return editStripe(
-                                                                          themeChange,
-                                                                          context,
-                                                                          controller);
-                                                                    });
-                                                              },
-                                                              child: Icon(
-                                                                Icons.edit,
-                                                                color: AppThemeData
-                                                                    .primary300,
-                                                              )),
-                                                          const SizedBox(
-                                                            width: 10,
-                                                          ),
-                                                          InkWell(
-                                                              onTap: () async {
-                                                                ShowToastDialog
-                                                                    .showLoader(
-                                                                        "Please wait..");
-                                                                controller
-                                                                    .withdrawMethodModel
-                                                                    .value
-                                                                    .stripe = null;
-                                                                await WithdrawUtils.setWithdrawMethod(
-                                                                        controller
-                                                                            .withdrawMethodModel
-                                                                            .value)
-                                                                    .then(
-                                                                  (value) async {
-                                                                    await controller
-                                                                        .getPaymentMethod();
-                                                                    ShowToastDialog
-                                                                        .closeLoader();
-                                                                    ShowToastDialog
-                                                                        .showToast(
-                                                                            "Payment Method remove successfully");
-                                                                  },
-                                                                );
-                                                              },
-                                                              child: const Icon(
-                                                                Icons.delete,
-                                                                color: AppThemeData
-                                                                    .warning400,
-                                                              )),
-                                                        ],
-                                                      )
-                                              ],
-                                            ),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 5),
-                                              child: controller
-                                                          .withdrawMethodModel
-                                                          .value
-                                                          .stripe !=
-                                                      null
-                                                  ? const Text(
-                                                      "Setup was Done",
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontFamily:
-                                                              "Poppinsl",
-                                                          color: Colors.green),
-                                                    )
-                                                  : Row(
-                                                      children: [
-                                                        Text(
-                                                          "Setup is Pending."
-                                                              .tr,
-                                                          style: const TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              fontFamily:
-                                                                  "Poppinsl",
-                                                              color: Colors
-                                                                  .orange),
-                                                        ),
-                                                        const SizedBox(
-                                                          width: 5,
-                                                        ),
-                                                        InkWell(
-                                                          onTap: () {
-                                                            showDialog(
-                                                                context:
-                                                                    context,
-                                                                builder:
-                                                                    (BuildContext
-                                                                        context) {
-                                                                  return editStripe(
-                                                                      themeChange,
-                                                                      context,
-                                                                      controller);
-                                                                });
-                                                          },
-                                                          child: Text(
-                                                            "Setup Now".tr,
-                                                            style: TextStyle(
-                                                                decorationColor:
-                                                                    AppThemeData
-                                                                        .primary300,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                decoration:
-                                                                    TextDecoration
-                                                                        .underline,
-                                                                fontFamily:
-                                                                    "Poppinsl",
-                                                                color: AppThemeData
-                                                                    .primary300),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      height: 10,
-                                    ),
-                                  ],
-                                ),
-                          controller.paymentModel.value.paypal != null &&
-                                  controller.paymentModel.value.paypal!
-                                          .isWithdrawEnabled ==
-                                      false
-                              ? const SizedBox()
-                              : Column(
-                                  children: [
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: themeChange.getThem()
-                                            ? AppThemeData.grey900
-                                            : AppThemeData.grey50,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(10),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Image.asset(
-                                                  "assets/images/paypal.png",
-                                                  width: 80,
-                                                  height: 40,
-                                                  color: themeChange.getThem()
-                                                      ? AppThemeData.grey50
-                                                      : null,
-                                                ),
-                                                const Expanded(
-                                                  child: SizedBox(
-                                                    height: 10,
-                                                  ),
-                                                ),
-                                                controller.withdrawMethodModel
-                                                            .value.paypal ==
-                                                        null
-                                                    ? const SizedBox()
-                                                    : Row(
-                                                        children: [
-                                                          InkWell(
-                                                              onTap: () {
-                                                                showDialog(
-                                                                    context:
-                                                                        context,
-                                                                    builder:
-                                                                        (BuildContext
-                                                                            context) {
-                                                                      return editPaypal(
-                                                                          themeChange,
-                                                                          context,
-                                                                          controller);
-                                                                    });
-                                                              },
-                                                              child: Icon(
-                                                                Icons.edit,
-                                                                color: AppThemeData
-                                                                    .primary300,
-                                                              )),
-                                                          const SizedBox(
-                                                            width: 10,
-                                                          ),
-                                                          InkWell(
-                                                              onTap: () async {
-                                                                ShowToastDialog
-                                                                    .showLoader(
-                                                                        "Please wait..");
-                                                                controller
-                                                                    .withdrawMethodModel
-                                                                    .value
-                                                                    .paypal = null;
-                                                                await WithdrawUtils.setWithdrawMethod(
-                                                                        controller
-                                                                            .withdrawMethodModel
-                                                                            .value)
-                                                                    .then(
-                                                                  (value) async {
-                                                                    await controller
-                                                                        .getPaymentMethod();
-                                                                    ShowToastDialog
-                                                                        .closeLoader();
-                                                                    ShowToastDialog
-                                                                        .showToast(
-                                                                            "Payment Method remove successfully");
-                                                                  },
-                                                                );
-                                                              },
-                                                              child: const Icon(
-                                                                Icons.delete,
-                                                                color: AppThemeData
-                                                                    .warning400,
-                                                              )),
-                                                        ],
-                                                      )
-                                              ],
-                                            ),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 5),
-                                              child: controller
-                                                          .withdrawMethodModel
-                                                          .value
-                                                          .paypal !=
-                                                      null
-                                                  ? const Text(
-                                                      "Setup was Done",
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontFamily:
-                                                              "Poppinsl",
-                                                          color: Colors.green),
-                                                    )
-                                                  : Row(
-                                                      children: [
-                                                        Text(
-                                                          "Setup is Pending."
-                                                              .tr,
-                                                          style: const TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              fontFamily:
-                                                                  "Poppinsl",
-                                                              color: Colors
-                                                                  .orange),
-                                                        ),
-                                                        const SizedBox(
-                                                          width: 5,
-                                                        ),
-                                                        InkWell(
-                                                          onTap: () {
-                                                            showDialog(
-                                                                context:
-                                                                    context,
-                                                                builder:
-                                                                    (BuildContext
-                                                                        context) {
-                                                                  return editPaypal(
-                                                                      themeChange,
-                                                                      context,
-                                                                      controller);
-                                                                });
-                                                          },
-                                                          child: Text(
-                                                            "Setup Now".tr,
-                                                            style: TextStyle(
-                                                                decorationColor:
-                                                                    AppThemeData
-                                                                        .primary300,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                decoration:
-                                                                    TextDecoration
-                                                                        .underline,
-                                                                fontFamily:
-                                                                    "Poppinsl",
-                                                                color: AppThemeData
-                                                                    .primary300),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      height: 10,
-                                    ),
-                                  ],
-                                ),
-                          controller.paymentModel.value.razorpay != null &&
-                                  controller.paymentModel.value.razorpay!
-                                          .isWithdrawEnabled ==
-                                      false
-                              ? const SizedBox()
-                              : Column(
-                                  children: [
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: themeChange.getThem()
-                                            ? AppThemeData.grey900
-                                            : AppThemeData.grey50,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(10),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Image.asset(
-                                                  "assets/images/razorpay.png",
-                                                  width: 80,
-                                                  height: 40,
-                                                  color: themeChange.getThem()
-                                                      ? AppThemeData.grey50
-                                                      : null,
-                                                ),
-                                                const Expanded(
-                                                  child: SizedBox(
-                                                    height: 10,
-                                                  ),
-                                                ),
-                                                controller.withdrawMethodModel
-                                                            .value.razorpay ==
-                                                        null
-                                                    ? const SizedBox()
-                                                    : Row(
-                                                        children: [
-                                                          InkWell(
-                                                              onTap: () {
-                                                                showDialog(
-                                                                    context:
-                                                                        context,
-                                                                    builder:
-                                                                        (BuildContext
-                                                                            context) {
-                                                                      return editRazorPay(
-                                                                          themeChange,
-                                                                          context,
-                                                                          controller);
-                                                                    });
-                                                              },
-                                                              child: Icon(
-                                                                Icons.edit,
-                                                                color: AppThemeData
-                                                                    .primary300,
-                                                              )),
-                                                          const SizedBox(
-                                                            width: 10,
-                                                          ),
-                                                          InkWell(
-                                                              onTap: () async {
-                                                                ShowToastDialog
-                                                                    .showLoader(
-                                                                        "Please wait..");
-                                                                controller
-                                                                    .withdrawMethodModel
-                                                                    .value
-                                                                    .razorpay = null;
-                                                                await WithdrawUtils.setWithdrawMethod(
-                                                                        controller
-                                                                            .withdrawMethodModel
-                                                                            .value)
-                                                                    .then(
-                                                                  (value) async {
-                                                                    await controller
-                                                                        .getPaymentMethod();
-                                                                    ShowToastDialog
-                                                                        .closeLoader();
-                                                                    ShowToastDialog
-                                                                        .showToast(
-                                                                            "Payment Method remove successfully");
-                                                                  },
-                                                                );
-                                                              },
-                                                              child: const Icon(
-                                                                Icons.delete,
-                                                                color: AppThemeData
-                                                                    .warning400,
-                                                              )),
-                                                        ],
-                                                      )
-                                              ],
-                                            ),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 5),
-                                              child: controller
-                                                          .withdrawMethodModel
-                                                          .value
-                                                          .razorpay !=
-                                                      null
-                                                  ? const Text(
-                                                      "Setup was Done",
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontFamily:
-                                                              "Poppinsl",
-                                                          color: Colors.green),
-                                                    )
-                                                  : Row(
-                                                      children: [
-                                                        Text(
-                                                          "Setup is Pending."
-                                                              .tr,
-                                                          style: const TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              fontFamily:
-                                                                  "Poppinsl",
-                                                              color: Colors
-                                                                  .orange),
-                                                        ),
-                                                        const SizedBox(
-                                                          width: 5,
-                                                        ),
-                                                        InkWell(
-                                                          onTap: () {
-                                                            showDialog(
-                                                                context:
-                                                                    context,
-                                                                builder:
-                                                                    (BuildContext
-                                                                        context) {
-                                                                  return editRazorPay(
-                                                                      themeChange,
-                                                                      context,
-                                                                      controller);
-                                                                });
-                                                          },
-                                                          child: Text(
-                                                            "Setup Now".tr,
-                                                            style: TextStyle(
-                                                                decorationColor:
-                                                                    AppThemeData
-                                                                        .primary300,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                decoration:
-                                                                    TextDecoration
-                                                                        .underline,
-                                                                fontFamily:
-                                                                    "Poppinsl",
-                                                                color: AppThemeData
-                                                                    .primary300),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      height: 10,
-                                    ),
-                                  ],
-                                ),
-                          controller.paymentModel.value.flutterWave != null &&
-                                  controller.paymentModel.value.flutterWave!
-                                          .isWithdrawEnabled ==
-                                      false
-                              ? const SizedBox()
-                              : Column(
-                                  children: [
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: themeChange.getThem()
-                                            ? AppThemeData.grey900
-                                            : AppThemeData.grey50,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(10),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Image.asset(
-                                                  "assets/images/flutterwave_logo.png",
-                                                  width: 80,
-                                                  height: 40,
-                                                  color: themeChange.getThem()
-                                                      ? AppThemeData.grey50
-                                                      : null,
-                                                ),
-                                                const Expanded(
-                                                  child: SizedBox(
-                                                    height: 10,
-                                                  ),
-                                                ),
-                                                controller
-                                                            .withdrawMethodModel
-                                                            .value
-                                                            .flutterWave ==
-                                                        null
-                                                    ? const SizedBox()
-                                                    : Row(
-                                                        children: [
-                                                          InkWell(
-                                                              onTap: () {
-                                                                showDialog(
-                                                                    context:
-                                                                        context,
-                                                                    builder:
-                                                                        (BuildContext
-                                                                            context) {
-                                                                      return editFlutterWave(
-                                                                          themeChange,
-                                                                          context,
-                                                                          controller);
-                                                                    });
-                                                              },
-                                                              child: Icon(
-                                                                Icons.edit,
-                                                                color: AppThemeData
-                                                                    .primary300,
-                                                              )),
-                                                          const SizedBox(
-                                                            width: 10,
-                                                          ),
-                                                          InkWell(
-                                                              onTap: () async {
-                                                                ShowToastDialog
-                                                                    .showLoader(
-                                                                        "Please wait..");
-                                                                controller
-                                                                    .withdrawMethodModel
-                                                                    .value
-                                                                    .flutterWave = null;
-                                                                await WithdrawUtils.setWithdrawMethod(
-                                                                        controller
-                                                                            .withdrawMethodModel
-                                                                            .value)
-                                                                    .then(
-                                                                  (value) async {
-                                                                    await controller
-                                                                        .getPaymentMethod();
-                                                                    ShowToastDialog
-                                                                        .closeLoader();
-                                                                    ShowToastDialog
-                                                                        .showToast(
-                                                                            "Payment Method remove successfully");
-                                                                  },
-                                                                );
-                                                              },
-                                                              child: const Icon(
-                                                                Icons.delete,
-                                                                color: AppThemeData
-                                                                    .warning400,
-                                                              )),
-                                                        ],
-                                                      )
-                                              ],
-                                            ),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 5),
-                                              child: controller
-                                                          .withdrawMethodModel
-                                                          .value
-                                                          .flutterWave !=
-                                                      null
-                                                  ? const Text(
-                                                      "Setup was Done",
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontFamily:
-                                                              "Poppinsl",
-                                                          color: Colors.green),
-                                                    )
-                                                  : Row(
-                                                      children: [
-                                                        Text(
-                                                          "Setup is Pending."
-                                                              .tr,
-                                                          style: const TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              fontFamily:
-                                                                  "Poppinsl",
-                                                              color: Colors
-                                                                  .orange),
-                                                        ),
-                                                        const SizedBox(
-                                                          width: 5,
-                                                        ),
-                                                        InkWell(
-                                                          onTap: () {
-                                                            showDialog(
-                                                                context:
-                                                                    context,
-                                                                builder:
-                                                                    (BuildContext
-                                                                        context) {
-                                                                  return editFlutterWave(
-                                                                      themeChange,
-                                                                      context,
-                                                                      controller);
-                                                                });
-                                                          },
-                                                          child: Text(
-                                                            "Setup Now".tr,
-                                                            style: TextStyle(
-                                                                decorationColor:
-                                                                    AppThemeData
-                                                                        .primary300,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                decoration:
-                                                                    TextDecoration
-                                                                        .underline,
-                                                                fontFamily:
-                                                                    "Poppinsl",
-                                                                color: AppThemeData
-                                                                    .primary300),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      height: 10,
-                                    ),
-                                  ],
-                                ),
+                          // controller.paymentModel.value.strip != null &&
+                          //         controller.paymentModel.value.strip!
+                          //                 .isWithdrawEnabled ==
+                          //             false
+                          //     ? const SizedBox()
+                          //     : Column(
+                          //         children: [
+                          //           Container(
+                          //             decoration: BoxDecoration(
+                          //               color: themeChange.getThem()
+                          //                   ? AppThemeData.grey900
+                          //                   : AppThemeData.grey50,
+                          //               borderRadius: BorderRadius.circular(8),
+                          //             ),
+                          //             child: Padding(
+                          //               padding: const EdgeInsets.all(10),
+                          //               child: Column(
+                          //                 crossAxisAlignment:
+                          //                     CrossAxisAlignment.start,
+                          //                 children: [
+                          //                   Row(
+                          //                     children: [
+                          //                       Image.asset(
+                          //                         "assets/images/stripe.png",
+                          //                         width: 80,
+                          //                         height: 40,
+                          //                         color: themeChange.getThem()
+                          //                             ? AppThemeData.grey50
+                          //                             : null,
+                          //                       ),
+                          //                       const Expanded(
+                          //                         child: SizedBox(
+                          //                           height: 10,
+                          //                         ),
+                          //                       ),
+                          //                       controller.withdrawMethodModel
+                          //                                   .value.stripe ==
+                          //                               null
+                          //                           ? const SizedBox()
+                          //                           : Row(
+                          //                               children: [
+                          //                                 InkWell(
+                          //                                     onTap: () {
+                          //                                       showDialog(
+                          //                                           context:
+                          //                                               context,
+                          //                                           builder:
+                          //                                               (BuildContext
+                          //                                                   context) {
+                          //                                             return editStripe(
+                          //                                                 themeChange,
+                          //                                                 context,
+                          //                                                 controller);
+                          //                                           });
+                          //                                     },
+                          //                                     child: Icon(
+                          //                                       Icons.edit,
+                          //                                       color: AppThemeData
+                          //                                           .primary300,
+                          //                                     )),
+                          //                                 const SizedBox(
+                          //                                   width: 10,
+                          //                                 ),
+                          //                                 InkWell(
+                          //                                     onTap: () async {
+                          //                                       ShowToastDialog
+                          //                                           .showLoader(
+                          //                                               "Please wait..");
+                          //                                       controller
+                          //                                           .withdrawMethodModel
+                          //                                           .value
+                          //                                           .stripe = null;
+                          //                                       await WithdrawUtils.setWithdrawMethod(
+                          //                                               controller
+                          //                                                   .withdrawMethodModel
+                          //                                                   .value)
+                          //                                           .then(
+                          //                                         (value) async {
+                          //                                           await controller
+                          //                                               .getPaymentMethod();
+                          //                                           ShowToastDialog
+                          //                                               .closeLoader();
+                          //                                           ShowToastDialog
+                          //                                               .showToast(
+                          //                                                   "Payment Method remove successfully");
+                          //                                         },
+                          //                                       );
+                          //                                     },
+                          //                                     child: const Icon(
+                          //                                       Icons.delete,
+                          //                                       color: AppThemeData
+                          //                                           .warning400,
+                          //                                     )),
+                          //                               ],
+                          //                             )
+                          //                     ],
+                          //                   ),
+                          //                   Padding(
+                          //                     padding:
+                          //                         const EdgeInsets.symmetric(
+                          //                             vertical: 5),
+                          //                     child: controller
+                          //                                 .withdrawMethodModel
+                          //                                 .value
+                          //                                 .stripe !=
+                          //                             null
+                          //                         ? const Text(
+                          //                             "Setup was Done",
+                          //                             style: TextStyle(
+                          //                                 fontWeight:
+                          //                                     FontWeight.bold,
+                          //                                 fontFamily:
+                          //                                     "Poppinsl",
+                          //                                 color: Colors.green),
+                          //                           )
+                          //                         : Row(
+                          //                             children: [
+                          //                               Text(
+                          //                                 "Setup is Pending."
+                          //                                     .tr,
+                          //                                 style: const TextStyle(
+                          //                                     fontWeight:
+                          //                                         FontWeight
+                          //                                             .bold,
+                          //                                     fontFamily:
+                          //                                         "Poppinsl",
+                          //                                     color: Colors
+                          //                                         .orange),
+                          //                               ),
+                          //                               const SizedBox(
+                          //                                 width: 5,
+                          //                               ),
+                          //                               InkWell(
+                          //                                 onTap: () {
+                          //                                   showDialog(
+                          //                                       context:
+                          //                                           context,
+                          //                                       builder:
+                          //                                           (BuildContext
+                          //                                               context) {
+                          //                                         return editStripe(
+                          //                                             themeChange,
+                          //                                             context,
+                          //                                             controller);
+                          //                                       });
+                          //                                 },
+                          //                                 child: Text(
+                          //                                   "Setup Now".tr,
+                          //                                   style: TextStyle(
+                          //                                       decorationColor:
+                          //                                           AppThemeData
+                          //                                               .primary300,
+                          //                                       fontWeight:
+                          //                                           FontWeight
+                          //                                               .bold,
+                          //                                       decoration:
+                          //                                           TextDecoration
+                          //                                               .underline,
+                          //                                       fontFamily:
+                          //                                           "Poppinsl",
+                          //                                       color: AppThemeData
+                          //                                           .primary300),
+                          //                                 ),
+                          //                               ),
+                          //                             ],
+                          //                           ),
+                          //                   ),
+                          //                 ],
+                          //               ),
+                          //             ),
+                          //           ),
+                          //           const SizedBox(
+                          //             height: 10,
+                          //           ),
+                          //         ],
+                          //       ),
+                          // controller.paymentModel.value.paypal != null &&
+                          //         controller.paymentModel.value.paypal!
+                          //                 .isWithdrawEnabled ==
+                          //             false
+                          //     ? const SizedBox()
+                          //     : Column(
+                          //         children: [
+                          //           Container(
+                          //             decoration: BoxDecoration(
+                          //               color: themeChange.getThem()
+                          //                   ? AppThemeData.grey900
+                          //                   : AppThemeData.grey50,
+                          //               borderRadius: BorderRadius.circular(8),
+                          //             ),
+                          //             child: Padding(
+                          //               padding: const EdgeInsets.all(10),
+                          //               child: Column(
+                          //                 crossAxisAlignment:
+                          //                     CrossAxisAlignment.start,
+                          //                 children: [
+                          //                   Row(
+                          //                     children: [
+                          //                       Image.asset(
+                          //                         "assets/images/paypal.png",
+                          //                         width: 80,
+                          //                         height: 40,
+                          //                         color: themeChange.getThem()
+                          //                             ? AppThemeData.grey50
+                          //                             : null,
+                          //                       ),
+                          //                       const Expanded(
+                          //                         child: SizedBox(
+                          //                           height: 10,
+                          //                         ),
+                          //                       ),
+                          //                       controller.withdrawMethodModel
+                          //                                   .value.paypal ==
+                          //                               null
+                          //                           ? const SizedBox()
+                          //                           : Row(
+                          //                               children: [
+                          //                                 InkWell(
+                          //                                     onTap: () {
+                          //                                       showDialog(
+                          //                                           context:
+                          //                                               context,
+                          //                                           builder:
+                          //                                               (BuildContext
+                          //                                                   context) {
+                          //                                             return editPaypal(
+                          //                                                 themeChange,
+                          //                                                 context,
+                          //                                                 controller);
+                          //                                           });
+                          //                                     },
+                          //                                     child: Icon(
+                          //                                       Icons.edit,
+                          //                                       color: AppThemeData
+                          //                                           .primary300,
+                          //                                     )),
+                          //                                 const SizedBox(
+                          //                                   width: 10,
+                          //                                 ),
+                          //                                 InkWell(
+                          //                                     onTap: () async {
+                          //                                       ShowToastDialog
+                          //                                           .showLoader(
+                          //                                               "Please wait..");
+                          //                                       controller
+                          //                                           .withdrawMethodModel
+                          //                                           .value
+                          //                                           .paypal = null;
+                          //                                       await WithdrawUtils.setWithdrawMethod(
+                          //                                               controller
+                          //                                                   .withdrawMethodModel
+                          //                                                   .value)
+                          //                                           .then(
+                          //                                         (value) async {
+                          //                                           await controller
+                          //                                               .getPaymentMethod();
+                          //                                           ShowToastDialog
+                          //                                               .closeLoader();
+                          //                                           ShowToastDialog
+                          //                                               .showToast(
+                          //                                                   "Payment Method remove successfully");
+                          //                                         },
+                          //                                       );
+                          //                                     },
+                          //                                     child: const Icon(
+                          //                                       Icons.delete,
+                          //                                       color: AppThemeData
+                          //                                           .warning400,
+                          //                                     )),
+                          //                               ],
+                          //                             )
+                          //                     ],
+                          //                   ),
+                          //                   Padding(
+                          //                     padding:
+                          //                         const EdgeInsets.symmetric(
+                          //                             vertical: 5),
+                          //                     child: controller
+                          //                                 .withdrawMethodModel
+                          //                                 .value
+                          //                                 .paypal !=
+                          //                             null
+                          //                         ? const Text(
+                          //                             "Setup was Done",
+                          //                             style: TextStyle(
+                          //                                 fontWeight:
+                          //                                     FontWeight.bold,
+                          //                                 fontFamily:
+                          //                                     "Poppinsl",
+                          //                                 color: Colors.green),
+                          //                           )
+                          //                         : Row(
+                          //                             children: [
+                          //                               Text(
+                          //                                 "Setup is Pending."
+                          //                                     .tr,
+                          //                                 style: const TextStyle(
+                          //                                     fontWeight:
+                          //                                         FontWeight
+                          //                                             .bold,
+                          //                                     fontFamily:
+                          //                                         "Poppinsl",
+                          //                                     color: Colors
+                          //                                         .orange),
+                          //                               ),
+                          //                               const SizedBox(
+                          //                                 width: 5,
+                          //                               ),
+                          //                               InkWell(
+                          //                                 onTap: () {
+                          //                                   showDialog(
+                          //                                       context:
+                          //                                           context,
+                          //                                       builder:
+                          //                                           (BuildContext
+                          //                                               context) {
+                          //                                         return editPaypal(
+                          //                                             themeChange,
+                          //                                             context,
+                          //                                             controller);
+                          //                                       });
+                          //                                 },
+                          //                                 child: Text(
+                          //                                   "Setup Now".tr,
+                          //                                   style: TextStyle(
+                          //                                       decorationColor:
+                          //                                           AppThemeData
+                          //                                               .primary300,
+                          //                                       fontWeight:
+                          //                                           FontWeight
+                          //                                               .bold,
+                          //                                       decoration:
+                          //                                           TextDecoration
+                          //                                               .underline,
+                          //                                       fontFamily:
+                          //                                           "Poppinsl",
+                          //                                       color: AppThemeData
+                          //                                           .primary300),
+                          //                                 ),
+                          //                               ),
+                          //                             ],
+                          //                           ),
+                          //                   ),
+                          //                 ],
+                          //               ),
+                          //             ),
+                          //           ),
+                          //           const SizedBox(
+                          //             height: 10,
+                          //           ),
+                          //         ],
+                          //       ),
+                          // controller.paymentModel.value.razorpay != null &&
+                          //         controller.paymentModel.value.razorpay!
+                          //                 .isWithdrawEnabled ==
+                          //             false
+                          //     ? const SizedBox()
+                          //     : Column(
+                          //         children: [
+                          //           Container(
+                          //             decoration: BoxDecoration(
+                          //               color: themeChange.getThem()
+                          //                   ? AppThemeData.grey900
+                          //                   : AppThemeData.grey50,
+                          //               borderRadius: BorderRadius.circular(8),
+                          //             ),
+                          //             child: Padding(
+                          //               padding: const EdgeInsets.all(10),
+                          //               child: Column(
+                          //                 crossAxisAlignment:
+                          //                     CrossAxisAlignment.start,
+                          //                 children: [
+                          //                   Row(
+                          //                     children: [
+                          //                       Image.asset(
+                          //                         "assets/images/razorpay.png",
+                          //                         width: 80,
+                          //                         height: 40,
+                          //                         color: themeChange.getThem()
+                          //                             ? AppThemeData.grey50
+                          //                             : null,
+                          //                       ),
+                          //                       const Expanded(
+                          //                         child: SizedBox(
+                          //                           height: 10,
+                          //                         ),
+                          //                       ),
+                          //                       controller.withdrawMethodModel
+                          //                                   .value.razorpay ==
+                          //                               null
+                          //                           ? const SizedBox()
+                          //                           : Row(
+                          //                               children: [
+                          //                                 InkWell(
+                          //                                     onTap: () {
+                          //                                       showDialog(
+                          //                                           context:
+                          //                                               context,
+                          //                                           builder:
+                          //                                               (BuildContext
+                          //                                                   context) {
+                          //                                             return editRazorPay(
+                          //                                                 themeChange,
+                          //                                                 context,
+                          //                                                 controller);
+                          //                                           });
+                          //                                     },
+                          //                                     child: Icon(
+                          //                                       Icons.edit,
+                          //                                       color: AppThemeData
+                          //                                           .primary300,
+                          //                                     )),
+                          //                                 const SizedBox(
+                          //                                   width: 10,
+                          //                                 ),
+                          //                                 InkWell(
+                          //                                     onTap: () async {
+                          //                                       ShowToastDialog
+                          //                                           .showLoader(
+                          //                                               "Please wait..");
+                          //                                       controller
+                          //                                           .withdrawMethodModel
+                          //                                           .value
+                          //                                           .razorpay = null;
+                          //                                       await WithdrawUtils.setWithdrawMethod(
+                          //                                               controller
+                          //                                                   .withdrawMethodModel
+                          //                                                   .value)
+                          //                                           .then(
+                          //                                         (value) async {
+                          //                                           await controller
+                          //                                               .getPaymentMethod();
+                          //                                           ShowToastDialog
+                          //                                               .closeLoader();
+                          //                                           ShowToastDialog
+                          //                                               .showToast(
+                          //                                                   "Payment Method remove successfully");
+                          //                                         },
+                          //                                       );
+                          //                                     },
+                          //                                     child: const Icon(
+                          //                                       Icons.delete,
+                          //                                       color: AppThemeData
+                          //                                           .warning400,
+                          //                                     )),
+                          //                               ],
+                          //                             )
+                          //                     ],
+                          //                   ),
+                          //                   Padding(
+                          //                     padding:
+                          //                         const EdgeInsets.symmetric(
+                          //                             vertical: 5),
+                          //                     child: controller
+                          //                                 .withdrawMethodModel
+                          //                                 .value
+                          //                                 .razorpay !=
+                          //                             null
+                          //                         ? const Text(
+                          //                             "Setup was Done",
+                          //                             style: TextStyle(
+                          //                                 fontWeight:
+                          //                                     FontWeight.bold,
+                          //                                 fontFamily:
+                          //                                     "Poppinsl",
+                          //                                 color: Colors.green),
+                          //                           )
+                          //                         : Row(
+                          //                             children: [
+                          //                               Text(
+                          //                                 "Setup is Pending."
+                          //                                     .tr,
+                          //                                 style: const TextStyle(
+                          //                                     fontWeight:
+                          //                                         FontWeight
+                          //                                             .bold,
+                          //                                     fontFamily:
+                          //                                         "Poppinsl",
+                          //                                     color: Colors
+                          //                                         .orange),
+                          //                               ),
+                          //                               const SizedBox(
+                          //                                 width: 5,
+                          //                               ),
+                          //                               InkWell(
+                          //                                 onTap: () {
+                          //                                   showDialog(
+                          //                                       context:
+                          //                                           context,
+                          //                                       builder:
+                          //                                           (BuildContext
+                          //                                               context) {
+                          //                                         return editRazorPay(
+                          //                                             themeChange,
+                          //                                             context,
+                          //                                             controller);
+                          //                                       });
+                          //                                 },
+                          //                                 child: Text(
+                          //                                   "Setup Now".tr,
+                          //                                   style: TextStyle(
+                          //                                       decorationColor:
+                          //                                           AppThemeData
+                          //                                               .primary300,
+                          //                                       fontWeight:
+                          //                                           FontWeight
+                          //                                               .bold,
+                          //                                       decoration:
+                          //                                           TextDecoration
+                          //                                               .underline,
+                          //                                       fontFamily:
+                          //                                           "Poppinsl",
+                          //                                       color: AppThemeData
+                          //                                           .primary300),
+                          //                                 ),
+                          //                               ),
+                          //                             ],
+                          //                           ),
+                          //                   ),
+                          //                 ],
+                          //               ),
+                          //             ),
+                          //           ),
+                          //           const SizedBox(
+                          //             height: 10,
+                          //           ),
+                          //         ],
+                          //       ),
+                          // controller.paymentModel.value.flutterWave != null &&
+                          //         controller.paymentModel.value.flutterWave!
+                          //                 .isWithdrawEnabled ==
+                          //             false
+                          //     ? const SizedBox()
+                          //     : Column(
+                          //         children: [
+                          //           Container(
+                          //             decoration: BoxDecoration(
+                          //               color: themeChange.getThem()
+                          //                   ? AppThemeData.grey900
+                          //                   : AppThemeData.grey50,
+                          //               borderRadius: BorderRadius.circular(8),
+                          //             ),
+                          //             child: Padding(
+                          //               padding: const EdgeInsets.all(10),
+                          //               child: Column(
+                          //                 crossAxisAlignment:
+                          //                     CrossAxisAlignment.start,
+                          //                 children: [
+                          //                   Row(
+                          //                     children: [
+                          //                       Image.asset(
+                          //                         "assets/images/flutterwave_logo.png",
+                          //                         width: 80,
+                          //                         height: 40,
+                          //                         color: themeChange.getThem()
+                          //                             ? AppThemeData.grey50
+                          //                             : null,
+                          //                       ),
+                          //                       const Expanded(
+                          //                         child: SizedBox(
+                          //                           height: 10,
+                          //                         ),
+                          //                       ),
+                          //                       controller
+                          //                                   .withdrawMethodModel
+                          //                                   .value
+                          //                                   .flutterWave ==
+                          //                               null
+                          //                           ? const SizedBox()
+                          //                           : Row(
+                          //                               children: [
+                          //                                 InkWell(
+                          //                                     onTap: () {
+                          //                                       showDialog(
+                          //                                           context:
+                          //                                               context,
+                          //                                           builder:
+                          //                                               (BuildContext
+                          //                                                   context) {
+                          //                                             return editFlutterWave(
+                          //                                                 themeChange,
+                          //                                                 context,
+                          //                                                 controller);
+                          //                                           });
+                          //                                     },
+                          //                                     child: Icon(
+                          //                                       Icons.edit,
+                          //                                       color: AppThemeData
+                          //                                           .primary300,
+                          //                                     )),
+                          //                                 const SizedBox(
+                          //                                   width: 10,
+                          //                                 ),
+                          //                                 InkWell(
+                          //                                     onTap: () async {
+                          //                                       ShowToastDialog
+                          //                                           .showLoader(
+                          //                                               "Please wait..");
+                          //                                       controller
+                          //                                           .withdrawMethodModel
+                          //                                           .value
+                          //                                           .flutterWave = null;
+                          //                                       await WithdrawUtils.setWithdrawMethod(
+                          //                                               controller
+                          //                                                   .withdrawMethodModel
+                          //                                                   .value)
+                          //                                           .then(
+                          //                                         (value) async {
+                          //                                           await controller
+                          //                                               .getPaymentMethod();
+                          //                                           ShowToastDialog
+                          //                                               .closeLoader();
+                          //                                           ShowToastDialog
+                          //                                               .showToast(
+                          //                                                   "Payment Method remove successfully");
+                          //                                         },
+                          //                                       );
+                          //                                     },
+                          //                                     child: const Icon(
+                          //                                       Icons.delete,
+                          //                                       color: AppThemeData
+                          //                                           .warning400,
+                          //                                     )),
+                          //                               ],
+                          //                             )
+                          //                     ],
+                          //                   ),
+                          //                   Padding(
+                          //                     padding:
+                          //                         const EdgeInsets.symmetric(
+                          //                             vertical: 5),
+                          //                     child: controller
+                          //                                 .withdrawMethodModel
+                          //                                 .value
+                          //                                 .flutterWave !=
+                          //                             null
+                          //                         ? const Text(
+                          //                             "Setup was Done",
+                          //                             style: TextStyle(
+                          //                                 fontWeight:
+                          //                                     FontWeight.bold,
+                          //                                 fontFamily:
+                          //                                     "Poppinsl",
+                          //                                 color: Colors.green),
+                          //                           )
+                          //                         : Row(
+                          //                             children: [
+                          //                               Text(
+                          //                                 "Setup is Pending."
+                          //                                     .tr,
+                          //                                 style: const TextStyle(
+                          //                                     fontWeight:
+                          //                                         FontWeight
+                          //                                             .bold,
+                          //                                     fontFamily:
+                          //                                         "Poppinsl",
+                          //                                     color: Colors
+                          //                                         .orange),
+                          //                               ),
+                          //                               const SizedBox(
+                          //                                 width: 5,
+                          //                               ),
+                          //                               InkWell(
+                          //                                 onTap: () {
+                          //                                   showDialog(
+                          //                                       context:
+                          //                                           context,
+                          //                                       builder:
+                          //                                           (BuildContext
+                          //                                               context) {
+                          //                                         return editFlutterWave(
+                          //                                             themeChange,
+                          //                                             context,
+                          //                                             controller);
+                          //                                       });
+                          //                                 },
+                          //                                 child: Text(
+                          //                                   "Setup Now".tr,
+                          //                                   style: TextStyle(
+                          //                                       decorationColor:
+                          //                                           AppThemeData
+                          //                                               .primary300,
+                          //                                       fontWeight:
+                          //                                           FontWeight
+                          //                                               .bold,
+                          //                                       decoration:
+                          //                                           TextDecoration
+                          //                                               .underline,
+                          //                                       fontFamily:
+                          //                                           "Poppinsl",
+                          //                                       color: AppThemeData
+                          //                                           .primary300),
+                          //                                 ),
+                          //                               ),
+                          //                             ],
+                          //                           ),
+                          //                   ),
+                          //                 ],
+                          //               ),
+                          //             ),
+                          //           ),
+                          //           const SizedBox(
+                          //             height: 10,
+                          //           ),
+                          //         ],
+                          //       ),
                           Container(
                             decoration: BoxDecoration(
                               color: themeChange.getThem()

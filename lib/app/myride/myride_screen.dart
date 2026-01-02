@@ -60,22 +60,6 @@ class MyRideScreen extends StatelessWidget {
                                 fontSize: 18),
                           ),
                           const SizedBox(width: 8),
-                          // Container(
-                          //   padding: const EdgeInsets.symmetric(
-                          //       horizontal: 6, vertical: 2),
-                          //   decoration: BoxDecoration(
-                          //     color: AppThemeData.success400,
-                          //     borderRadius: BorderRadius.circular(8),
-                          //   ),
-                          //   child: Text(
-                          //     "LIVE",
-                          //     style: TextStyle(
-                          //       color: AppThemeData.grey50,
-                          //       fontSize: 10,
-                          //       fontFamily: AppThemeData.semiBold,
-                          //     ),
-                          //   ),
-                          // ),
                         ],
                       ),
                       elevation: 0,
@@ -223,7 +207,7 @@ class MyRideScreen extends StatelessWidget {
                                                                             ),
                                                                           ),
                                                                           Text(
-                                                                            Constant.amountShow(amount: stopOverModel?.price?.toString() ?? "0"),
+                                                                            Constant.amountShow(amount: bookingModel.pricePerSeat.toString()),
                                                                             maxLines:
                                                                                 1,
                                                                             style:

@@ -466,6 +466,7 @@ withdrawalBottomSheet(
             child: StatefulBuilder(builder: (context1, setState) {
               return Obx(
                 () => Scaffold(
+                  backgroundColor: AppThemeData.grey50,
                   body: SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -479,9 +480,7 @@ withdrawalBottomSheet(
                               height: 5,
                               margin: const EdgeInsets.only(bottom: 6),
                               decoration: ShapeDecoration(
-                                color: themeChange.getThem()
-                                    ? AppThemeData.grey50
-                                    : AppThemeData.grey800,
+                                color: AppThemeData.grey50,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(3),
                                 ),
@@ -500,9 +499,7 @@ withdrawalBottomSheet(
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontFamily: AppThemeData.medium,
-                                    color: themeChange.getThem()
-                                        ? AppThemeData.grey50
-                                        : AppThemeData.grey900,
+                                    color: AppThemeData.grey900,
                                   ),
                                 ),
                               ),
@@ -636,242 +633,18 @@ withdrawalBottomSheet(
                                   ),
                                 ),
                               ),
-                        controller.withdrawMethodModel.value.stripe == null ||
-                                (controller.paymentModel.value.strip != null &&
-                                    controller.paymentModel.value.strip!
-                                            .isWithdrawEnabled ==
-                                        false)
-                            ? const SizedBox()
-                            : Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 5),
-                                child: InkWell(
-                                  onTap: () {
-                                    controller.selectedValue.value = 1;
-                                  },
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: themeChange.getThem()
-                                          ? AppThemeData.grey800
-                                          : AppThemeData.grey100,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(10),
-                                      child: Row(
-                                        children: [
-                                          Image.asset(
-                                            "assets/images/stripe.png",
-                                            height: 40,
-                                            width: 100,
-                                            color: themeChange.getThem()
-                                                ? AppThemeData.grey50
-                                                : null,
-                                          ),
-                                          const Expanded(
-                                            child: SizedBox(),
-                                          ),
-                                          Radio(
-                                            value: 1,
-                                            visualDensity: const VisualDensity(
-                                                horizontal: VisualDensity
-                                                    .minimumDensity,
-                                                vertical: VisualDensity
-                                                    .minimumDensity),
-                                            groupValue:
-                                                controller.selectedValue.value,
-                                            onChanged: (value) {
-                                              controller.selectedValue.value =
-                                                  value!;
-                                            },
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                        controller.withdrawMethodModel.value.paypal == null ||
-                                (controller.paymentModel.value.paypal != null &&
-                                    controller.paymentModel.value.paypal!
-                                            .isWithdrawEnabled ==
-                                        false)
-                            ? const SizedBox()
-                            : Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 5),
-                                child: InkWell(
-                                  onTap: () {
-                                    controller.selectedValue.value = 2;
-                                  },
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: themeChange.getThem()
-                                          ? AppThemeData.grey800
-                                          : AppThemeData.grey100,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(10),
-                                      child: Row(
-                                        children: [
-                                          Image.asset(
-                                            "assets/images/paypal.png",
-                                            height: 40,
-                                            width: 100,
-                                            color: themeChange.getThem()
-                                                ? AppThemeData.grey50
-                                                : null,
-                                          ),
-                                          const Expanded(
-                                            child: SizedBox(),
-                                          ),
-                                          Radio(
-                                            value: 2,
-                                            visualDensity: const VisualDensity(
-                                                horizontal: VisualDensity
-                                                    .minimumDensity,
-                                                vertical: VisualDensity
-                                                    .minimumDensity),
-                                            groupValue:
-                                                controller.selectedValue.value,
-                                            onChanged: (value) {
-                                              controller.selectedValue.value =
-                                                  value!;
-                                            },
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                        controller.withdrawMethodModel.value.razorpay == null ||
-                                (controller.paymentModel.value.razorpay !=
-                                        null &&
-                                    controller.paymentModel.value.razorpay!
-                                            .isWithdrawEnabled ==
-                                        false)
-                            ? const SizedBox()
-                            : Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 5),
-                                child: InkWell(
-                                  onTap: () {
-                                    controller.selectedValue.value = 3;
-                                  },
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: themeChange.getThem()
-                                          ? AppThemeData.grey800
-                                          : AppThemeData.grey100,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(10),
-                                      child: Row(
-                                        children: [
-                                          Image.asset(
-                                            "assets/images/razorpay.png",
-                                            height: 40,
-                                            width: 100,
-                                            color: themeChange.getThem()
-                                                ? AppThemeData.grey50
-                                                : null,
-                                          ),
-                                          const Expanded(
-                                            child: SizedBox(),
-                                          ),
-                                          Radio(
-                                            value: 3,
-                                            visualDensity: const VisualDensity(
-                                                horizontal: VisualDensity
-                                                    .minimumDensity,
-                                                vertical: VisualDensity
-                                                    .minimumDensity),
-                                            groupValue:
-                                                controller.selectedValue.value,
-                                            onChanged: (value) {
-                                              controller.selectedValue.value =
-                                                  value!;
-                                            },
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                        controller.withdrawMethodModel.value.flutterWave ==
-                                    null ||
-                                (controller.paymentModel.value.flutterWave !=
-                                        null &&
-                                    controller.paymentModel.value.flutterWave!
-                                            .isWithdrawEnabled ==
-                                        false)
-                            ? const SizedBox()
-                            : Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 5),
-                                child: InkWell(
-                                  onTap: () {
-                                    controller.selectedValue.value = 4;
-                                  },
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: themeChange.getThem()
-                                          ? AppThemeData.grey800
-                                          : AppThemeData.grey100,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(10),
-                                      child: Row(
-                                        children: [
-                                          Image.asset(
-                                            "assets/images/flutterwave_logo.png",
-                                            height: 40,
-                                            width: 100,
-                                            color: themeChange.getThem()
-                                                ? AppThemeData.grey50
-                                                : null,
-                                          ),
-                                          const Expanded(
-                                            child: SizedBox(),
-                                          ),
-                                          Radio(
-                                            value: 4,
-                                            visualDensity: const VisualDensity(
-                                                horizontal: VisualDensity
-                                                    .minimumDensity,
-                                                vertical: VisualDensity
-                                                    .minimumDensity),
-                                            groupValue:
-                                                controller.selectedValue.value,
-                                            onChanged: (value) {
-                                              controller.selectedValue.value =
-                                                  value!;
-                                            },
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
                       ],
                     ),
                   ),
                   bottomNavigationBar: Container(
-                    color: themeChange.getThem()
-                        ? AppThemeData.grey800
-                        : AppThemeData.grey100,
+                    color: AppThemeData.grey100,
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 20),
                     child: Padding(
                       padding: const EdgeInsets.only(bottom: 20),
                       child: RoundedButtonFill(
                         title: "Withdraw".tr,
+                        textColor: Colors.white,
                         height: 5.5,
                         color: AppThemeData.primary300,
                         fontSizes: 16,

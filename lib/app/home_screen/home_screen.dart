@@ -101,7 +101,7 @@ class HomeScreen extends StatelessWidget {
                                             filterQuality: FilterQuality.high,
                                             imageUrl:
                                                 controller.bannerList[index],
-                                            fit: BoxFit.cover,
+                                            fit: BoxFit.fill,
                                           ),
                                         );
                                       },
@@ -409,7 +409,7 @@ class HomeScreen extends StatelessWidget {
                                                     100, context),
                                                 decoration: BoxDecoration(
                                                   color:
-                                                      AppThemeData.primary300,
+                                                      Colors.black,
                                                   borderRadius:
                                                       const BorderRadius.only(
                                                           bottomLeft:
@@ -631,7 +631,7 @@ class HomeScreen extends StatelessWidget {
             child: FloatingActionButton.extended(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(100)),
-              backgroundColor: AppThemeData.primary300,
+              backgroundColor: Colors.black,
               onPressed: () async {
                 if (Constant.verifyPublish == true) {
                   if (controller.userModel.value.panVerified == true &&

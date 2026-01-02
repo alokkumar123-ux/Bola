@@ -64,7 +64,7 @@ class AadhaarVerificationProvider extends ChangeNotifier {
         _otpAttempts++;
         _lastOtpTime = DateTime.now();
 
-        log('✅ OTP generated successfully');
+        print('✅ OTP generated successfully');
         _setLoading(false);
         return true;
       } else {
@@ -73,7 +73,7 @@ class AadhaarVerificationProvider extends ChangeNotifier {
         return false;
       }
     } catch (e) {
-      log('❌ Error in generateOtp: $e');
+      print('❌ Error in generateOtp: $e');
       _setError('Something went wrong. Please try again.');
       _setLoading(false);
       return false;
@@ -105,7 +105,7 @@ class AadhaarVerificationProvider extends ChangeNotifier {
         };
         _isVerified = true;
 
-        log('✅ Aadhaar verified successfully');
+        print('✅ Aadhaar verified successfully');
         _setLoading(false);
         return true;
       } else {
@@ -114,7 +114,7 @@ class AadhaarVerificationProvider extends ChangeNotifier {
         return false;
       }
     } catch (e) {
-      log('❌ Error in verifyOtp: $e');
+      print('❌ Error in verifyOtp: $e');
       _setError('Something went wrong. Please try again.');
       _setLoading(false);
       return false;

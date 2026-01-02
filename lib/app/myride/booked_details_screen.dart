@@ -26,6 +26,8 @@ import 'package:timelines_plus/timelines_plus.dart';
 import 'package:poolmate/services/whatsapp_service.dart';
 import 'package:poolmate/constant/send_notification.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:poolmate/services/ticket_service.dart';
+import 'package:poolmate/app/pdf_viewer/pdf_viewer_screen.dart';
 
 class BookedDetailsScreen extends StatelessWidget {
   const BookedDetailsScreen({super.key});
@@ -716,7 +718,7 @@ class BookedDetailsScreen extends StatelessWidget {
                                       Text(
                                         Constant.amountShow(
                                             amount: controller
-                                                .getCorrectPricePerSeat()
+                                                .bookingModel.value.pricePerSeat
                                                 .toString()),
                                         maxLines: 1,
                                         style: TextStyle(
@@ -1290,405 +1292,518 @@ class BookedDetailsScreen extends StatelessWidget {
                         ),
                       ),
               ),
-              bottomNavigationBar: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    PreferredSize(
-                      preferredSize: const Size.fromHeight(4.0),
-                      child: Container(
-                        color: themeChange.getThem()
-                            ? AppThemeData.grey700
-                            : AppThemeData.grey200,
-                        height: 6.0,
+              bottomNavigationBar: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      PreferredSize(
+                        preferredSize: const Size.fromHeight(4.0),
+                        child: Container(
+                          color: themeChange.getThem()
+                              ? AppThemeData.grey700
+                              : AppThemeData.grey200,
+                          height: 6.0,
+                        ),
                       ),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    controller.publisherUserModel.value.id != null &&
-                            controller.bookingModel.value.status ==
-                                Constant.completed &&
-                            controller.bookingUserModel.value.paymentStatus ==
-                                true
-                        ? Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: RoundedButtonFill(
-                              title: controller.reviewModel.value.id != null
-                                  ? "Edit Review"
-                                  : "Add Review".tr,
-                              color: AppThemeData.primary300,
-                              textColor: AppThemeData.grey50,
-                              onPress: () async {
-                                Get.to(() => const ReviewScreen(), arguments: {
-                                  "bookingModel": controller.bookingModel.value,
-                                  "senderUserModel": controller.userModel.value,
-                                  "reciverUserModel":
-                                      controller.publisherUserModel.value
-                                })!
-                                    .then(
-                                  (value) {
-                                    if (value == true) {
-                                      controller.getUserData();
-                                      controller.getReview();
-                                    }
-                                  },
-                                );
-                              },
-                            ),
-                          )
-                        : Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Row(
-                              children: [
-                                controller.bookingModel.value.status ==
-                                            Constant.onGoing ||
-                                        controller.bookingModel.value.status ==
-                                            Constant.completed
-                                    ? const SizedBox()
-                                    : Expanded(
-                                        child: RoundedButtonFill(
-                                          title: "Cancel Booking".tr,
-                                          color: AppThemeData.warning300,
-                                          textColor: AppThemeData.grey50,
-                                          onPress: () async {
-                                            showDialog(
-                                                context: context,
-                                                builder:
-                                                    (BuildContext context) {
-                                                  return CustomDialogBox(
-                                                    title: "Cancel Ride".tr,
-                                                    descriptions:
-                                                        "Are you sure want to cancel ride?"
-                                                            .tr,
-                                                    positiveString: "OK".tr,
-                                                    negativeString: "Cancel".tr,
-                                                    img: Image.asset(
-                                                        'assets/icons/ic_cancel.svg',
-                                                        height: 40,
-                                                        width: 40),
-                                                    positiveClick: () async {
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      controller.publisherUserModel.value.id != null &&
+                              controller.bookingModel.value.status ==
+                                  Constant.completed &&
+                              controller.bookingUserModel.value.paymentStatus ==
+                                  true
+                          ? Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: RoundedButtonFill(
+                                      title: controller.reviewModel.value.id !=
+                                              null
+                                          ? "Edit Review"
+                                          : "Add Review".tr,
+                                      color: AppThemeData.primary300,
+                                      textColor: AppThemeData.grey50,
+                                      onPress: () async {
+                                        Get.to(() => const ReviewScreen(),
+                                                arguments: {
+                                              "bookingModel":
+                                                  controller.bookingModel.value,
+                                              "senderUserModel":
+                                                  controller.userModel.value,
+                                              "reciverUserModel": controller
+                                                  .publisherUserModel.value
+                                            })!
+                                            .then(
+                                          (value) {
+                                            if (value == true) {
+                                              controller.getUserData();
+                                              controller.getReview();
+                                            }
+                                          },
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: RoundedButtonFill(
+                                      title: "Tickets".tr,
+                                      color: AppThemeData.secondary300,
+                                      textColor: AppThemeData.grey50,
+                                      onPress: () async {
+                                        ShowToastDialog.showLoader(
+                                            "Generating ticket...".tr);
+
+                                        final result =
+                                            await TicketService.generateTicket(
+                                          bookingModel:
+                                              controller.bookingModel.value,
+                                          bookingUserModel:
+                                              controller.bookingUserModel.value,
+                                          userModel: controller.userModel.value,
+                                          publisherUserModel: controller
+                                              .publisherUserModel.value,
+                                        );
+
+                                        ShowToastDialog.closeLoader();
+
+                                        if (result['success'] == true) {
+                                          Get.to(() => const PdfViewerScreen(),
+                                              arguments: {
+                                                'pdf_url': result['pdf_url'],
+                                              });
+                                        } else {
+                                          ShowToastDialog.showToast(
+                                              result['message'] ??
+                                                  'Failed to generate ticket');
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              child: Row(
+                                children: [
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  controller.bookingModel.value.status ==
+                                              Constant.onGoing ||
+                                          controller
+                                                  .bookingModel.value.status ==
+                                              Constant.completed ||
+                                          controller
+                                                  .bookingModel.value.status ==
+                                              Constant.canceled ||
+                                          (controller.bookingModel.value
+                                                      .cancelledUserId !=
+                                                  null &&
+                                              controller.bookingModel.value
+                                                  .cancelledUserId!
+                                                  .contains(AuthUtils
+                                                      .getCurrentUid()))
+                                      ? const SizedBox()
+                                      : Expanded(
+                                          child: RoundedButtonFill(
+                                            title: "Cancel Booking".tr,
+                                            color: AppThemeData.warning300,
+                                            textColor: AppThemeData.grey50,
+                                            onPress: () async {
+                                              showDialog(
+                                                  context: context,
+                                                  builder:
+                                                      (BuildContext context) {
+                                                    return CustomDialogBox(
+                                                      title: "Cancel Ride".tr,
+                                                      descriptions:
+                                                          "Are you sure want to cancel ride?"
+                                                              .tr,
+                                                      positiveString: "OK".tr,
+                                                      negativeString:
+                                                          "Cancel".tr,
+                                                      img: Image.asset(
+                                                          'assets/icons/ic_cancel.svg',
+                                                          height: 40,
+                                                          width: 40),
+                                                      positiveClick: () async {
+                                                        ShowToastDialog
+                                                            .showLoader(
+                                                                "Please wait"
+                                                                    .tr);
+                                                        bool success =
+                                                            await controller
+                                                                .cancelBooking();
+                                                        if (success) {
+                                                          ShowToastDialog
+                                                              .closeLoader();
+                                                          ShowToastDialog.showToast(
+                                                              "Booking Cancelled"
+                                                                  .tr);
+                                                          Get.back();
+                                                          Get.back(
+                                                              result: true);
+                                                        } else {
+                                                          ShowToastDialog
+                                                              .closeLoader();
+                                                          ShowToastDialog.showToast(
+                                                              "Error cancelling booking"
+                                                                  .tr);
+                                                        }
+                                                      },
+                                                      negativeClick: () {
+                                                        Get.back();
+                                                      },
+                                                    );
+                                                  });
+                                            },
+                                          ),
+                                        ),
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  Expanded(
+                                    child: RoundedButtonFill(
+                                      title: "Tickets".tr,
+                                      color: AppThemeData.primary300,
+                                      textColor: AppThemeData.grey50,
+                                      onPress: () async {
+                                        ShowToastDialog.showLoader(
+                                            "Generating ticket...".tr);
+
+                                        final result =
+                                            await TicketService.generateTicket(
+                                          bookingModel:
+                                              controller.bookingModel.value,
+                                          bookingUserModel:
+                                              controller.bookingUserModel.value,
+                                          userModel: controller.userModel.value,
+                                          publisherUserModel: controller
+                                              .publisherUserModel.value,
+                                        );
+
+                                        ShowToastDialog.closeLoader();
+
+                                        if (result['success'] == true) {
+                                          Get.to(() => const PdfViewerScreen(),
+                                              arguments: {
+                                                'pdf_url': result['pdf_url'],
+                                              });
+                                        } else {
+                                          ShowToastDialog.showToast(
+                                              result['message'] ??
+                                                  'Failed to generate ticket');
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  controller.bookingModel.value.status !=
+                                          Constant.placed
+                                      ? Expanded(
+                                          child: Row(
+                                            children: [
+                                              if (controller.bookingModel.value
+                                                      .status ==
+                                                  Constant.onGoing)
+                                                Expanded(
+                                                  child: RoundedButtonFill(
+                                                    title: "SOS".tr,
+                                                    color:
+                                                        AppThemeData.primary300,
+                                                    textColor:
+                                                        AppThemeData.grey50,
+                                                    onPress: () async {
+                                                      // ...existing SOS logic below...
                                                       ShowToastDialog
                                                           .showLoader(
                                                               "Please wait".tr);
-                                                      bool success =
-                                                          await controller
-                                                              .cancelBooking();
-                                                      if (success) {
+                                                      loc.LocationData?
+                                                          position =
+                                                          await Constant
+                                                              .getCurrentLocation();
+                                                      if (position?.latitude ==
+                                                          null) {
                                                         ShowToastDialog
                                                             .closeLoader();
                                                         ShowToastDialog.showToast(
-                                                            "Booking Cancelled"
+                                                            "Please enable GPS to use the SOS emergency feature."
                                                                 .tr);
-                                                        Get.back();
-                                                        Get.back(result: true);
-                                                      } else {
-                                                        ShowToastDialog
-                                                            .closeLoader();
-                                                        ShowToastDialog.showToast(
-                                                            "Error cancelling booking"
-                                                                .tr);
+                                                        return;
                                                       }
-                                                    },
-                                                    negativeClick: () {
-                                                      Get.back();
-                                                    },
-                                                  );
-                                                });
-                                          },
-                                        ),
-                                      ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                controller.bookingModel.value.status !=
-                                        Constant.placed
-                                    ? Expanded(
-                                        child: Row(
-                                          children: [
-                                            if (controller.bookingModel.value
-                                                    .status ==
-                                                Constant.onGoing)
-                                              Expanded(
-                                                child: RoundedButtonFill(
-                                                  title: "SOS".tr,
-                                                  color:
-                                                      AppThemeData.primary300,
-                                                  textColor:
-                                                      AppThemeData.grey50,
-                                                  onPress: () async {
-                                                    // ...existing SOS logic below...
-                                                    ShowToastDialog.showLoader(
-                                                        "Please wait".tr);
-                                                    loc.LocationData? position =
-                                                        await Constant
-                                                            .getCurrentLocation();
-                                                    if (position?.latitude ==
-                                                        null) {
-                                                      ShowToastDialog
-                                                          .closeLoader();
-                                                      ShowToastDialog.showToast(
-                                                          "Please enable GPS to use the SOS emergency feature."
-                                                              .tr);
-                                                      return;
-                                                    }
-                                                    String customerId =
-                                                        AuthUtils
-                                                            .getCurrentUid();
-                                                    await SosUtils.getSOS(
-                                                            bookingId: controller
-                                                                .bookingModel
-                                                                .value
-                                                                .id
-                                                                .toString(),
-                                                            driverId: controller
-                                                                .bookingModel
-                                                                .value
-                                                                .createdBy!,
-                                                            customerId:
-                                                                customerId)
-                                                        .then((value) async {
-                                                      if (value != null) {
-                                                        ShowToastDialog
-                                                            .closeLoader();
-                                                        ShowToastDialog.showToast(
-                                                            "Your SOS request is already submitted."
-                                                                .tr);
-                                                      } else {
-                                                        SosModel sosModel =
-                                                            SosModel();
-                                                        sosModel.id =
-                                                            Constant.getUuid();
-                                                        sosModel.bookingId =
-                                                            controller
-                                                                .bookingModel
-                                                                .value
-                                                                .id;
-                                                        sosModel.driverId =
-                                                            controller
-                                                                .bookingModel
-                                                                .value
-                                                                .createdBy;
-                                                        sosModel.customerId =
-                                                            customerId;
-                                                        sosModel.sosLocation =
-                                                            SOSLocation(
-                                                                latitude: position!
-                                                                    .latitude!,
-                                                                longitude: position
-                                                                    .longitude!);
-                                                        sosModel.status =
-                                                            "Initiated";
-                                                        await SosUtils.setSOS(
-                                                            sosModel);
-                                                        // Send WhatsApp SOS message to all user's SOS numbers
-                                                        final sosNumbers =
-                                                            controller
-                                                                    .userModel
-                                                                    .value
-                                                                    .sosWhatsAppNumbers ??
-                                                                [];
-                                                        final locationText =
-                                                            "https://maps.google.com/?q=${position.latitude},${position.longitude}";
-                                                        final passengerName =
-                                                            "${controller.userModel.value.firstName ?? ''} ${controller.userModel.value.lastName ?? ''}"
-                                                                .trim();
-                                                        final startLocation =
-                                                            controller
-                                                                    .bookingModel
-                                                                    .value
-                                                                    .pickUpAddress ??
-                                                                "";
-                                                        final endLocation =
-                                                            controller
-                                                                    .bookingModel
-                                                                    .value
-                                                                    .dropAddress ??
-                                                                "";
-                                                        final rideDate = controller
-                                                                    .bookingModel
-                                                                    .value
-                                                                    .departureDateTime !=
-                                                                null
-                                                            ? Constant.timestampToDate(
-                                                                controller
-                                                                    .bookingModel
-                                                                    .value
-                                                                    .departureDateTime!)
-                                                            : "";
-                                                        final rideTime = controller
-                                                                    .bookingModel
-                                                                    .value
-                                                                    .departureDateTime !=
-                                                                null
-                                                            ? Constant.timestampToTime(
-                                                                controller
-                                                                    .bookingModel
-                                                                    .value
-                                                                    .departureDateTime!)
-                                                            : "";
-                                                        final vehicleNumber = controller
-                                                                .bookingModel
-                                                                .value
-                                                                .vehicleInformation
-                                                                ?.licensePlatNumber ??
-                                                            "";
-                                                        print(sosNumbers);
-                                                        await WhatsAppService
-                                                            .sendToMultipleRecipients(
-                                                                phoneNumbers:
-                                                                    sosNumbers,
-                                                                templateName:
-                                                                    "sos_alerttt",
-                                                                components: [
-                                                              {
-                                                                "type": "body",
-                                                                "parameters": [
-                                                                  {
-                                                                    "type":
-                                                                        "text",
-                                                                    "text":
-                                                                        passengerName
-                                                                  },
-                                                                  {
-                                                                    "type":
-                                                                        "text",
-                                                                    "text":
-                                                                        startLocation
-                                                                  },
-                                                                  {
-                                                                    "type":
-                                                                        "text",
-                                                                    "text":
-                                                                        endLocation
-                                                                  },
-                                                                  {
-                                                                    "type":
-                                                                        "text",
-                                                                    "text":
-                                                                        rideDate
-                                                                  },
-                                                                  {
-                                                                    "type":
-                                                                        "text",
-                                                                    "text":
-                                                                        rideTime
-                                                                  },
-                                                                  {
-                                                                    "type":
-                                                                        "text",
-                                                                    "text":
-                                                                        locationText
-                                                                  },
-                                                                  {
-                                                                    "type":
-                                                                        "text",
-                                                                    "text":
-                                                                        vehicleNumber
-                                                                  }
-                                                                ]
-                                                              }
-                                                            ]);
-                                                        print(
-                                                            "SOS messages sent to $sosNumbers");
-                                                        // Send push notification to driver with custom sound
-                                                        final driverFcmToken =
-                                                            controller
-                                                                .publisherUserModel
-                                                                .value
-                                                                .fcmToken;
-                                                        if (driverFcmToken !=
-                                                                null &&
-                                                            driverFcmToken
-                                                                .isNotEmpty) {
-                                                          await SendNotification
-                                                              .sendChatNotification(
-                                                            token:
-                                                                driverFcmToken,
-                                                            title: "SOS Alert!",
-                                                            body:
-                                                                "Passenger triggered SOS. Tap to respond.",
-                                                            payload: {
-                                                              "type":
-                                                                  "sos_alert",
-                                                              "sound":
-                                                                  "sos_43210.mp3",
-                                                              "bookingId":
-                                                                  controller
-                                                                          .bookingModel
-                                                                          .value
-                                                                          .id ??
-                                                                      "",
-                                                              "location":
-                                                                  locationText
-                                                            },
-                                                          );
-                                                        }
-                                                        ShowToastDialog
-                                                            .closeLoader();
-                                                        final Uri launchUri =
-                                                            Uri(
-                                                                scheme: 'tel',
-                                                                path: '100');
-                                                        if (await canLaunchUrl(
-                                                            launchUri)) {
-                                                          await launchUrl(
-                                                              launchUri);
+                                                      String customerId =
+                                                          AuthUtils
+                                                              .getCurrentUid();
+                                                      await SosUtils.getSOS(
+                                                              bookingId: controller
+                                                                  .bookingModel
+                                                                  .value
+                                                                  .id
+                                                                  .toString(),
+                                                              driverId: controller
+                                                                  .bookingModel
+                                                                  .value
+                                                                  .createdBy!,
+                                                              customerId:
+                                                                  customerId)
+                                                          .then((value) async {
+                                                        if (value != null) {
+                                                          ShowToastDialog
+                                                              .closeLoader();
+                                                          ShowToastDialog.showToast(
+                                                              "Your SOS request is already submitted."
+                                                                  .tr);
                                                         } else {
+                                                          SosModel sosModel =
+                                                              SosModel();
+                                                          sosModel.id = Constant
+                                                              .getUuid();
+                                                          sosModel.bookingId =
+                                                              controller
+                                                                  .bookingModel
+                                                                  .value
+                                                                  .id;
+                                                          sosModel.driverId =
+                                                              controller
+                                                                  .bookingModel
+                                                                  .value
+                                                                  .createdBy;
+                                                          sosModel.customerId =
+                                                              customerId;
+                                                          sosModel.sosLocation =
+                                                              SOSLocation(
+                                                                  latitude:
+                                                                      position!
+                                                                          .latitude!,
+                                                                  longitude:
+                                                                      position
+                                                                          .longitude!);
+                                                          sosModel.status =
+                                                              "Initiated";
+                                                          await SosUtils.setSOS(
+                                                              sosModel);
+                                                          // Send WhatsApp SOS message to all user's SOS numbers
+                                                          final sosNumbers =
+                                                              controller
+                                                                      .userModel
+                                                                      .value
+                                                                      .sosWhatsAppNumbers ??
+                                                                  [];
+                                                          final locationText =
+                                                              "https://maps.google.com/?q=${position.latitude},${position.longitude}";
+                                                          final passengerName =
+                                                              "${controller.userModel.value.firstName ?? ''} ${controller.userModel.value.lastName ?? ''}"
+                                                                  .trim();
+                                                          final startLocation =
+                                                              controller
+                                                                      .bookingModel
+                                                                      .value
+                                                                      .pickUpAddress ??
+                                                                  "";
+                                                          final endLocation =
+                                                              controller
+                                                                      .bookingModel
+                                                                      .value
+                                                                      .dropAddress ??
+                                                                  "";
+                                                          final rideDate = controller
+                                                                      .bookingModel
+                                                                      .value
+                                                                      .departureDateTime !=
+                                                                  null
+                                                              ? Constant.timestampToDate(
+                                                                  controller
+                                                                      .bookingModel
+                                                                      .value
+                                                                      .departureDateTime!)
+                                                              : "";
+                                                          final rideTime = controller
+                                                                      .bookingModel
+                                                                      .value
+                                                                      .departureDateTime !=
+                                                                  null
+                                                              ? Constant.timestampToTime(
+                                                                  controller
+                                                                      .bookingModel
+                                                                      .value
+                                                                      .departureDateTime!)
+                                                              : "";
+                                                          final vehicleNumber = controller
+                                                                  .bookingModel
+                                                                  .value
+                                                                  .vehicleInformation
+                                                                  ?.licensePlatNumber ??
+                                                              "";
+                                                          print(sosNumbers);
+                                                          await WhatsAppService
+                                                              .sendToMultipleRecipients(
+                                                                  phoneNumbers:
+                                                                      sosNumbers,
+                                                                  templateName:
+                                                                      "sos_alerttt",
+                                                                  components: [
+                                                                {
+                                                                  "type":
+                                                                      "body",
+                                                                  "parameters":
+                                                                      [
+                                                                    {
+                                                                      "type":
+                                                                          "text",
+                                                                      "text":
+                                                                          passengerName
+                                                                    },
+                                                                    {
+                                                                      "type":
+                                                                          "text",
+                                                                      "text":
+                                                                          startLocation
+                                                                    },
+                                                                    {
+                                                                      "type":
+                                                                          "text",
+                                                                      "text":
+                                                                          endLocation
+                                                                    },
+                                                                    {
+                                                                      "type":
+                                                                          "text",
+                                                                      "text":
+                                                                          rideDate
+                                                                    },
+                                                                    {
+                                                                      "type":
+                                                                          "text",
+                                                                      "text":
+                                                                          rideTime
+                                                                    },
+                                                                    {
+                                                                      "type":
+                                                                          "text",
+                                                                      "text":
+                                                                          locationText
+                                                                    },
+                                                                    {
+                                                                      "type":
+                                                                          "text",
+                                                                      "text":
+                                                                          vehicleNumber
+                                                                    }
+                                                                  ]
+                                                                }
+                                                              ]);
                                                           print(
-                                                              'Could not launch dialer');
+                                                              "SOS messages sent to $sosNumbers");
+                                                          // Send push notification to driver with custom sound
+                                                          final driverFcmToken =
+                                                              controller
+                                                                  .publisherUserModel
+                                                                  .value
+                                                                  .fcmToken;
+                                                          if (driverFcmToken !=
+                                                                  null &&
+                                                              driverFcmToken
+                                                                  .isNotEmpty) {
+                                                            await SendNotification
+                                                                .sendChatNotification(
+                                                              token:
+                                                                  driverFcmToken,
+                                                              title:
+                                                                  "SOS Alert!",
+                                                              body:
+                                                                  "Passenger triggered SOS. Tap to respond.",
+                                                              payload: {
+                                                                "type":
+                                                                    "sos_alert",
+                                                                "sound":
+                                                                    "sos_43210.mp3",
+                                                                "bookingId": controller
+                                                                        .bookingModel
+                                                                        .value
+                                                                        .id ??
+                                                                    "",
+                                                                "location":
+                                                                    locationText
+                                                              },
+                                                            );
+                                                          }
+                                                          ShowToastDialog
+                                                              .closeLoader();
+                                                          final Uri launchUri =
+                                                              Uri(
+                                                                  scheme: 'tel',
+                                                                  path: '100');
+                                                          if (await canLaunchUrl(
+                                                              launchUri)) {
+                                                            await launchUrl(
+                                                                launchUri);
+                                                          } else {
+                                                            print(
+                                                                'Could not launch dialer');
+                                                          }
+                                                          // ShowToastDialog.showToast(
+                                                          //     "Your SOS request has been submitted to admin, sent to your emergency contacts, and driver alerted."
+                                                          //         .tr);
                                                         }
-                                                        ShowToastDialog.showToast(
-                                                            "Your SOS request has been submitted to admin, sent to your emergency contacts, and driver alerted."
-                                                                .tr);
-                                                      }
-                                                    });
-                                                  },
+                                                      });
+                                                    },
+                                                  ),
                                                 ),
-                                              ),
-                                            if (controller.bookingModel.value
-                                                        .status ==
-                                                    Constant.onGoing &&
-                                                controller.bookingUserModel
-                                                        .value.paymentStatus ==
-                                                    false)
-                                              SizedBox(width: 20),
-                                            if (controller.bookingUserModel
-                                                    .value.paymentStatus ==
-                                                false)
-                                              Expanded(
-                                                child: RoundedButtonFill(
-                                                  title: "Pay Now".tr,
-                                                  color:
-                                                      AppThemeData.primary300,
-                                                  textColor:
-                                                      AppThemeData.grey50,
-                                                  onPress: () async {
-                                                    // Payment method is already selected, directly process payment
-                                                    controller
-                                                            .paymentType.value =
-                                                        controller
-                                                            .bookingUserModel
-                                                            .value
-                                                            .paymentType
-                                                            .toString();
-                                                    controller
-                                                        .paymentCompleted();
-                                                  },
+                                              if (controller.bookingModel.value
+                                                          .status ==
+                                                      Constant.onGoing &&
+                                                  controller
+                                                          .bookingUserModel
+                                                          .value
+                                                          .paymentStatus ==
+                                                      false)
+                                                SizedBox(width: 20),
+                                              if (controller.bookingUserModel
+                                                      .value.paymentStatus ==
+                                                  false)
+                                                Expanded(
+                                                  child: RoundedButtonFill(
+                                                    title: "Pay Now".tr,
+                                                    color:
+                                                        AppThemeData.primary300,
+                                                    textColor:
+                                                        AppThemeData.grey50,
+                                                    onPress: () async {
+                                                      // Payment method is already selected, directly process payment
+                                                      controller.paymentType
+                                                              .value =
+                                                          controller
+                                                              .bookingUserModel
+                                                              .value
+                                                              .paymentType
+                                                              .toString();
+                                                      controller
+                                                          .paymentCompleted();
+                                                    },
+                                                  ),
                                                 ),
-                                              ),
-                                          ],
-                                        ),
-                                      )
-                                    : const SizedBox(),
-                              ],
+                                            ],
+                                          ),
+                                        )
+                                      : const SizedBox(),
+                                ],
+                              ),
                             ),
-                          ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                  ],
+                      const SizedBox(
+                        height: 10,
+                      ),
+                    ],
+                  ),
                 ),
               ));
         });

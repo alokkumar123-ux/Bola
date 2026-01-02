@@ -15,7 +15,7 @@ import 'package:poolmate/model/user_model.dart';
 import 'package:poolmate/services/whatsapp_auth_service.dart';
 import 'package:poolmate/utils/firestore/auth_utils.dart';
 import 'package:poolmate/utils/firestore/user_utils.dart';
-import 'package:poolmate/utils/notification_service.dart';
+import 'package:poolmate/services/fcm_token_manager.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class LoginController extends GetxController {
@@ -113,16 +113,12 @@ class LoginController extends GetxController {
                   // Save user ID to local storage
                   await AuthUtils.setCurrentUid(userModel.id!);
 
-                  // Update FCM token for existing user on login with error handling
+                  // Initialize FCM token manager and save token
                   try {
-                    String fcmToken = await NotificationService.getToken();
-                    userModel.fcmToken = fcmToken;
-                    await UserUtils.updateUser(userModel);
-                    debugPrint(
-                        "FCM token updated for existing user: $fcmToken");
+                    await FcmTokenManager.saveCurrentToken();
+                    debugPrint("FCM token saved for existing user");
                   } catch (e) {
-                    debugPrint(
-                        "Failed to update FCM token for existing user: $e");
+                    debugPrint("Failed to save FCM token: $e");
                     // Continue with login even if FCM token update fails
                   }
 
@@ -186,16 +182,12 @@ class LoginController extends GetxController {
                   // Save user ID to local storage
                   await AuthUtils.setCurrentUid(userModel.id!);
 
-                  // Update FCM token for existing user on Apple login with error handling
+                  // Initialize FCM token manager and save token
                   try {
-                    String fcmToken = await NotificationService.getToken();
-                    userModel.fcmToken = fcmToken;
-                    await UserUtils.updateUser(userModel);
-                    debugPrint(
-                        "FCM token updated for existing Apple user: $fcmToken");
+                    await FcmTokenManager.saveCurrentToken();
+                    debugPrint("FCM token saved for existing Apple user");
                   } catch (e) {
-                    debugPrint(
-                        "Failed to update FCM token for existing Apple user: $e");
+                    debugPrint("Failed to save FCM token: $e");
                     // Continue with login even if FCM token update fails
                   }
 

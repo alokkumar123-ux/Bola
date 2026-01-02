@@ -8,11 +8,19 @@ import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/controller/add_your_ride_controller.dart';
 import 'package:poolmate/themes/app_them_data.dart';
 import 'package:poolmate/themes/round_button_fill.dart';
+import 'package:poolmate/themes/responsive.dart';
 import 'package:poolmate/utils/dark_theme_provider.dart';
 import 'package:provider/provider.dart';
 
-class StepFivePriceScreen extends StatelessWidget {
+class StepFivePriceScreen extends StatefulWidget {
   const StepFivePriceScreen({super.key});
+
+  @override
+  State<StepFivePriceScreen> createState() => _StepFivePriceScreenState();
+}
+
+class _StepFivePriceScreenState extends State<StepFivePriceScreen> {
+  bool isPublishing = false;
 
   @override
   Widget build(BuildContext context) {
@@ -89,8 +97,8 @@ class StepFivePriceScreen extends StatelessWidget {
                             child: Container(
                               decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  border:
-                                      Border.all(color: AppThemeData.primary300)),
+                                  border: Border.all(
+                                      color: AppThemeData.primary300)),
                               child: Padding(
                                 padding: const EdgeInsets.all(4.0),
                                 child: Icon(Icons.remove,
@@ -128,8 +136,8 @@ class StepFivePriceScreen extends StatelessWidget {
                             child: Container(
                               decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  border:
-                                      Border.all(color: AppThemeData.primary300)),
+                                  border: Border.all(
+                                      color: AppThemeData.primary300)),
                               child: Padding(
                                 padding: const EdgeInsets.all(4.0),
                                 child: Icon(
@@ -200,7 +208,8 @@ class StepFivePriceScreen extends StatelessWidget {
                           children: [
                             Expanded(
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 10),
                                 child: Text(
                                   "Stopover prices".tr,
                                   textAlign: TextAlign.start,
@@ -316,7 +325,8 @@ class StepFivePriceScreen extends StatelessWidget {
                         child: Divider(),
                       ),
                       Text(
-                        "Passengers can pay with any available payment method".tr,
+                        "Passengers can pay with any available payment method"
+                            .tr,
                         style: TextStyle(
                           color: AppThemeData.grey600,
                           fontSize: 12,
@@ -339,7 +349,8 @@ class StepFivePriceScreen extends StatelessWidget {
                               "assets/icons/ic_shield.svg",
                               color: controller.userModel.value.panVerified ==
                                           true &&
-                                      controller.userModel.value.aadharVerified ==
+                                      controller
+                                              .userModel.value.aadharVerified ==
                                           true
                                   ? AppThemeData.success400
                                   : AppThemeData.warning300,
@@ -349,41 +360,44 @@ class StepFivePriceScreen extends StatelessWidget {
                             ),
                             Expanded(
                               child: Text(
-                                controller.userModel.value.panVerified == true &&
-                                        controller
-                                                .userModel.value.aadharVerified ==
+                                controller.userModel.value.panVerified ==
+                                            true &&
+                                        controller.userModel.value
+                                                .aadharVerified ==
                                             true
                                     ? "Account Verified"
                                     : "Account not Verify".tr,
                                 textAlign: TextAlign.start,
                                 style: TextStyle(
-                                    color:
-                                        controller.userModel.value.panVerified ==
-                                                    true &&
-                                                controller.userModel.value
-                                                        .aadharVerified ==
-                                                    true
-                                            ? AppThemeData.success400
-                                            : AppThemeData.warning300,
+                                    color: controller.userModel.value
+                                                    .panVerified ==
+                                                true &&
+                                            controller.userModel.value
+                                                    .aadharVerified ==
+                                                true
+                                        ? AppThemeData.success400
+                                        : AppThemeData.warning300,
                                     fontFamily: AppThemeData.medium,
                                     fontSize: 14),
                               ),
                             ),
                             Text(
                               controller.userModel.value.panVerified == true &&
-                                      controller.userModel.value.aadharVerified ==
+                                      controller
+                                              .userModel.value.aadharVerified ==
                                           true
                                   ? "Verified"
                                   : "Verify".tr,
                               textAlign: TextAlign.start,
                               style: TextStyle(
-                                  color: controller.userModel.value.panVerified ==
-                                              true &&
-                                          controller.userModel.value
-                                                  .aadharVerified ==
-                                              true
-                                      ? AppThemeData.success400
-                                      : AppThemeData.warning400,
+                                  color:
+                                      controller.userModel.value.panVerified ==
+                                                  true &&
+                                              controller.userModel.value
+                                                      .aadharVerified ==
+                                                  true
+                                          ? AppThemeData.success400
+                                          : AppThemeData.warning400,
                                   fontFamily: AppThemeData.medium,
                                   fontSize: 14),
                             ),
@@ -409,14 +423,29 @@ class StepFivePriceScreen extends StatelessWidget {
                 child: Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  child: RoundedButtonFill(
-                    title: "Publish Ride".tr,
-                    color: AppThemeData.primary300,
-                    textColor: AppThemeData.grey50,
-                    onPress: () {
-                      controller.publishRide();
-                    },
-                  ),
+                  child: isPublishing
+                      ? SizedBox(
+                          height: Responsive.height(6, context),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: AppThemeData.primary300,
+                            ),
+                          ),
+                        )
+                      : RoundedButtonFill(
+                          title: "Publish Ride".tr,
+                          color: AppThemeData.primary300,
+                          textColor: AppThemeData.grey50,
+                          onPress: () async {
+                            setState(() {
+                              isPublishing = true;
+                            });
+                            await controller.publishRide();
+                            setState(() {
+                              isPublishing = false;
+                            });
+                          },
+                        ),
                 ),
               ));
         });

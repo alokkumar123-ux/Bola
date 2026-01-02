@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:poolmate/app/home_screen/ride_dialog.dart';
+import 'package:poolmate/app/home_screen/ride_details.dart';
 
 // A helper widget to display a single seat icon based on its status
 class SeatIcon extends StatelessWidget {

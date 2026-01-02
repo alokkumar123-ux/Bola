@@ -31,7 +31,7 @@ class NetworkImageWidget extends StatelessWidget {
 
     if (sanitizedUrl.isEmpty) {
       return Image.asset(
-        Constant.getStartedImage,
+        Constant.userPlaceHolder,
         fit: fit ?? BoxFit.fitWidth,
         height: height ?? Responsive.height(8, context),
         width: width ?? Responsive.width(15, context),

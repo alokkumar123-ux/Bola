@@ -69,7 +69,7 @@ class WhatsAppService {
   /// Send rider booking cancelled message (to passengers when driver cancels)
   static Future<bool> sendRiderBookingCancelled({
     required String phoneNumber,
-    List<String>? rideDetails,
+    List<dynamic>? rideDetails,
   }) async {
     return await sendTemplateMessage(
       phoneNumber: phoneNumber,
@@ -81,11 +81,11 @@ class WhatsAppService {
   /// Send rider booking confirmed message (to passenger when they book)
   static Future<bool> sendRiderBookingConfirmed({
     required String phoneNumber,
-    List<String>? rideDetails,
+    List<dynamic>? rideDetails,
   }) async {
     return await sendTemplateMessage(
       phoneNumber: phoneNumber,
-      templateName: 'rider_bookingconfirmed',
+      templateName: 'after_rider_booked',
       components: rideDetails,
     );
   }
@@ -93,11 +93,11 @@ class WhatsAppService {
   /// Send driver ride published message (to driver when they publish)
   static Future<bool> sendDriverRidePublished({
     required String phoneNumber,
-    List<String>? rideDetails,
+    List<dynamic>? rideDetails,
   }) async {
     return await sendTemplateMessage(
       phoneNumber: phoneNumber,
-      templateName: 'driver_ridepublished',
+      templateName: 'after_driver_ridepublish',
       components: rideDetails,
     );
   }

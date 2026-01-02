@@ -19,9 +19,13 @@ class StepSixStopOverPriceScreen extends StatelessWidget {
         init: AddYourRideController(),
         builder: (controller) {
           return Scaffold(
-            backgroundColor: themeChange.getThem() ? AppThemeData.grey800 : AppThemeData.grey50,
+            backgroundColor: themeChange.getThem()
+                ? AppThemeData.grey800
+                : AppThemeData.grey50,
             appBar: AppBar(
-              backgroundColor: themeChange.getThem() ? AppThemeData.grey900 : AppThemeData.grey100,
+              backgroundColor: themeChange.getThem()
+                  ? AppThemeData.grey900
+                  : AppThemeData.grey100,
               centerTitle: false,
               titleSpacing: 0,
               leading: InkWell(
@@ -30,21 +34,26 @@ class StepSixStopOverPriceScreen extends StatelessWidget {
                 },
                 child: Icon(
                   Icons.chevron_left_outlined,
-                  color: themeChange.getThem() ? AppThemeData.grey50 : AppThemeData.grey900,
+                  color: themeChange.getThem()
+                      ? AppThemeData.grey50
+                      : AppThemeData.grey900,
                 ),
               ),
               elevation: 0,
               bottom: PreferredSize(
                 preferredSize: const Size.fromHeight(4.0),
                 child: Container(
-                  color: themeChange.getThem() ? AppThemeData.grey700 : AppThemeData.grey200,
+                  color: themeChange.getThem()
+                      ? AppThemeData.grey700
+                      : AppThemeData.grey200,
                   height: 4.0,
                 ),
               ),
             ),
             body: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -52,7 +61,12 @@ class StepSixStopOverPriceScreen extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       child: Text(
                         "Edit price per seat".tr,
-                        style: TextStyle(color: themeChange.getThem() ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.bold, fontSize: 20),
+                        style: TextStyle(
+                            color: themeChange.getThem()
+                                ? AppThemeData.grey50
+                                : AppThemeData.grey900,
+                            fontFamily: AppThemeData.bold,
+                            fontSize: 20),
                       ),
                     ),
                     Expanded(
@@ -93,15 +107,34 @@ class StepSixStopOverPriceScreen extends StatelessWidget {
                                     contentsBuilder: (context, index) {
                                       return index == 0
                                           ? Padding(
-                                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                              child: Constant.getCityName(themeChange, Location(lat: legs.startLocation!.lat!, lng: legs.startLocation!.lng!)),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16,
+                                                      vertical: 14),
+                                              child: Constant.getCityName(
+                                                  themeChange,
+                                                  Location(
+                                                      lat: legs
+                                                          .startLocation!.lat!,
+                                                      lng: legs.startLocation!
+                                                          .lng!)),
                                             )
                                           : Padding(
-                                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                              child: Constant.getCityName(themeChange, Location(lat: legs.endLocation!.lat!, lng: legs.endLocation!.lng!)),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16,
+                                                      vertical: 14),
+                                              child: Constant.getCityName(
+                                                  themeChange,
+                                                  Location(
+                                                      lat: legs
+                                                          .endLocation!.lat!,
+                                                      lng: legs
+                                                          .endLocation!.lng!)),
                                             );
                                     },
-                                    connectorBuilder: (context, index, connectorType) {
+                                    connectorBuilder:
+                                        (context, index, connectorType) {
                                       return const DashedLineConnector(
                                         color: AppThemeData.grey300,
                                         gap: 2,
@@ -114,34 +147,54 @@ class StepSixStopOverPriceScreen extends StatelessWidget {
                               Column(
                                 children: [
                                   Text(
-                                    "${Constant.distanceCalculate(legs.distance!.value.toString())} ${Constant.distanceType} ".tr,
+                                    "${Constant.distanceCalculate(legs.distance!.value.toString())} ${Constant.distanceType} "
+                                        .tr,
                                     textAlign: TextAlign.center,
-                                    style: TextStyle(color: themeChange.getThem() ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.bold, fontSize: 14),
+                                    style: TextStyle(
+                                        color: themeChange.getThem()
+                                            ? AppThemeData.grey50
+                                            : AppThemeData.grey900,
+                                        fontFamily: AppThemeData.bold,
+                                        fontSize: 14),
                                   ),
                                   const SizedBox(height: 5),
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
                                       InkWell(
                                         onTap: () {
                                           // if (double.parse(legs.price.toString()) >= Constant.getMinusPercentageAmount(legs.recommendedPrice.toString())) {
-                                            controller.changeStopOverPrice(index, false);
+                                          controller.changeStopOverPrice(
+                                              index, false);
                                           // }
                                         },
                                         child: Container(
-                                          decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppThemeData.primary300)),
-                                          child: Icon(Icons.remove, color: AppThemeData.primary300),
+                                          decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                  color:
+                                                      AppThemeData.primary300)),
+                                          child: Icon(Icons.remove,
+                                              color: AppThemeData.primary300),
                                         ),
                                       ),
                                       const SizedBox(
                                         width: 5,
                                       ),
                                       Text(
-                                        Constant.amountShow(amount: legs.price),
+                                        controller.stopOverList.length > 1
+                                            ? Constant.amountShow(
+                                                amount: legs.price)
+                                            : Constant.amountShow(
+                                                amount: controller.price.value
+                                                    .toString()),
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
-                                          color: themeChange.getThem() ? AppThemeData.grey100 : AppThemeData.grey800,
+                                          color: themeChange.getThem()
+                                              ? AppThemeData.grey100
+                                              : AppThemeData.grey800,
                                           fontFamily: AppThemeData.bold,
                                         ),
                                       ),
@@ -151,11 +204,16 @@ class StepSixStopOverPriceScreen extends StatelessWidget {
                                       InkWell(
                                         onTap: () {
                                           // if (double.parse(legs.price.toString()) <= Constant.getPlusPercentageAmount(legs.recommendedPrice.toString())) {
-                                            controller.changeStopOverPrice(index, true);
+                                          controller.changeStopOverPrice(
+                                              index, true);
                                           // }
                                         },
                                         child: Container(
-                                          decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppThemeData.primary300)),
+                                          decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                  color:
+                                                      AppThemeData.primary300)),
                                           child: Icon(
                                             Icons.add,
                                             color: AppThemeData.primary300,

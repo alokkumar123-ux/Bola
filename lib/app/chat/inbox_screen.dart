@@ -264,11 +264,15 @@ class InboxScreen extends StatelessWidget {
                                                                 fontSize: 14),
                                                           ),
                                                         ),
-                                                        inboxModel.seen == true
+                                                        inboxModel.seen ==
+                                                                    true ||
+                                                                (inboxModel.unreadCount ??
+                                                                        0) ==
+                                                                    0
                                                             ? const SizedBox()
                                                             : SizedBox(
-                                                                width: 12,
-                                                                height: 12,
+                                                                width: 20,
+                                                                height: 20,
                                                                 child: ClipOval(
                                                                   child:
                                                                       Container(
@@ -276,6 +280,20 @@ class InboxScreen extends StatelessWidget {
                                                                         BoxDecoration(
                                                                             color:
                                                                                 AppThemeData.primary300),
+                                                                    child:
+                                                                        Center(
+                                                                      child:
+                                                                          Text(
+                                                                        '${inboxModel.unreadCount ?? 0}',
+                                                                        style: TextStyle(
+                                                                            color: Colors
+                                                                                .white,
+                                                                            fontSize:
+                                                                                12,
+                                                                            fontWeight:
+                                                                                FontWeight.bold),
+                                                                      ),
+                                                                    ),
                                                                   ),
                                                                 ),
                                                               )

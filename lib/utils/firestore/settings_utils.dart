@@ -54,7 +54,6 @@ class SettingsUtils {
         .listen((event) {
       if (event.exists) {
         Constant.priceVariation = event.data()!["priceVariation"];
-        Constant.radius = event.data()!["radius"];
         Constant.intervalHoursForPublishNewRide =
             event.data()!['intervalHoursForPublishNewRide'];
         Constant.minimumAmountToDeposit =

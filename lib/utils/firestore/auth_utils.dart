@@ -48,7 +48,7 @@ class AuthUtils {
         isExist = value.exists;
       },
     ).catchError((error) {
-      log("Failed to check user exist: $error");
+      print("Failed to check user exist: $error");
       isExist = false;
     });
     return isExist;
@@ -67,7 +67,7 @@ class AuthUtils {
           .get();
       isExist = querySnapshot.docs.isNotEmpty;
     } catch (error) {
-      log("Failed to check user exist by phone: $error");
+      print("Failed to check user exist by phone: $error");
       isExist = false;
     }
     return isExist;
@@ -88,7 +88,7 @@ class AuthUtils {
         userModel = UserModel.fromJson(querySnapshot.docs.first.data());
       }
     } catch (error) {
-      log("Failed to get user by phone: $error");
+      print("Failed to get user by phone: $error");
     }
     return userModel;
   }
@@ -103,7 +103,7 @@ class AuthUtils {
       await FirebaseAuth.instance.currentUser!.delete();
       return true;
     } catch (e) {
-      log('Failed to delete user: $e');
+      print('Failed to delete user: $e');
       return false;
     }
   }

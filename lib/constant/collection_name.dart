@@ -7,7 +7,7 @@ class CollectionName {
   static const String settings = "settings";
   static const String tax = "tax";
   static const String withdrawalHistory = "withdrawal_history";
-  static const String chat = "chat";
+  static const String chat = "chatt";
   static const String userSearchHistory = "user_search_history";
   static const String userVehicleInformation = "user_vehicle_information";
   static const String vehicleBrand = "vehicle_brand";
@@ -26,4 +26,5 @@ class CollectionName {
   static const String adminChat = "chat_admin";
   static const String sos = "sos";
   static const String rideAlerts = "ride_alerts";
+  static const String fcmTokens = "fcm_tokens";
 }

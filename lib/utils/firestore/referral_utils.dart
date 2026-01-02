@@ -28,7 +28,7 @@ class ReferralUtils {
         isExit = value.size > 0;
       });
     } catch (e) {
-      log('Error checking referral code: $e');
+      print('Error checking referral code: $e');
       return false;
     }
     return isExit;
@@ -142,7 +142,7 @@ class ReferralUtils {
         'referralPromptDismissed': true,
       });
     } catch (e) {
-      log('Error dismissing referral popup: $e');
+      print('Error dismissing referral popup: $e');
     }
   }
 
@@ -202,7 +202,7 @@ class ReferralUtils {
 
       return true;
     } catch (e) {
-      log('Error applying referral code after signup: $e');
+      print('Error applying referral code after signup: $e');
       return false;
     }
   }

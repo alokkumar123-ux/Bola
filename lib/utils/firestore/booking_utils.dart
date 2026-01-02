@@ -20,7 +20,7 @@ class BookingUtils {
         .then((value) {
       isAdded = true;
     }).catchError((error) {
-      log("Failed to set booking: $error");
+      print("Failed to set booking: $error");
       isAdded = false;
     });
     return isAdded;
@@ -36,7 +36,7 @@ class BookingUtils {
         .then((value) {
       isAdded = true;
     }).catchError((error) {
-      log("Failed to delete booking: $error");
+      print("Failed to delete booking: $error");
       isAdded = false;
     });
     return isAdded;
@@ -55,7 +55,7 @@ class BookingUtils {
         bookingList!.add(BookingModel.fromJson(element.data()));
       }
     }).catchError((error) {
-      log("Failed to get publishes: $error");
+      print("Failed to get publishes: $error");
     });
     return bookingList;
   }
@@ -75,7 +75,7 @@ class BookingUtils {
         bookingList!.add(BookingModel.fromJson(element.data()));
       }
     }).catchError((error) {
-      log("Failed to check active publishes: $error");
+      print("Failed to check active publishes: $error");
     });
     return bookingList;
   }
@@ -93,7 +93,7 @@ class BookingUtils {
         bookingList!.add(BookingModel.fromJson(element.data()));
       }
     }).catchError((error) {
-      log("Failed to get my bookings: $error");
+      print("Failed to get my bookings: $error");
     });
     return bookingList;
   }
@@ -110,7 +110,7 @@ class BookingUtils {
         bookingList = BookingModel.fromJson(value.data()!);
       }
     }).catchError((error) {
-      log("Failed to get booking: $error");
+      print("Failed to get booking: $error");
     });
     return bookingList;
   }
@@ -183,7 +183,7 @@ class BookingUtils {
         bookingList.add(documentModel);
       }
     }).catchError((error) {
-      log("Failed to update user: $error");
+      print("Failed to update user: $error");
     });
     return bookingList;
   }
@@ -200,15 +200,16 @@ class BookingUtils {
         .then((value) {
       isAdded = true;
     }).catchError((error) {
-      log("Failed to update user: $error");
+      print("Failed to update user: $error");
       isAdded = false;
     });
     return isAdded;
   }
-    // Real-time stream for BookedUserModel - checks both bookedUser and cancelledUser
+
+  // Real-time stream for BookedUserModel - checks both bookedUser and cancelledUser
   static Stream<BookedUserModel?> getMyBookingUserStream(
       BookingModel bookingModel) {
-    String currentUserId =AuthUtils.getCurrentUid();
+    String currentUserId = AuthUtils.getCurrentUid();
 
     // Check bookedUser collection first
     Stream<BookedUserModel?> bookedUserStream = fireStore
@@ -245,7 +246,6 @@ class BookingUtils {
     });
   }
 
-
   /// Get cancelled bookings
   static Future<List<BookingModel>?> getCancelledBookings() async {
     List<BookingModel>? bookingList = [];
@@ -260,7 +260,7 @@ class BookingUtils {
         bookingList!.add(BookingModel.fromJson(element.data()));
       }
     }).catchError((error) {
-      log("Failed to get cancelled bookings: $error");
+      print("Failed to get cancelled bookings: $error");
     });
     return bookingList;
   }
@@ -279,7 +279,7 @@ class BookingUtils {
         bookingList!.add(BookingModel.fromJson(element.data()));
       }
     }).catchError((error) {
-      log("Failed to get completed bookings: $error");
+      print("Failed to get completed bookings: $error");
     });
     return bookingList;
   }
@@ -329,6 +329,7 @@ class BookingUtils {
   static Stream<List<BookingModel>> getCancelledBookingsStream() {
     String currentUid = AuthUtils.getCurrentUid();
 
+    // Driver's cancelled rides (where user created the booking)
     Stream<List<BookingModel>> driverStream = fireStore
         .collection(CollectionName.booking)
         .where("createdBy", isEqualTo: currentUid)
@@ -337,7 +338,8 @@ class BookingUtils {
         .snapshots()
         .map(_mapBookingSnapshot);
 
-    Stream<List<BookingModel>> passengerStream = fireStore
+    // Passenger's cancelled rides (still in bookedUserId - ride was cancelled by driver)
+    Stream<List<BookingModel>> passengerBookedStream = fireStore
         .collection(CollectionName.booking)
         .where("bookedUserId", arrayContains: currentUid)
         .where("status", isEqualTo: Constant.canceled)
@@ -345,10 +347,22 @@ class BookingUtils {
         .snapshots()
         .map(_mapBookingSnapshot);
 
-    return Rx.combineLatest2(driverStream, passengerStream,
+    // Passenger's cancelled rides (moved to cancelledUserId - passenger cancelled their booking)
+    Stream<List<BookingModel>> passengerCancelledStream = fireStore
+        .collection(CollectionName.booking)
+        .where("cancelledUserId", arrayContains: currentUid)
+        .orderBy("createdAt", descending: true)
+        .snapshots()
+        .map(_mapBookingSnapshot);
+
+    return Rx.combineLatest3(
+        driverStream, passengerBookedStream, passengerCancelledStream,
         (List<BookingModel> driverBookings,
-            List<BookingModel> passengerBookings) {
-      return _deduplicateBookings(driverBookings + passengerBookings);
+            List<BookingModel> passengerBookedBookings,
+            List<BookingModel> passengerCancelledBookings) {
+      return _deduplicateBookings(driverBookings +
+          passengerBookedBookings +
+          passengerCancelledBookings);
     });
   }
 
@@ -378,7 +392,8 @@ class BookingUtils {
       return _deduplicateBookings(driverBookings + passengerBookings);
     });
   }
-   static Future<List<BookingModel>?> checkAtivePublishes() async {
+
+  static Future<List<BookingModel>?> checkAtivePublishes() async {
     List<BookingModel>? bookingList = [];
 
     await fireStore
@@ -390,12 +405,12 @@ class BookingUtils {
         .get()
         .then((value) {
       for (var element in value.docs) {
-        log("BookingList :: ${element.id}");
+        print("BookingList :: ${element.id}");
         BookingModel documentModel = BookingModel.fromJson(element.data());
         bookingList.add(documentModel);
       }
     }).catchError((error) {
-      log("Failed to update user: $error");
+      print("Failed to update user: $error");
     });
     return bookingList;
   }
@@ -447,7 +462,7 @@ class BookingUtils {
         .then((value) {
       isAdded = true;
     }).catchError((error) {
-      log("Failed to remove user booking: $error");
+      print("Failed to remove user booking: $error");
       isAdded = false;
     });
     return isAdded;
@@ -488,7 +503,7 @@ class BookingUtils {
 
       isSuccess = true;
     } catch (error) {
-      log('Error in setCancelledUserBooking: $error');
+      print('Error in setCancelledUserBooking: $error');
       isSuccess = false;
     }
 

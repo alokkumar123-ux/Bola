@@ -41,10 +41,8 @@ class AddYourRideScreen extends StatelessWidget {
                   children: [
                     Stack(
                       children: [
-                        NetworkImageWidget(
-                          imageUrl: themeChange.getThem()
-                              ? Constant.appBannerImageDark
-                              : Constant.appBannerImageLight,
+                        Image.asset(
+                          Constant.getStartedImage,
                           fit: BoxFit.cover,
                           width: Responsive.width(100, context),
                           height: Responsive.height(50, context),
@@ -393,7 +391,8 @@ class AddYourRideScreen extends StatelessWidget {
                                                     .add(searchRideDuration);
                                             DateTime selectedDate =
                                                 controller.selectedDate.value;
-                                            log("listOfRide :: Selected Date: ${Constant.dateToString(selectedDate)} selectedDate :: Interval Duration Time: ${Constant.dateToString(intervalDurationTime)}");
+                                            print(
+                                                "listOfRide :: Selected Date: ${Constant.dateToString(selectedDate)} selectedDate :: Interval Duration Time: ${Constant.dateToString(intervalDurationTime)}");
                                             DateTime rideDepartureTime = ride
                                                 .departureDateTime!
                                                 .toDate();
@@ -419,7 +418,8 @@ class AddYourRideScreen extends StatelessWidget {
                                                       .stringConvertIntoDuration(
                                                           ride.estimatedTime ??
                                                               ''));
-                                              log("listOfRide :: Start Date: ${Constant.dateToString(pickUpTime)} selectedDate :: End Time: ${Constant.dateToString(droffTime)} :: Selected Date :: ${Constant.dateToString(controller.selectedDate.value)}");
+                                              print(
+                                                  "listOfRide :: Start Date: ${Constant.dateToString(pickUpTime)} selectedDate :: End Time: ${Constant.dateToString(droffTime)} :: Selected Date :: ${Constant.dateToString(controller.selectedDate.value)}");
                                               return controller
                                                       .selectedDate.value
                                                       .isAfter(pickUpTime) &&

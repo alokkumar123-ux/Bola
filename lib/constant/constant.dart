@@ -44,7 +44,6 @@ class Constant {
   static String jsonNotificationFileURL = '';
 
   static String priceVariation = "5";
-  static String radius = "5";
   static String intervalHoursForPublishNewRide = "0";
 
   static String appBannerImageDark = "";
@@ -231,8 +230,7 @@ class Constant {
   }
 
   static const userPlaceHolder = 'assets/images/user_placeholder.png';
-  static const getStartedImage =
-      'assets/images/ic_logo.png';
+  static const getStartedImage = 'assets/images/get_started.png';
 
   static const chattiness = [
     'I love to chat',
@@ -466,6 +464,18 @@ class Constant {
   static String getReferralCode() {
     var rng = math.Random();
     return (rng.nextInt(900000) + 100000).toString();
+  }
+
+  /// Generate a 6-character PNR code for booked users
+  /// Example: PM3F92K
+  static String generatePNR() {
+    const String chars = '0123456789';
+    final rng = math.Random();
+
+    String randomPart =
+        List.generate(10, (_) => chars[rng.nextInt(chars.length)]).join();
+
+    return '$randomPart';
   }
 
   static LanguageModel getLanguage() {
@@ -719,6 +729,27 @@ class Constant {
             2;
     var radiusOfEarth = 6371;
     return radiusOfEarth * 2 * asin(sqrt(a));
+  }
+
+  /// Calculate dynamic radius as 10% of the distance between pickup and drop
+  /// Returns radius in kilometers
+  /// Minimum radius is 2km to ensure reasonable matching
+  /// Maximum radius is capped at 50km for very long routes
+  static double calculateDynamicRadius(Location pickup, Location drop) {
+    double totalDistance = calculateDistance(pickup, drop);
+    double dynamicRadius = totalDistance * 0.10; // 10% of total distance
+
+    // Set minimum radius of 2km to ensure matches on short routes
+    const double minRadius = 1.0;
+    // Set maximum radius of 50km to prevent overly broad matching on very long routes
+    const double maxRadius = 50.0;
+
+    if (dynamicRadius < minRadius) {
+      return minRadius;
+    } else if (dynamicRadius > maxRadius) {
+      return maxRadius;
+    }
+    return dynamicRadius;
   }
 
   static List<LatLng> decodePolyline(String poly) {

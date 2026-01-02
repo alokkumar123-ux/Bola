@@ -5,7 +5,6 @@ import 'package:poolmate/model/booking_model.dart';
 import 'package:poolmate/model/map/geometry.dart';
 import 'package:poolmate/model/ride_alert_model.dart';
 
-
 class RideAlertUtils {
   static FirebaseFirestore fireStore = FirebaseFirestore.instance;
 
@@ -142,6 +141,12 @@ class RideAlertUtils {
     bool isPickUpMatched = false;
     bool isDropOffMatched = false;
 
+    // Calculate dynamic radius as 10% of the distance between alert's pickup and drop
+    double dynamicRadius = Constant.calculateDynamicRadius(
+        Location(
+            lat: alert.pickUpLocation!.lat, lng: alert.pickUpLocation!.lng),
+        Location(lat: alert.dropLocation!.lat, lng: alert.dropLocation!.lng));
+
     // Iterate through all stopOvers in the booking to find matching pickup and drop
     for (var stopOver in booking.stopOverList!) {
       // Skip if stopOver doesn't have valid location data
@@ -163,13 +168,13 @@ class RideAlertUtils {
               lat: stopOver.endLocation!.lat, lng: stopOver.endLocation!.lng),
           Location(lat: alert.dropLocation!.lat, lng: alert.dropLocation!.lng));
 
-      // Check if pickup is within radius
-      if (distancePickup <= double.parse(Constant.radius)) {
+      // Check if pickup is within dynamic radius
+      if (distancePickup <= dynamicRadius) {
         isPickUpMatched = true;
       }
 
-      // Check if drop is within radius
-      if (distanceDrop <= double.parse(Constant.radius)) {
+      // Check if drop is within dynamic radius
+      if (distanceDrop <= dynamicRadius) {
         isDropOffMatched = true;
       }
 

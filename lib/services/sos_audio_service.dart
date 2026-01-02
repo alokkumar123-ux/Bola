@@ -44,14 +44,14 @@ class SosAudioService extends GetxService {
 
     // Listen to player state changes
     _audioPlayer.onPlayerStateChanged.listen((PlayerState state) {
-      log('SOS Audio Player State: $state');
+      print('SOS Audio Player State: $state');
       if (state == PlayerState.playing) {
         isPlaying.value = true;
       } else if (state == PlayerState.stopped ||
           state == PlayerState.completed) {
         // If it stopped but we want it playing, restart
         if (isPlaying.value) {
-          log('SOS Audio stopped unexpectedly - restarting...');
+          print('SOS Audio stopped unexpectedly - restarting...');
           _restartAudio();
         }
       }
@@ -59,7 +59,7 @@ class SosAudioService extends GetxService {
 
     // Handle player completion (backup for loop mode)
     _audioPlayer.onPlayerComplete.listen((_) {
-      log('SOS Audio completed - restarting...');
+      print('SOS Audio completed - restarting...');
       if (isPlaying.value) {
         _restartAudio();
       }
@@ -69,12 +69,12 @@ class SosAudioService extends GetxService {
   /// Start playing SOS audio continuously
   Future<void> startPlaying() async {
     if (isPlaying.value) {
-      log('SOS audio is already playing');
+      print('SOS audio is already playing');
       return;
     }
 
     isPlaying.value = true;
-    log('Starting SOS audio playback...');
+    print('Starting SOS audio playback...');
 
     // Start a timer to keep restarting audio (backup mechanism)
     _startLoopTimer();
@@ -82,7 +82,7 @@ class SosAudioService extends GetxService {
     // Start a timer to auto-stop after 5 minutes (300 seconds)
     _autoStopTimer?.cancel();
     _autoStopTimer = Timer(const Duration(minutes: 5), () async {
-      log('Auto-stop timer reached 5 minutes, stopping SOS audio');
+      print('Auto-stop timer reached 5 minutes, stopping SOS audio');
       await stopPlaying();
     });
 
@@ -96,7 +96,7 @@ class SosAudioService extends GetxService {
       if (isPlaying.value) {
         final playerState = _audioPlayer.state;
         if (playerState != PlayerState.playing) {
-          log('Loop timer: Audio not playing, restarting...');
+          print('Loop timer: Audio not playing, restarting...');
           await _restartAudio();
         }
       } else {
@@ -111,7 +111,7 @@ class SosAudioService extends GetxService {
       await Future.delayed(const Duration(milliseconds: 100));
       await _playAudio();
     } catch (e) {
-      log('Error restarting audio: $e');
+      print('Error restarting audio: $e');
     }
   }
 
@@ -119,16 +119,16 @@ class SosAudioService extends GetxService {
     try {
       // Use asset file for both Android and iOS
       // The file is in assets/audio/sos_43210.mp3
-      log('Playing SOS audio from assets/audio/sos_43210.mp3');
+      print('Playing SOS audio from assets/audio/sos_43210.mp3');
 
       // Set loop mode before playing
       await _audioPlayer.setReleaseMode(ReleaseMode.loop);
       await _audioPlayer.play(AssetSource('audio/sos_43210.mp3'));
       await _audioPlayer.setVolume(1.0);
 
-      log('SOS audio started playing successfully');
+      print('SOS audio started playing successfully');
     } catch (e) {
-      log('Error playing SOS audio from assets: $e');
+      print('Error playing SOS audio from assets: $e');
       // Try fallback methods
       await _tryFallbackPlay();
     }
@@ -136,27 +136,27 @@ class SosAudioService extends GetxService {
 
   Future<void> _tryFallbackPlay() async {
     try {
-      log('Trying fallback: assets/audio folder');
+      print('Trying fallback: assets/audio folder');
       await _audioPlayer.setReleaseMode(ReleaseMode.loop);
       await _audioPlayer.play(AssetSource('audio/sos_43210.mp3'));
       await _audioPlayer.setVolume(1.0);
-      log('SOS audio started from assets folder');
+      print('SOS audio started from assets folder');
     } catch (e2) {
-      log('Error with fallback method: $e2');
+      print('Error with fallback method: $e2');
       try {
-        log('Trying last resort: direct asset');
+        print('Trying last resort: direct asset');
         await _audioPlayer.setReleaseMode(ReleaseMode.loop);
         await _audioPlayer.play(AssetSource('sos_43210.mp3'));
         await _audioPlayer.setVolume(1.0);
       } catch (e3) {
-        log('All methods failed to play SOS audio: $e3');
+        print('All methods failed to play SOS audio: $e3');
       }
     }
   }
 
   /// Stop playing SOS audio
   Future<void> stopPlaying() async {
-    log('Stopping SOS audio playback...');
+    print('Stopping SOS audio playback...');
 
     // Stop the loop timer first
     _loopTimer?.cancel();
@@ -171,9 +171,9 @@ class SosAudioService extends GetxService {
 
     try {
       await _audioPlayer.stop();
-      log('SOS audio stopped');
+      print('SOS audio stopped');
     } catch (e) {
-      log('Error stopping SOS audio: $e');
+      print('Error stopping SOS audio: $e');
     }
   }
 

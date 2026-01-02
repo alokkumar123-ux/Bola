@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 class RcWebViewScreen extends StatefulWidget {
   final String userId;
@@ -18,34 +18,15 @@ class RcWebViewScreen extends StatefulWidget {
 }
 
 class _RcWebViewScreenState extends State<RcWebViewScreen> {
-  late final WebViewController _controller;
   StreamSubscription? _sub;
   bool _completed = false;
   bool _isLoading = true;
+  late String _url;
 
   @override
   void initState() {
     super.initState();
-    final String url =
-        'https://bolaletsgo.com/aadhar/rc.php?user=${widget.userId}';
-
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageStarted: (String url) {
-            setState(() {
-              _isLoading = true;
-            });
-          },
-          onPageFinished: (String url) {
-            setState(() {
-              _isLoading = false;
-            });
-          },
-        ),
-      )
-      ..loadRequest(Uri.parse(url));
+    _url = 'https://bolaletsgo.com/aadhar/rc.php?user=${widget.userId}';
 
     // Listen to Firebase for RC verification status in users collection
     // Specifically monitor for the vehicle number that was entered
@@ -94,7 +75,24 @@ class _RcWebViewScreenState extends State<RcWebViewScreen> {
       ),
       body: Stack(
         children: [
-          WebViewWidget(controller: _controller),
+          InAppWebView(
+            initialUrlRequest: URLRequest(url: WebUri(_url)),
+            initialSettings: InAppWebViewSettings(
+              javaScriptEnabled: true,
+              domStorageEnabled: true,
+              useHybridComposition: true,
+            ),
+            onLoadStart: (controller, url) {
+              setState(() {
+                _isLoading = true;
+              });
+            },
+            onLoadStop: (controller, url) {
+              setState(() {
+                _isLoading = false;
+              });
+            },
+          ),
           if (_isLoading)
             const Center(
               child: CircularProgressIndicator(),

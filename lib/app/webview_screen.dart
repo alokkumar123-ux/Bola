@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 class WebViewScreen extends StatelessWidget {
   final String url;
@@ -10,10 +10,13 @@ class WebViewScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: WebViewWidget(
-          controller: WebViewController()
-            ..setJavaScriptMode(JavaScriptMode.unrestricted)
-            ..loadRequest(Uri.parse(url)),
+        child: InAppWebView(
+          initialUrlRequest: URLRequest(url: WebUri(url)),
+          initialSettings: InAppWebViewSettings(
+            javaScriptEnabled: true,
+            domStorageEnabled: true,
+            useHybridComposition: true,
+          ),
         ),
       ),
     );

@@ -22,6 +22,7 @@ import 'package:poolmate/utils/dark_theme_provider.dart';
 import 'package:poolmate/utils/network_image_widget.dart';
 import 'package:poolmate/utils/firestore/user_utils.dart';
 import 'package:poolmate/utils/firestore/auth_utils.dart';
+import 'package:poolmate/services/fcm_token_manager.dart';
 import 'package:provider/provider.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -227,7 +228,8 @@ class ProfileScreen extends StatelessWidget {
 
                             menuItemWidget(
                               onTap: () {
-                                Get.to(const VerificationScreen());
+                                Get.to(VerificationScreen(
+                                    usermodel: controller.userModel.value));
                               },
                               title: "Account Verification".tr,
                               subTitle:
@@ -348,6 +350,9 @@ class ProfileScreen extends StatelessWidget {
                                         positiveString: "Log out".tr,
                                         negativeString: "Cancel".tr,
                                         positiveClick: () async {
+                                          // Deactivate FCM token before logout
+                                          await FcmTokenManager.instance
+                                              .deactivateCurrentDeviceToken();
                                           // Clear local user ID
                                           await AuthUtils.clearCurrentUid();
                                           // Sign out from Firebase if signed in

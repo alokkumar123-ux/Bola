@@ -103,3 +103,61 @@
 -keep class com.google.android.play.core.splitinstall.** { *; }
 -keep class com.google.android.play.core.tasks.** { *; }
 -dontwarn com.google.android.play.core.**
+
+##############################################
+# Firebase
+##############################################
+-keep class com.google.firebase.** { *; }
+-dontwarn com.google.firebase.**
+-keep class com.google.android.gms.** { *; }
+-dontwarn com.google.android.gms.**
+
+##############################################
+# Cashfree SDK
+##############################################
+-keep class com.cashfree.** { *; }
+-dontwarn com.cashfree.**
+
+##############################################
+# GetX (Flutter State Management)
+##############################################
+-keep class get.** { *; }
+-dontwarn get.**
+
+##############################################
+# Awesome Notifications
+##############################################
+-keep class me.carda.awesome_notifications.** { *; }
+-dontwarn me.carda.awesome_notifications.**
+
+##############################################
+# Google Maps
+##############################################
+-keep class com.google.android.libraries.maps.** { *; }
+-dontwarn com.google.android.libraries.maps.**
+
+##############################################
+# Flutter InAppWebView
+##############################################
+-keep class com.pichillilorenzo.flutter_inappwebview.** { *; }
+-dontwarn com.pichillilorenzo.flutter_inappwebview.**
+
+##############################################
+# Keep all model classes (Firestore/JSON serialization)
+##############################################
+-keep class com.alok.poolmate.model.** { *; }
+
+##############################################
+# Prevent R8 from stripping native methods
+##############################################
+-keepclasseswithmembernames class * {
+    native <methods>;
+}
+
+##############################################
+# Keep annotations
+##############################################
+-keepattributes *Annotation*
+-keepattributes SourceFile,LineNumberTable
+-keepattributes Signature
+-keepattributes Exceptions

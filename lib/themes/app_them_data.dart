@@ -4,7 +4,7 @@ class AppThemeData {
   static const Color primary50 = Color(0xFFE5F0FF);
   static const Color primary100 = Color(0xFFA7CAFF);
   static const Color primary200 = Color(0xFF69A5FF);
-  static Color primary300 = const Color(0xFF2B80FF);
+  static Color primary300 = Colors.black;
   static const Color primary400 = Color(0xFF1C58B2);
   static const Color primary500 = Color(0xFF0E3166);
   static const Color primary600 = Color(0xFF000A1A);

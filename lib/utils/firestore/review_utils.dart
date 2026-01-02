@@ -71,7 +71,7 @@ class ReviewUtils {
         .then((value) {
       isAdded = true;
     }).catchError((error) {
-      log("Failed to update user: $error");
+      print("Failed to update user: $error");
       isAdded = false;
     });
     return isAdded;

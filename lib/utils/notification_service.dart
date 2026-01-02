@@ -14,20 +14,20 @@ import 'package:poolmate/utils/preferences.dart';
 @pragma('vm:entry-point')
 Future<void> awesomeOnActionReceivedMethod(
     ReceivedAction receivedAction) async {
-  log('Awesome Notification action received: ${receivedAction.payload}');
+  print('Awesome Notification action received: ${receivedAction.payload}');
 
   final String? type = receivedAction.payload?['type'];
 
   // Stop SOS audio when notification is tapped
   // if (type == 'sos_alert') {
-  //   log('SOS Alert notification tapped - stopping audio');
+  //   print('SOS Alert notification tapped - stopping audio');
   //   try {
   //     if (Get.isRegistered<SosAudioService>()) {
   //       final sosAudioService = Get.find<SosAudioService>();
   //       await sosAudioService.stopPlaying();
   //     }
   //   } catch (e) {
-  //     log("Error stopping SOS audio on notification tap: $e");
+  //     print("Error stopping SOS audio on notification tap: $e");
   //   }
   // }
 
@@ -51,18 +51,18 @@ Future<void> awesomeOnActionReceivedMethod(
 @pragma('vm:entry-point')
 Future<void> awesomeOnNotificationCreatedMethod(
     ReceivedNotification receivedNotification) async {
-  log('Awesome Notification created: ${receivedNotification.id}');
+  print('Awesome Notification created: ${receivedNotification.id}');
 }
 
 @pragma('vm:entry-point')
 Future<void> awesomeOnNotificationDisplayedMethod(
     ReceivedNotification receivedNotification) async {
-  log('Awesome Notification displayed: ${receivedNotification.id}');
+  print('Awesome Notification displayed: ${receivedNotification.id}');
 
   // Start audio when SOS notification is displayed
   final String? type = receivedNotification.payload?['type'];
   if (type == 'sos_alert') {
-    log('SOS notification displayed - starting audio');
+    print('SOS notification displayed - starting audio');
     try {
       if (!Get.isRegistered<SosAudioService>()) {
         Get.put(SosAudioService());
@@ -70,7 +70,7 @@ Future<void> awesomeOnNotificationDisplayedMethod(
       final sosAudioService = Get.find<SosAudioService>();
       await sosAudioService.startPlaying();
     } catch (e) {
-      log("Error starting SOS audio on notification display: $e");
+      print("Error starting SOS audio on notification display: $e");
     }
   }
 }
@@ -78,7 +78,7 @@ Future<void> awesomeOnNotificationDisplayedMethod(
 @pragma('vm:entry-point')
 Future<void> awesomeOnDismissActionReceivedMethod(
     ReceivedAction receivedAction) async {
-  log('Awesome Notification dismissed: ${receivedAction.id}');
+  print('Awesome Notification dismissed: ${receivedAction.id}');
 
   // Stop SOS audio when notification is dismissed
   // final String? type = receivedAction.payload?['type'];
@@ -87,10 +87,10 @@ Future<void> awesomeOnDismissActionReceivedMethod(
   //     if (Get.isRegistered<SosAudioService>()) {
   //       final sosAudioService = Get.find<SosAudioService>();
   //       await sosAudioService.stopPlaying();
-  //       log('SOS audio stopped after notification dismissed');
+  //       print('SOS audio stopped after notification dismissed');
   //     }
   //   } catch (e) {
-  //     log('Error stopping SOS audio on dismiss: $e');
+  //     print('Error stopping SOS audio on dismiss: $e');
   //   }
   // }
 }
@@ -99,14 +99,15 @@ Future<void> awesomeOnDismissActionReceivedMethod(
 /// Must be top-level for background execution
 @pragma('vm:entry-point')
 Future<void> firebaseMessageBackgroundHandle(RemoteMessage message) async {
-  log("🔔 BackGround Message :: ${message.messageId}");
-  log("🔔 BackGround Message Data :: ${message.data}");
-  log("🔔 BackGround Notification :: ${message.notification?.title} - ${message.notification?.body}");
+  print("🔔 BackGround Message :: ${message.messageId}");
+  print("🔔 BackGround Message Data :: ${message.data}");
+  print(
+      "🔔 BackGround Notification :: ${message.notification?.title} - ${message.notification?.body}");
 
   // Handle background notification data
   if (message.data.isNotEmpty || message.notification != null) {
     final String type = message.data['type'] ?? '';
-    log("🔔 Background notification type: $type");
+    print("🔔 Background notification type: $type");
 
     // For all notifications in background, create using Awesome Notifications
     // Android will also show system notification, but we want to ensure it shows
@@ -144,16 +145,16 @@ Future<void> firebaseMessageBackgroundHandle(RemoteMessage message) async {
           payload: payloadMap,
         ),
       );
-      log("✅ Background notification created successfully");
+      print("✅ Background notification created successfully");
     } catch (e) {
-      log("❌ Error creating background notification: $e");
+      print("❌ Error creating background notification: $e");
     }
   }
 }
 
 class NotificationService {
   initInfo() async {
-    log('Initializing notification service...');
+    print('Initializing notification service...');
 
     await FirebaseMessaging.instance
         .setForegroundNotificationPresentationOptions(
@@ -172,11 +173,11 @@ class NotificationService {
       sound: true,
     );
 
-    log('Notification permission status: ${request.authorizationStatus}');
+    print('Notification permission status: ${request.authorizationStatus}');
 
     if (request.authorizationStatus == AuthorizationStatus.authorized ||
         request.authorizationStatus == AuthorizationStatus.provisional) {
-      log('Notification service initialized successfully');
+      print('Notification service initialized successfully');
       await setupInteractedMessage();
     }
   }
@@ -186,7 +187,8 @@ class NotificationService {
     RemoteMessage? initialMessage =
         await FirebaseMessaging.instance.getInitialMessage();
     if (initialMessage != null) {
-      log("App opened from terminated state with message: ${initialMessage.data}");
+      print(
+          "App opened from terminated state with message: ${initialMessage.data}");
       final String type = initialMessage.data['type'] ?? '';
       await handleNotificationTap(
           type: type, isBgApp: true, data: initialMessage.data);
@@ -194,15 +196,16 @@ class NotificationService {
 
     // Foreground message handler
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-      log("::::::::::::onMessage (FOREGROUND):::::::::::::::::");
-      log('Message data: ${message.data}');
-      log('Message notification: ${message.notification?.toMap()}');
-      log('Has notification object: ${message.notification != null}');
+      print("::::::::::::onMessage (FOREGROUND):::::::::::::::::");
+      print('Message data: ${message.data}');
+      print('Message notification: ${message.notification?.toMap()}');
+      print('Has notification object: ${message.notification != null}');
 
       // Check for SOS alert and start playing audio
       final String type = message.data['type'] ?? '';
       if (type == 'sos_alert') {
-        log("SOS Alert received in foreground - starting continuous audio playback");
+        print(
+            "SOS Alert received in foreground - starting continuous audio playback");
         try {
           // Initialize SOS audio service if not already initialized
           if (!Get.isRegistered<SosAudioService>()) {
@@ -211,7 +214,7 @@ class NotificationService {
           final sosAudioService = Get.find<SosAudioService>();
           await sosAudioService.startPlaying();
         } catch (e) {
-          log("Error starting SOS audio: $e");
+          print("Error starting SOS audio: $e");
         }
 
         // Display SOS notification using Awesome Notifications
@@ -219,14 +222,14 @@ class NotificationService {
       } else {
         // Display ALL notifications when app is in foreground
         // FCM doesn't show notifications automatically in foreground, so we must display them
-        log('Displaying notification in foreground: ${message.notification?.title ?? "No title"}');
+        print(
+            'Displaying notification in foreground: ${message.notification?.title ?? "No title"}');
         await display(message);
       }
     });
 
     // Handle notification tap when app is in background
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage? message) async {
-      log("::::::::::::onMessageOpenedApp:::::::::::::::::");
       if (message != null) {
         final String type = message.data['type'] ?? '';
         await handleNotificationTap(
@@ -234,8 +237,12 @@ class NotificationService {
       }
     });
 
-    log("::::::::::::Permission authorized:::::::::::::::::");
-    await FirebaseMessaging.instance.subscribeToTopic("QuicklAI");
+    // Subscribe to topic with timeout to prevent blocking when service is unavailable
+    try {
+      await FirebaseMessaging.instance
+          .subscribeToTopic("QuicklAI")
+          .timeout(const Duration(seconds: 5), onTimeout: () {});
+    } catch (e) {}
   }
 
   Future<void> _displaySosNotification(RemoteMessage message) async {
@@ -265,9 +272,9 @@ class NotificationService {
         ),
       );
 
-      log('SOS Notification displayed using Awesome Notifications');
+      print('SOS Notification displayed using Awesome Notifications');
     } catch (e) {
-      log('Error displaying SOS notification: $e');
+      print('Error displaying SOS notification: $e');
     }
   }
 
@@ -293,7 +300,7 @@ class NotificationService {
       if (isBgApp == false) {
         // Navigate to search screen when ride alert is tapped
         // You can pass the booking ID from data if needed
-        log('Ride alert notification tapped - navigating to search');
+        print('Ride alert notification tapped - navigating to search');
         // Get.offAll() with search or booking details if needed
       }
     }
@@ -302,10 +309,10 @@ class NotificationService {
   static getToken() async {
     try {
       String? token = await FirebaseMessaging.instance.getToken();
-      log('Current FCM Token: $token');
+      print('Current FCM Token: $token');
       return token ?? '';
     } catch (e) {
-      log('Failed to get FCM token: $e');
+      print('Failed to get FCM token: $e');
       return '';
     }
   }
@@ -325,9 +332,9 @@ class NotificationService {
           payload: {'type': 'sos_alert'},
         ),
       );
-      log('Test notification created');
+      print('Test notification created');
     } catch (e) {
-      log('Error creating test notification: $e');
+      print('Error creating test notification: $e');
     }
   }
 
@@ -344,7 +351,8 @@ class NotificationService {
           message.data['message'] ??
           'You have a new notification';
 
-      log('Displaying notification - Type: $type, Title: $title, Body: $body');
+      print(
+          'Displaying notification - Type: $type, Title: $title, Body: $body');
 
       // Use high_importance_channel to match FCM channel_id
       String channelKey = 'high_importance_channel';
@@ -381,10 +389,58 @@ class NotificationService {
         ),
       );
 
-      log('✅ Notification displayed successfully using Awesome Notifications (ID: $notificationId)');
+      print(
+          '✅ Notification displayed successfully using Awesome Notifications (ID: $notificationId)');
     } catch (e, stackTrace) {
-      log('❌ Error displaying notification with Awesome Notifications: $e');
-      log('Stack trace: $stackTrace');
+      print('❌ Error displaying notification with Awesome Notifications: $e');
+      print('Stack trace: $stackTrace');
+    }
+  }
+
+  /// Schedule a local notification at a specific time
+  static Future<void> scheduleNotification({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime scheduledTime,
+  }) async {
+    try {
+      // Ensure time is in the future
+      if (scheduledTime.isBefore(DateTime.now())) {
+        print('❌ Cannot schedule notification in the past: $scheduledTime');
+        return;
+      }
+
+      await AwesomeNotifications().createNotification(
+        content: NotificationContent(
+          id: id,
+          channelKey: 'high_importance_channel',
+          title: title,
+          body: body,
+          notificationLayout: NotificationLayout.BigText,
+          category: NotificationCategory.Reminder,
+          wakeUpScreen: true,
+        ),
+        schedule: NotificationCalendar.fromDate(
+          date: scheduledTime,
+          allowWhileIdle: true,
+          preciseAlarm: true,
+        ),
+      );
+      print(
+          '⏰ Notification scheduled successfully for $scheduledTime (ID: $id)');
+    } catch (e) {
+      print('❌ Error scheduling notification: $e');
+    }
+  }
+
+  /// Cancel a specific scheduled notification
+  static Future<void> cancelNotification(int id) async {
+    try {
+      await AwesomeNotifications().cancel(id);
+      print('🗑️ Notification $id cancelled');
+    } catch (e) {
+      print('❌ Error cancelling notification: $e');
     }
   }
 }
