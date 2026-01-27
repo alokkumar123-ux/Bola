@@ -46,10 +46,13 @@ class AddYourRideController extends GetxController {
   RxInt numberOfSheet = 1.obs;
   RxBool womenOnly = false.obs;
   RxBool onlyVerifiedPassenger = false.obs;
+  RxList<TextEditingController> stopOverPriceControllers =
+      <TextEditingController>[].obs;
   RxBool twoPassengerMaxInBack = false.obs;
   RxList<int> selectedSeats = <int>[].obs;
   RxString driverPaymentMethod =
       "".obs; // New field for driver's payment preference
+  RxBool isPublishing = false.obs;
 
   Rx<DateTime> selectedDate = DateTime.now().obs;
 
@@ -224,6 +227,7 @@ class AddYourRideController extends GetxController {
     filterSelectedCityList.clear();
     wayPointPolyLines.clear();
     stopOverList.clear();
+    stopOverPriceControllers.clear();
 
     // On web, skip the API call due to CORS restrictions
     if (kIsWeb) {
@@ -247,25 +251,30 @@ class AddYourRideController extends GetxController {
             ? directionAPIModel.routes!.first
             : directionAPIModel.routes![selectedRouteIndex.value];
         for (var element in route.legs!) {
-          String price = (double.parse(Constant.distanceCalculate(
-                      element.distance!.value.toString())) *
-                  double.parse(selectedUserVehicle
-                      .value.vehicleType!.perKmCharges
-                      .toString()))
-              .toString();
-          String recommendedPrice = (double.parse(Constant.distanceCalculate(
-                      element.distance!.value.toString())) *
-                  double.parse(selectedUserVehicle
-                      .value.vehicleType!.perKmCharges
-                      .toString()))
-              .toString();
+          // If only one leg (no stopovers), use the main price
+          // Otherwise calculate based on distance
+          String calculatedPrice;
+          if (selectedCityList.isEmpty) {
+            // No intermediate stopovers - use main price
+            calculatedPrice = price.value.toStringAsFixed(2);
+          } else {
+            calculatedPrice = (double.parse(Constant.distanceCalculate(
+                        element.distance!.value.toString())) *
+                    double.parse(selectedUserVehicle
+                        .value.vehicleType!.perKmCharges
+                        .toString()))
+                .toStringAsFixed(2);
+          }
+
+          stopOverPriceControllers
+              .add(TextEditingController(text: calculatedPrice));
+
           stopOverList.add(StopOverModel(
               duration: element.duration,
               distance: element.distance,
               endAddress: element.endAddress,
               endLocation: element.endLocation,
-              price: price,
-              recommendedPrice: recommendedPrice,
+              price: calculatedPrice,
               startAddress: element.startAddress,
               startLocation: element.startLocation));
         }
@@ -316,6 +325,14 @@ class AddYourRideController extends GetxController {
         if (price.value < 0) price.value = 0.0;
       }
     }
+
+    // Sync main price with stopover price if there is only one leg
+    if (stopOverList.length == 1) {
+      stopOverList[0].price = price.value.toStringAsFixed(2);
+      if (stopOverPriceControllers.isNotEmpty) {
+        stopOverPriceControllers[0].text = price.value.toStringAsFixed(2);
+      }
+    }
   }
 
   changeStopOverPrice(int index, bool isIncrement) {
@@ -331,18 +348,28 @@ class AddYourRideController extends GetxController {
         stopOverModel.price = (newPrice < 0 ? 0.0 : newPrice).toString();
       }
     }
+    stopOverPriceControllers[index].text = stopOverModel.price!;
     stopOverList.removeAt(index);
     stopOverList.insert(index, stopOverModel);
+
+    // Sync stopover price back to main price if only one leg
+    if (stopOverList.length == 1) {
+      price.value = double.tryParse(stopOverModel.price ?? '0.0') ?? 0.0;
+    }
     update();
   }
 
   publishRide() async {
+    if (isPublishing.value) return;
+    isPublishing.value = true;
+
     // Check wallet balance before publishing ride
     double walletBalance =
         double.tryParse(userModel.value.walletAmount ?? "0.0") ?? 0.0;
     const double minAllowedBalance = -500.0;
 
     if (walletBalance < minAllowedBalance) {
+      isPublishing.value = false;
       _showWalletTopUpDialog();
       return;
     }
@@ -442,12 +469,6 @@ class AddYourRideController extends GetxController {
           notificationBody,
           notificationData,
         );
-        await _sendFCMMessage(
-          publisherFcmToken,
-          notificationTitle,
-          notificationBody,
-          notificationData,
-        );
         print('📤 Ride published notification sent to driver');
       }
 
@@ -483,15 +504,15 @@ class AddYourRideController extends GetxController {
       final dashboardController = Get.put(DashboardScreenController());
       Get.offAll(
         const DashBoardScreen(),
-        arguments: {
-          'goToMyRidePublished': true,
-          'publishedRideId': bookingModel.id,
-        },
       );
       // Switch to MyRide tab after navigation
       Future.delayed(const Duration(milliseconds: 100), () {
         dashboardController.selectedIndex.value = 1;
       });
+      isPublishing.value = false;
+    }).catchError((e) {
+      isPublishing.value = false;
+      log("Error publishing ride: $e");
     });
   }
 

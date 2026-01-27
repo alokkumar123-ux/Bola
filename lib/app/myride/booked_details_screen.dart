@@ -1403,14 +1403,7 @@ class BookedDetailsScreen extends StatelessWidget {
                                               Constant.completed ||
                                           controller
                                                   .bookingModel.value.status ==
-                                              Constant.canceled ||
-                                          (controller.bookingModel.value
-                                                      .cancelledUserId !=
-                                                  null &&
-                                              controller.bookingModel.value
-                                                  .cancelledUserId!
-                                                  .contains(AuthUtils
-                                                      .getCurrentUid()))
+                                              Constant.canceled
                                       ? const SizedBox()
                                       : Expanded(
                                           child: RoundedButtonFill(
@@ -1742,7 +1735,7 @@ class BookedDetailsScreen extends StatelessWidget {
                                                           final Uri launchUri =
                                                               Uri(
                                                                   scheme: 'tel',
-                                                                  path: '100');
+                                                                  path: '112');
                                                           if (await canLaunchUrl(
                                                               launchUri)) {
                                                             await launchUrl(

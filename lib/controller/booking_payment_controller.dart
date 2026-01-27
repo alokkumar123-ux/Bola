@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:poolmate/app/dashboard_screen.dart';
+import 'package:poolmate/app/home_screen/booking_success_screen.dart';
 import 'package:poolmate/app/myride/myride_screen.dart';
 import 'package:poolmate/app/payment/cashfreeScreen.dart';
 import 'package:poolmate/constant/constant.dart';
@@ -14,12 +15,15 @@ import 'package:poolmate/constant/show_toast_dialog.dart';
 import 'package:poolmate/model/booking_model.dart';
 import 'package:poolmate/model/map/geometry.dart';
 import 'package:poolmate/model/payment_method_model.dart';
+import 'package:poolmate/model/pending_booking_model.dart';
 import 'package:poolmate/model/stop_over_model.dart';
 import 'package:poolmate/model/user_model.dart';
 import 'package:poolmate/services/whatsapp_service.dart';
+import 'package:poolmate/utils/cashfree_verification_utils.dart';
 import 'package:poolmate/utils/firestore/auth_utils.dart';
 import 'package:poolmate/utils/firestore/booking_utils.dart';
 import 'package:poolmate/utils/firestore/payment_utils.dart';
+import 'package:poolmate/utils/firestore/pending_booking_utils.dart';
 import 'package:poolmate/utils/firestore/user_utils.dart';
 import 'package:poolmate/utils/firestore/wallet_utils.dart';
 import 'package:poolmate/utils/notification_service.dart';
@@ -197,12 +201,11 @@ class BookingPaymentController extends GetxController {
         // Process booking and redirect to MyRideScreen
         selectedPaymentMethod.value = "Wallet";
         isPaymentCompleted.value = true;
-        isPaymentCompleted.value = true;
         bool success = await _processBooking();
         if (success) {
-          Get.back();
-          Get.back();
-          Get.back();
+          ShowToastDialog.closeLoader();
+          Get.until((route) => route.isFirst);
+          Get.to(() => const BookingSuccessScreen());
         }
       } else {
         ShowToastDialog.showToast(
@@ -215,6 +218,9 @@ class BookingPaymentController extends GetxController {
       update();
     }
   }
+
+  // Current pending booking ID for cleanup on failure
+  String? _currentPendingBookingId;
 
   Future<void> _processCashfreePayment(BuildContext context) async {
     try {
@@ -235,43 +241,128 @@ class BookingPaymentController extends GetxController {
             "Failed to create payment session. Please try again.");
         return;
       }
+
+      final String orderId = sessionData["order_id"].toString();
       print("sessionData: $sessionData");
+
+      // ✅ STEP 1: Create pending booking BEFORE opening SDK
+      ShowToastDialog.showLoader("Preparing payment...");
+      final pendingBookingId = await _createPendingBooking(orderId);
+      ShowToastDialog.closeLoader();
+
+      if (pendingBookingId == null) {
+        ShowToastDialog.showToast(
+            "Failed to prepare payment. Please try again.");
+        return;
+      }
+      _currentPendingBookingId = pendingBookingId;
+
       print("Navigating to CashfreeScreen...");
-      final bool? result = await Get.to<bool>(() => CashfreeScreen(
-            orderId: sessionData["order_id"].toString(),
+      await Get.to<bool>(() => CashfreeScreen(
+            orderId: orderId,
             paymentSessionId: sessionData["payment_session_id"],
             paymentUrl: sessionData["payment_url"],
             isSandbox: sessionData["is_sandbox"] ?? true,
-            onPaymentResult: (success) {},
-          ));
+            onPaymentResult: (bool sdkPaymentSuccess) async {
+              if (sdkPaymentSuccess) {
+                // ✅ STEP 2: Verify payment via GET API before processing
+                ShowToastDialog.showLoader("Verifying payment...");
+                final verificationResult =
+                    await _verifyPaymentWithCashfree(orderId);
+                ShowToastDialog.closeLoader();
 
-      print("Cashfree payment result: $result");
-      if (result == true) {
-        ShowToastDialog.showToast("Payment Successful!!");
-        // Process booking and redirect to MyRideScreen
-        selectedPaymentMethod.value = "Cashfree";
-        isPaymentCompleted.value = true;
-        isPaymentCompleted.value = true;
-        bool success = await _processBooking();
-        if (success) {
-          Get.back();
-          Get.back();
-          Get.back();
-        }
-      } else {
-        ShowToastDialog.showToast("Payment cancelled or failed");
-        Get.back(result: {
-          "paymentType": "Cashfree",
-          "paymentSuccess": false,
-        });
-      }
+                if (verificationResult['is_paid'] == true) {
+                  ShowToastDialog.showToast("Payment Verified!");
+
+                  // ✅ STEP 3: Process booking only after server verification
+                  selectedPaymentMethod.value = "Cashfree";
+                  isPaymentCompleted.value = true;
+                  bool bookingSuccess = await _processBooking();
+
+                  if (bookingSuccess) {
+                    // ✅ STEP 4: Delete pending booking after successful processing
+                    await _deletePendingBooking(orderId);
+                    ShowToastDialog.closeLoader();
+                    Get.until((route) => route.isFirst);
+                    Get.to(() => const BookingSuccessScreen());
+                  }
+                } else {
+                  // Payment verification failed - SDK said success but server says no
+                  ShowToastDialog.showToast(
+                      "Payment verification failed. Please contact support.");
+                  await PendingBookingUtils.updateStatus(
+                      pendingBookingId, 'verification_failed');
+                }
+              } else {
+                // Payment was cancelled or failed - clean up pending booking
+                ShowToastDialog.showToast("Payment cancelled or failed");
+                await _deletePendingBooking(orderId);
+              }
+            },
+          ));
     } catch (e) {
       ShowToastDialog.closeLoader();
       ShowToastDialog.showToast("Payment failed: $e");
+      // Clean up pending booking on error
+      if (_currentPendingBookingId != null) {
+        await PendingBookingUtils.deletePendingBooking(
+            _currentPendingBookingId!);
+      }
       Get.back(result: {
         "paymentType": "Cashfree",
         "paymentSuccess": false,
       });
+    }
+  }
+
+  /// Create a pending booking record before payment initiation
+  Future<String?> _createPendingBooking(String orderId) async {
+    try {
+      final pendingBooking = PendingBookingModel(
+        userId: AuthUtils.getCurrentUid(),
+        orderId: orderId,
+        bookingId: bookingModel.value.id,
+        amount: totalAmount.value,
+        status: 'pending',
+        createdAt: Timestamp.now(),
+        selectedSeatIndices: selectedSeatIndices.toList(),
+        passengerNames: passengerNames.map((k, v) => MapEntry(k.toString(), v)),
+        passengerGenders:
+            passengerGenders.map((k, v) => MapEntry(k.toString(), v)),
+        passengerAges: passengerAges.map((k, v) => MapEntry(k.toString(), v)),
+        stopOverData: stopOverModel.value.toJson(),
+        pricePerSeat: getCorrectPrice(),
+        paymentMethod: 'Cashfree',
+      );
+
+      return await PendingBookingUtils.createPendingBooking(pendingBooking);
+    } catch (e) {
+      print('Error creating pending booking: $e');
+      return null;
+    }
+  }
+
+  /// Verify payment with Cashfree GET /pg/orders API
+  Future<Map<String, dynamic>> _verifyPaymentWithCashfree(
+      String orderId) async {
+    try {
+      return await CashfreeVerificationUtils.verifyPayment(
+        orderId: orderId,
+        cashfreeConfig: paymentModel.value.cashfree!,
+      );
+    } catch (e) {
+      print('Error verifying payment: $e');
+      return {'success': false, 'is_paid': false, 'message': e.toString()};
+    }
+  }
+
+  /// Delete pending booking after successful processing or failure
+  Future<void> _deletePendingBooking(String orderId) async {
+    try {
+      await PendingBookingUtils.deletePendingBookingByOrderId(orderId);
+      _currentPendingBookingId = null;
+    } catch (e) {
+      print('Error deleting pending booking: $e');
     }
   }
 
@@ -322,10 +413,7 @@ class BookingPaymentController extends GetxController {
             "customer_email": userModel.value.email ?? 'test@example.com',
             "customer_phone": userModel.value.phoneNumber ?? '9999999999',
           },
-          "order_meta": {
-            "return_url": "https://your-app.com/cashfree/success",
-            "cancel_url": "https://your-app.com/cashfree/cancel",
-          },
+          "order_meta": {},
           "order_note": "Ride booking payment via Cashfree",
         }),
       );
@@ -683,6 +771,7 @@ class BookingPaymentController extends GetxController {
       ShowToastDialog.showLoader("Processing booking...");
 
       // Move seats from tempSeatSelection to bookedSeat in Firebase
+      String updatedBookedSeats = "";
       if (bookingModel.value.id != null) {
         final docRef = FirebaseFirestore.instance
             .collection('booking')
@@ -714,14 +803,21 @@ class BookingPaymentController extends GetxController {
             currentTempSeats
                 .removeWhere((seat) => selectedSeatIndices.contains(seat));
 
+            // Store the updated value to sync with local model
+            updatedBookedSeats = currentBookedSeatsList.join(',');
+
             // Update both fields in the same transaction
             transaction.update(docRef, {
               'tempSeatSelection': currentTempSeats,
-              'bookedSeat': currentBookedSeatsList.join(','),
+              'bookedSeat': updatedBookedSeats,
               'bookedUserId': bookingModel.value.bookedUserId,
             });
           }
         });
+
+        // Sync local model with the value written to Firestore
+        // This prevents race condition where setBooking overwrites transaction
+        bookingModel.value.bookedSeat = updatedBookedSeats;
       }
 
       // Save user booking
@@ -824,7 +920,8 @@ class BookingPaymentController extends GetxController {
       ShowToastDialog.closeLoader();
 
       // Show success message
-      ShowToastDialog.showToast("Booking confirmed successfully!");
+      // Toast removed to prevent overlay conflict with navigation
+      // ShowToastDialog.showToast("Booking confirmed successfully!");
 
       // Do not navigate here, let caller handle navigation
       // Get.back(result: true);

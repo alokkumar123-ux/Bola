@@ -204,6 +204,13 @@ class BookedUserModel {
   List<TaxModel>? taxList;
   AdminCommission? adminCommission;
 
+  // Cashfree payment tracking fields
+  String? cashfreeOrderId; // Cashfree order ID for tracking
+  String? cashfreePaymentId; // cf_payment_id for refunds
+  String? bankReference; // Bank transaction reference
+  bool? paymentVerified; // True if verified via API
+  Timestamp? paymentVerifiedAt; // When payment was verified
+
   List<String>? selectedSeats;
   Map<String, String?>?
       passengerNames; // Map of seat index (as string) to passenger name
@@ -226,6 +233,11 @@ class BookedUserModel {
     this.dropLocation,
     this.taxList,
     this.adminCommission,
+    this.cashfreeOrderId,
+    this.cashfreePaymentId,
+    this.bankReference,
+    this.paymentVerified,
+    this.paymentVerifiedAt,
     this.selectedSeats,
     this.passengerNames,
     this.passengerGenders,
@@ -260,6 +272,11 @@ class BookedUserModel {
     adminCommission = json['adminCommission'] != null
         ? AdminCommission.fromJson(json['adminCommission'])
         : null;
+    cashfreeOrderId = json['cashfreeOrderId'];
+    cashfreePaymentId = json['cashfreePaymentId'];
+    bankReference = json['bankReference'];
+    paymentVerified = json['paymentVerified'];
+    paymentVerifiedAt = json['paymentVerifiedAt'];
     if (json['selectedSeats'] != null) {
       selectedSeats = List<String>.from(json['selectedSeats']);
     }
@@ -310,6 +327,21 @@ class BookedUserModel {
     }
     if (adminCommission != null) {
       data['adminCommission'] = adminCommission!.toJson();
+    }
+    if (cashfreeOrderId != null) {
+      data['cashfreeOrderId'] = cashfreeOrderId;
+    }
+    if (cashfreePaymentId != null) {
+      data['cashfreePaymentId'] = cashfreePaymentId;
+    }
+    if (bankReference != null) {
+      data['bankReference'] = bankReference;
+    }
+    if (paymentVerified != null) {
+      data['paymentVerified'] = paymentVerified;
+    }
+    if (paymentVerifiedAt != null) {
+      data['paymentVerifiedAt'] = paymentVerifiedAt;
     }
     if (selectedSeats != null) {
       data['selectedSeats'] = selectedSeats;

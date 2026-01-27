@@ -76,7 +76,8 @@ class BookingDetailsScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -117,10 +118,9 @@ class BookingDetailsScreen extends StatelessWidget {
                                           width: 10,
                                         ),
                                         Text(
-                                          Constant.timestampToDateTime(controller
-                                              .bookingModel
-                                              .value
-                                              .departureDateTime!),
+                                          Constant.timestampToDateTime(
+                                              controller.bookingModel.value
+                                                  .departureDateTime!),
                                           maxLines: 1,
                                           style: TextStyle(
                                             color: themeChange.getThem()
@@ -153,8 +153,8 @@ class BookingDetailsScreen extends StatelessWidget {
                                           width: 10,
                                         ),
                                         Text(
-                                          controller
-                                              .stopOverModel.value.duration!.text
+                                          controller.stopOverModel.value
+                                              .duration!.text
                                               .toString(),
                                           maxLines: 1,
                                           style: TextStyle(
@@ -260,8 +260,10 @@ class BookingDetailsScreen extends StatelessWidget {
                                                       ? AppThemeData.grey200
                                                       : AppThemeData.grey700,
                                                   fontSize: 16,
-                                                  overflow: TextOverflow.ellipsis,
-                                                  fontFamily: AppThemeData.medium,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  fontFamily:
+                                                      AppThemeData.medium,
                                                 ),
                                               ),
                                             ],
@@ -333,7 +335,8 @@ class BookingDetailsScreen extends StatelessWidget {
                                                                 : AppThemeData
                                                                     .grey800,
                                                             fontFamily:
-                                                                AppThemeData.bold,
+                                                                AppThemeData
+                                                                    .bold,
                                                             fontSize: 18)),
                                                     Text(
                                                       controller.stopOverModel
@@ -347,8 +350,9 @@ class BookingDetailsScreen extends StatelessWidget {
                                                                   .grey100
                                                               : AppThemeData
                                                                   .grey800,
-                                                          fontFamily: AppThemeData
-                                                              .regular,
+                                                          fontFamily:
+                                                              AppThemeData
+                                                                  .regular,
                                                           fontSize: 14),
                                                     ),
                                                     const SizedBox(
@@ -379,8 +383,9 @@ class BookingDetailsScreen extends StatelessWidget {
                                                                     .grey200
                                                                 : AppThemeData
                                                                     .grey700,
-                                                            overflow: TextOverflow
-                                                                .ellipsis,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
                                                             fontFamily:
                                                                 AppThemeData
                                                                     .regular,
@@ -395,8 +400,10 @@ class BookingDetailsScreen extends StatelessWidget {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                        controller.stopOverModel
-                                                                .value.endAddress
+                                                        controller
+                                                                .stopOverModel
+                                                                .value
+                                                                .endAddress
                                                                 ?.split(',')
                                                                 .first ??
                                                             'Location',
@@ -408,7 +415,8 @@ class BookingDetailsScreen extends StatelessWidget {
                                                                 : AppThemeData
                                                                     .grey800,
                                                             fontFamily:
-                                                                AppThemeData.bold,
+                                                                AppThemeData
+                                                                    .bold,
                                                             fontSize: 18)),
                                                     Text(
                                                       controller.stopOverModel
@@ -422,8 +430,9 @@ class BookingDetailsScreen extends StatelessWidget {
                                                                   .grey100
                                                               : AppThemeData
                                                                   .grey800,
-                                                          fontFamily: AppThemeData
-                                                              .regular,
+                                                          fontFamily:
+                                                              AppThemeData
+                                                                  .regular,
                                                           fontSize: 14),
                                                     ),
                                                     const SizedBox(
@@ -454,8 +463,9 @@ class BookingDetailsScreen extends StatelessWidget {
                                                                     .grey200
                                                                 : AppThemeData
                                                                     .grey700,
-                                                            overflow: TextOverflow
-                                                                .ellipsis,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
                                                             fontFamily:
                                                                 AppThemeData
                                                                     .regular,
@@ -472,14 +482,16 @@ class BookingDetailsScreen extends StatelessWidget {
                                   ),
                                   InkWell(
                                     onTap: () {
-                                      Get.to(const RouteViewScreen(), arguments: {
-                                        "bookingModel":
-                                            controller.bookingModel.value
-                                      });
+                                      Get.to(const RouteViewScreen(),
+                                          arguments: {
+                                            "bookingModel":
+                                                controller.bookingModel.value
+                                          });
                                     },
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.end,
-                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
                                       children: [
                                         Icon(
                                           Icons.map_outlined,
@@ -599,7 +611,9 @@ class BookingDetailsScreen extends StatelessWidget {
                                         borderRadius: BorderRadius.circular(60),
                                         child: NetworkImageWidget(
                                           imageUrl: controller
-                                              .publisherUserModel.value.profilePic
+                                              .publisherUserModel
+                                              .value
+                                              .profilePic
                                               .toString(),
                                           height: Responsive.width(14, context),
                                           width: Responsive.width(14, context),
@@ -649,7 +663,8 @@ class BookingDetailsScreen extends StatelessWidget {
                                                   color: themeChange.getThem()
                                                       ? AppThemeData.grey200
                                                       : AppThemeData.grey700,
-                                                  fontFamily: AppThemeData.medium,
+                                                  fontFamily:
+                                                      AppThemeData.medium,
                                                   fontSize: 14),
                                             ),
                                             const SizedBox(
@@ -671,7 +686,8 @@ class BookingDetailsScreen extends StatelessWidget {
                                                   color: themeChange.getThem()
                                                       ? AppThemeData.grey500
                                                       : AppThemeData.grey500,
-                                                  fontFamily: AppThemeData.medium,
+                                                  fontFamily:
+                                                      AppThemeData.medium,
                                                   fontSize: 14),
                                             ),
                                             const SizedBox(
@@ -681,22 +697,25 @@ class BookingDetailsScreen extends StatelessWidget {
                                               onTap: () {
                                                 Get.to(const RatingViewScreen(),
                                                     arguments: {
-                                                      "receiverUserId": controller
-                                                          .publisherUserModel
-                                                          .value
-                                                          .id
+                                                      "receiverUserId":
+                                                          controller
+                                                              .publisherUserModel
+                                                              .value
+                                                              .id
                                                     });
                                               },
                                               child: Text(
                                                 "${double.parse(controller.publisherUserModel.value.reviewCount ?? "0").toStringAsFixed(0)} Ratings",
                                                 style: TextStyle(
-                                                    decoration:
-                                                        TextDecoration.underline,
+                                                    decoration: TextDecoration
+                                                        .underline,
                                                     decorationColor:
                                                         AppThemeData.primary300,
                                                     color: themeChange.getThem()
-                                                        ? AppThemeData.primary300
-                                                        : AppThemeData.primary300,
+                                                        ? AppThemeData
+                                                            .primary300
+                                                        : AppThemeData
+                                                            .primary300,
                                                     fontFamily:
                                                         AppThemeData.medium,
                                                     fontSize: 14),
@@ -765,10 +784,12 @@ class BookingDetailsScreen extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            controller.bookingModel.value.travelPreference == null
+                            controller.bookingModel.value.travelPreference ==
+                                    null
                                 ? const SizedBox()
                                 : Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       const Padding(
                                         padding:
@@ -789,8 +810,10 @@ class BookingDetailsScreen extends StatelessWidget {
                                                   .isEmpty
                                           ? const SizedBox()
                                           : Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  horizontal: 16, vertical: 5),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16,
+                                                      vertical: 5),
                                               child: Row(
                                                 children: [
                                                   controller
@@ -816,9 +839,11 @@ class BookingDetailsScreen extends StatelessWidget {
                                                         .toString(),
                                                     style: TextStyle(
                                                       fontSize: 14,
-                                                      color: themeChange.getThem()
+                                                      color: themeChange
+                                                              .getThem()
                                                           ? AppThemeData.grey50
-                                                          : AppThemeData.grey900,
+                                                          : AppThemeData
+                                                              .grey900,
                                                       fontFamily:
                                                           AppThemeData.medium,
                                                     ),
@@ -840,8 +865,10 @@ class BookingDetailsScreen extends StatelessWidget {
                                                   .isEmpty
                                           ? const SizedBox()
                                           : Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  horizontal: 16, vertical: 5),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16,
+                                                      vertical: 5),
                                               child: Row(
                                                 children: [
                                                   controller
@@ -859,14 +886,19 @@ class BookingDetailsScreen extends StatelessWidget {
                                                   ),
                                                   Expanded(
                                                       child: Text(
-                                                    controller.bookingModel.value
-                                                        .travelPreference!.smoking
+                                                    controller
+                                                        .bookingModel
+                                                        .value
+                                                        .travelPreference!
+                                                        .smoking
                                                         .toString(),
                                                     style: TextStyle(
                                                       fontSize: 14,
-                                                      color: themeChange.getThem()
+                                                      color: themeChange
+                                                              .getThem()
                                                           ? AppThemeData.grey50
-                                                          : AppThemeData.grey900,
+                                                          : AppThemeData
+                                                              .grey900,
                                                       fontFamily:
                                                           AppThemeData.medium,
                                                     ),
@@ -874,8 +906,11 @@ class BookingDetailsScreen extends StatelessWidget {
                                                 ],
                                               ),
                                             ),
-                                      controller.bookingModel.value
-                                                      .travelPreference!.music ==
+                                      controller
+                                                      .bookingModel
+                                                      .value
+                                                      .travelPreference!
+                                                      .music ==
                                                   null ||
                                               controller
                                                   .bookingModel
@@ -885,8 +920,10 @@ class BookingDetailsScreen extends StatelessWidget {
                                                   .isEmpty
                                           ? const SizedBox()
                                           : Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  horizontal: 16, vertical: 5),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16,
+                                                      vertical: 5),
                                               child: Row(
                                                 children: [
                                                   controller
@@ -904,14 +941,19 @@ class BookingDetailsScreen extends StatelessWidget {
                                                   ),
                                                   Expanded(
                                                       child: Text(
-                                                    controller.bookingModel.value
-                                                        .travelPreference!.music
+                                                    controller
+                                                        .bookingModel
+                                                        .value
+                                                        .travelPreference!
+                                                        .music
                                                         .toString(),
                                                     style: TextStyle(
                                                       fontSize: 14,
-                                                      color: themeChange.getThem()
+                                                      color: themeChange
+                                                              .getThem()
                                                           ? AppThemeData.grey50
-                                                          : AppThemeData.grey900,
+                                                          : AppThemeData
+                                                              .grey900,
                                                       fontFamily:
                                                           AppThemeData.medium,
                                                     ),
@@ -922,12 +964,18 @@ class BookingDetailsScreen extends StatelessWidget {
                                       controller.bookingModel.value
                                                       .travelPreference!.pets ==
                                                   null ||
-                                              controller.bookingModel.value
-                                                  .travelPreference!.pets!.isEmpty
+                                              controller
+                                                  .bookingModel
+                                                  .value
+                                                  .travelPreference!
+                                                  .pets!
+                                                  .isEmpty
                                           ? const SizedBox()
                                           : Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  horizontal: 16, vertical: 5),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16,
+                                                      vertical: 5),
                                               child: Row(
                                                 children: [
                                                   SvgPicture.asset(
@@ -937,14 +985,19 @@ class BookingDetailsScreen extends StatelessWidget {
                                                   ),
                                                   Expanded(
                                                       child: Text(
-                                                    controller.bookingModel.value
-                                                        .travelPreference!.pets
+                                                    controller
+                                                        .bookingModel
+                                                        .value
+                                                        .travelPreference!
+                                                        .pets
                                                         .toString(),
                                                     style: TextStyle(
                                                       fontSize: 14,
-                                                      color: themeChange.getThem()
+                                                      color: themeChange
+                                                              .getThem()
                                                           ? AppThemeData.grey50
-                                                          : AppThemeData.grey900,
+                                                          : AppThemeData
+                                                              .grey900,
                                                       fontFamily:
                                                           AppThemeData.medium,
                                                     ),
@@ -954,8 +1007,8 @@ class BookingDetailsScreen extends StatelessWidget {
                                             ),
                                     ],
                                   ),
-                            if (controller.bookingModel.value.vehicleInformation!
-                                    .vehicleImages ==
+                            if (controller.bookingModel.value
+                                    .vehicleInformation!.vehicleImages ==
                                 null)
                               const SizedBox()
                             else
@@ -973,7 +1026,8 @@ class BookingDetailsScreen extends StatelessWidget {
                                         .length,
                                     shrinkWrap: true,
                                     scrollDirection: Axis.horizontal,
-                                    physics: const NeverScrollableScrollPhysics(),
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
                                     itemBuilder: (context, index) {
                                       return InkWell(
                                         onTap: () {
@@ -989,8 +1043,9 @@ class BookingDetailsScreen extends StatelessWidget {
                                           padding: const EdgeInsets.symmetric(
                                               horizontal: 5),
                                           child: ClipRRect(
-                                            borderRadius: const BorderRadius.all(
-                                                Radius.circular(10)),
+                                            borderRadius:
+                                                const BorderRadius.all(
+                                                    Radius.circular(10)),
                                             child: NetworkImageWidget(
                                               imageUrl: controller
                                                   .bookingModel
@@ -1060,21 +1115,42 @@ class BookingDetailsScreen extends StatelessWidget {
                         ),
                         InkWell(
                             onTap: () {
+                              // Calculate subTotal for payment
+                              double correctPricePerSeat =
+                                  controller.getCorrectPricePerSeat();
+                              double subTotal = correctPricePerSeat *
+                                  controller.homeController.numberOfSheet.value;
+
                               Get.to(const SelectPaymentMethodScreen(),
                                       arguments: {
                                     "type": "bookingSelect",
-                                    "amount": "",
+                                    "amount": subTotal.toStringAsFixed(2),
                                     "driverPaymentMethod": controller
                                             .bookingModel
                                             .value
                                             .driverPaymentMethod ??
                                         "",
+                                    // Additional data for automatic booking after Cashfree payment
+                                    "bookingModel":
+                                        controller.bookingModel.value,
+                                    "stopOverModel":
+                                        controller.stopOverModel.value,
+                                    "pickupLocation": controller
+                                        .homeController.pickUpLocation.value,
+                                    "dropLocation": controller
+                                        .homeController.dropLocation.value,
+                                    "numberOfSeats": controller
+                                        .homeController.numberOfSheet.value,
+                                    "subTotal": subTotal.toStringAsFixed(2),
                                   })!
                                   .then(
                                 (value) {
                                   if (value != null) {
                                     controller.paymentType.value =
-                                        value['paymentType'];
+                                        value['paymentType'] ?? "";
+                                    // If Cashfree payment was successful and booking was created,
+                                    // this screen would have been replaced by success screen
+                                    // So we only get here for wallet selection or failed payments
                                   }
                                 },
                               );

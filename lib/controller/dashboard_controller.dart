@@ -8,6 +8,8 @@ import 'package:poolmate/app/profile_screen/profile_screen.dart';
 import 'package:poolmate/app/wallet_screen/wallet_screen.dart';
 import 'package:poolmate/constant/collection_name.dart';
 import 'package:poolmate/model/user_model.dart';
+import 'package:poolmate/services/payment_recovery_service.dart';
+import 'package:poolmate/services/pending_payment_service.dart';
 import 'package:poolmate/utils/firestore/auth_utils.dart';
 
 class DashboardScreenController extends GetxController {
@@ -24,6 +26,10 @@ class DashboardScreenController extends GetxController {
   @override
   void onInit() {
     getData();
+    // Check for any incomplete payments that need recovery
+    PaymentRecoveryService.checkAndRecoverPendingPayments();
+    // Check for any incomplete wallet top-ups that need recovery
+    PendingPaymentService.checkAndRecoverPendingTopups();
     super.onInit();
   }
 

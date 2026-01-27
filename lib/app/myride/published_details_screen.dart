@@ -558,7 +558,7 @@ class PublishedDetailsScreen extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                _formatSeatLabelsCsv(
+                                BookingUtils.formatSeatLabelsCsv(
                                     controller.bookingModel.value.bookedSeat),
                                 maxLines: 1,
                                 style: TextStyle(
@@ -1650,28 +1650,6 @@ class PublishedDetailsScreen extends StatelessWidget {
 
 // Convert stored seat indices CSV (e.g., "1,2") to labels CSV (e.g., "A2,B1")
 // Excludes index 0 (A1 - driver seat)
-String _formatSeatLabelsCsv(String? csv) {
-  if (csv == null || csv.trim().isEmpty) return '';
-  final parts =
-      csv.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
-
-  // Filter out index 0 (A1 - driver seat) and convert to labels
-  final filteredLabels = parts
-      .map((p) => int.tryParse(p) ?? -1)
-      .where((idx) => idx != 0) // Exclude driver seat (A1)
-      .map((idx) => _seatIndexToLabel(idx))
-      .toList();
-
-  return filteredLabels.join(',');
-}
-
-String _seatIndexToLabel(int index) {
-  const labels = ['A1', 'A2', 'B1', 'B2', 'B3', 'C1', 'C2', 'C3'];
-  if (index >= 0 && index < labels.length) {
-    return labels[index];
-  }
-  return 'S$index';
-}
 
 // Calculate total amount: pricePerSeat × number of booked seats (excluding driver)
 String _calculateTotalAmount(String? bookedSeatsCsv, String? pricePerSeat) {

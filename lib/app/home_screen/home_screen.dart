@@ -190,7 +190,7 @@ class HomeScreen extends StatelessWidget {
                                                 decoration: InputDecoration(
                                                   border: InputBorder.none,
                                                   hintText:
-                                                      'Enter Pickup Location'
+                                                      'From'
                                                           .tr,
                                                   enabled: false,
                                                   prefixIcon: Padding(
@@ -251,9 +251,7 @@ class HomeScreen extends StatelessWidget {
                                                         AppThemeData.medium),
                                                 decoration: InputDecoration(
                                                   border: InputBorder.none,
-                                                  hintText:
-                                                      'Enter Drop-off Location'
-                                                          .tr,
+                                                  hintText: 'To'.tr,
                                                   enabled: false,
                                                   prefixIcon: Padding(
                                                     padding: EdgeInsets.all(

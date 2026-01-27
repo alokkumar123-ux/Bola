@@ -104,13 +104,18 @@ class _RidePageState extends State<RidePage> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
 
-    // Release seats when app goes to background (minimized) or inactive
-    // if (state == AppLifecycleState.paused ||
-    //     state == AppLifecycleState.inactive) {
-    //   print('🔴 App going to background - releasing temporary seats');
-    //   // Do not pop explicitly; let the user decide or timer expire
-    //   // Navigator.of(context).pop();
-    // }
+    // Release seats when app goes to background (minimized), inactive, or detached (closed)
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached) {
+      print('🔴 App going to background/closing - releasing temporary seats');
+      _releaseTemporarySeats();
+
+      // If app is being closed (detached), also pop the screen
+      if (state == AppLifecycleState.detached && mounted) {
+        Navigator.of(context).pop();
+      }
+    }
   }
 
   // Setup real-time listener for booking changes

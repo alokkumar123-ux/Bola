@@ -147,10 +147,15 @@ class BookingDetailsController extends GetxController {
         false) {
       bookingModel.value.bookedUserId!.add(AuthUtils.getCurrentUid());
     }
-    bookingModel.value.bookedSeat =
-        (int.parse(bookingModel.value.bookedSeat.toString()) +
-                int.parse(homeController.numberOfSheet.value.toString()))
-            .toString();
+    int totalSeats = int.tryParse(bookingModel.value.totalSeat ?? "4") ?? 4;
+    int seatsNeeded =
+        int.tryParse(homeController.numberOfSheet.value.toString()) ?? 1;
+
+    bookingModel.value.bookedSeat = BookingUtils.allocateSeats(
+      bookingModel.value.bookedSeat,
+      seatsNeeded,
+      totalSeats,
+    );
 
     BookedUserModel bookingUserModel = BookedUserModel();
     bookingUserModel.id = AuthUtils.getCurrentUid();

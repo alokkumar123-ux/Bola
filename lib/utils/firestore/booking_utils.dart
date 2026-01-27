@@ -509,4 +509,81 @@ class BookingUtils {
 
     return isSuccess;
   }
+
+  // Convert stored seat indices CSV (e.g., "1,2") to labels CSV (e.g., "A1,A2")
+  static String formatSeatLabelsCsv(String? csv) {
+    if (csv == null || csv.trim().isEmpty) return 'No';
+    final parts =
+        csv.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+    // Filter out seat index 0 (A1 - driver's seat) as it's always occupied by the driver
+    final passengerSeats =
+        parts.where((p) => (int.tryParse(p) ?? -1) != 0).map((p) {
+      final idx = int.tryParse(p) ?? -1;
+      return seatIndexToLabel(idx);
+    }).toList();
+
+    // If no passenger seats are booked (only driver seat), return 'No'
+    if (passengerSeats.isEmpty) return 'No';
+
+    return passengerSeats.join(',');
+  }
+
+  static String seatIndexToLabel(int index) {
+    const labels = ['A1', 'A2', 'B1', 'B2', 'B3', 'C1', 'C2', 'C3'];
+    if (index >= 0 && index < labels.length) {
+      return labels[index];
+    }
+    return 'S$index';
+  }
+
+  /// Allocate seats for a new booking
+  /// [currentBookedSeats] - CSV string of currently booked seats (e.g. "0,1")
+  /// [seatsNeeded] - Number of seats to allocate
+  /// [totalSeats] - Total capacity of the vehicle
+  /// Returns updated CSV string with new seats appended (e.g. "0,1,2,3")
+  static String allocateSeats(
+      String? currentBookedSeats, int seatsNeeded, int totalSeats) {
+    Set<int> occupied = {};
+
+    if (currentBookedSeats != null && currentBookedSeats.isNotEmpty) {
+      final parts = currentBookedSeats.split(',');
+      for (var part in parts) {
+        final idx = int.tryParse(part.trim());
+        if (idx != null) {
+          occupied.add(idx);
+        }
+      }
+    } else {
+      // If empty, assume driver (0) is occupied if that's the convention,
+      // but strictly speaking if the string is empty, we start fresh.
+      // However, usually "0" is present.
+      // Let's rely on the input string.
+    }
+
+    List<int> newAllocations = [];
+    int seatsFound = 0;
+
+    // Iterate through all possible indices to find available ones
+    // We assume seat indices are 0-based: 0 to totalSeats-1
+    for (int i = 0; i < totalSeats; i++) {
+      if (!occupied.contains(i)) {
+        newAllocations.add(i);
+        seatsFound++;
+        if (seatsFound >= seatsNeeded) break;
+      }
+    }
+
+    if (seatsFound < seatsNeeded) {
+      // Not enough seats available
+      // This refers to a race condition or logic error upstream
+      throw Exception("Not enough seats available");
+    }
+
+    // Add new allocations to occupied set for the result
+    occupied.addAll(newAllocations);
+
+    // Convert back to CSV, sorted for consistency
+    final sortedList = occupied.toList()..sort();
+    return sortedList.join(',');
+  }
 }

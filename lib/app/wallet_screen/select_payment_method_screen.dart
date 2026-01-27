@@ -142,11 +142,64 @@ class SelectPaymentMethodScreen extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 10),
                     child: RoundedButtonFill(
-                        title: "Next".tr,
+                        title: controller.type.value == "bookingSelect"
+                            ? "Proceed".tr
+                            : "Next".tr,
                         color: AppThemeData.primary300,
                         textColor: AppThemeData.grey50,
                         onPress: () async {
-                          // Only handle wallet top-up logic here
+                          // Check if payment method is selected
+                          if (controller.selectedPaymentMethod.value.isEmpty) {
+                            ShowToastDialog.showToast(
+                                "Please select payment method".tr);
+                            return;
+                          }
+
+                          // Handle bookingSelect type (seat booking)
+                          if (controller.type.value == "bookingSelect") {
+                            String walletName =
+                                controller.paymentModel.value.wallet?.name ??
+                                    "Wallet";
+                            String cashfreeName =
+                                controller.paymentModel.value.cashfree?.name ??
+                                    "Cashfree";
+
+                            if (controller.selectedPaymentMethod.value ==
+                                cashfreeName) {
+                              // Cashfree selected - trigger payment with provided amount
+                              String paymentAmount = controller
+                                      .amountController.value.text.isNotEmpty
+                                  ? controller.amountController.value.text
+                                  : controller.subTotal.value;
+
+                              if (paymentAmount.isEmpty ||
+                                  double.parse(paymentAmount) <= 0) {
+                                ShowToastDialog.showToast(
+                                    "Invalid payment amount".tr);
+                                return;
+                              }
+
+                              controller.cashfreePayment(
+                                  amount: paymentAmount, context: context);
+                              // Note: After successful payment, booking is created automatically
+                              // and user is navigated to success screen
+                            } else if (controller.selectedPaymentMethod.value ==
+                                walletName) {
+                              // Wallet selected - return payment type for manual booking
+                              Get.back(result: {
+                                "paymentType":
+                                    controller.selectedPaymentMethod.value,
+                                "paymentSuccess":
+                                    false // Wallet payment happens at booking time
+                              });
+                            } else {
+                              ShowToastDialog.showToast(
+                                  "Invalid payment method selected".tr);
+                            }
+                            return;
+                          }
+
+                          // Handle wallet top-up
                           // Check wallet balance and enforce minimum top-up for negative balances
                           double currentBalance = double.parse(
                               controller.userModel.value.walletAmount ?? "0");

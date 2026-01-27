@@ -268,9 +268,9 @@ Use my referral code: $code
 or click here: $link
 
 Benefits:
-🎁 Get 1% cashback on your first ride
-💵 Earn ₹100 bonus when you complete rides
-🚀 Unlock 3% commission on shared rides
+🎁 Refer 1 friend, earn 1% on their first ride
+💵 Refer 5 friends, get ₹100 bonus once they ride
+🚀 Refer 8 more friends to unlock 3% on every ride thereafter
 
 Get the app now and start earning! 🚙✨
 """;

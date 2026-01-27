@@ -353,7 +353,7 @@ class MyRideScreen extends StatelessWidget {
                                                                                 10,
                                                                           ),
                                                                           Text(
-                                                                            "${_formatSeatLabelsCsv(bookingUserModel.bookedSeat)} Passenger",
+                                                                            "${BookingUtils.formatSeatLabelsCsv(bookingUserModel.bookedSeat)} Passenger",
                                                                             maxLines:
                                                                                 1,
                                                                             style:
@@ -580,392 +580,10 @@ class MyRideScreen extends StatelessWidget {
                                           },
                                         );
                                       },
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 5),
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            color: themeChange.getThem()
-                                                ? AppThemeData.grey900
-                                                : AppThemeData.grey50,
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                          ),
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(20),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    RichText(
-                                                      text: TextSpan(
-                                                        style: Theme.of(context)
-                                                            .textTheme
-                                                            .bodyLarge,
-                                                        children: [
-                                                          // Use address strings instead of geocoding
-                                                          TextSpan(
-                                                            text: bookingModel
-                                                                    .pickUpAddress
-                                                                    ?.split(',')
-                                                                    .first ??
-                                                                'Location',
-                                                            style: TextStyle(
-                                                                color: themeChange.getThem()
-                                                                    ? AppThemeData
-                                                                        .grey100
-                                                                    : AppThemeData
-                                                                        .grey800,
-                                                                fontFamily:
-                                                                    AppThemeData
-                                                                        .bold,
-                                                                fontSize: 14),
-                                                          ),
-                                                          WidgetSpan(
-                                                            child: Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .symmetric(
-                                                                      horizontal:
-                                                                          10),
-                                                              child: SvgPicture
-                                                                  .asset(
-                                                                      "assets/icons/ic_right_arrow.svg"),
-                                                            ),
-                                                          ),
-                                                          TextSpan(
-                                                            text: bookingModel
-                                                                    .dropAddress
-                                                                    ?.split(',')
-                                                                    .first ??
-                                                                'Location',
-                                                            style: TextStyle(
-                                                                color: themeChange.getThem()
-                                                                    ? AppThemeData
-                                                                        .grey100
-                                                                    : AppThemeData
-                                                                        .grey800,
-                                                                fontFamily:
-                                                                    AppThemeData
-                                                                        .bold,
-                                                                fontSize: 14),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      Constant.amountShow(
-                                                          amount: bookingModel
-                                                              .pricePerSeat
-                                                              .toString()),
-                                                      maxLines: 1,
-                                                      style: TextStyle(
-                                                        color: themeChange
-                                                                .getThem()
-                                                            ? AppThemeData
-                                                                .grey100
-                                                            : AppThemeData
-                                                                .grey800,
-                                                        fontSize: 16,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        fontFamily:
-                                                            AppThemeData.bold,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(
-                                                  height: 5,
-                                                ),
-                                                Text(
-                                                  Constant.timestampToDateTime(
-                                                      bookingModel
-                                                          .departureDateTime!),
-                                                  maxLines: 1,
-                                                  style: TextStyle(
-                                                    color: themeChange.getThem()
-                                                        ? AppThemeData.grey200
-                                                        : AppThemeData.grey700,
-                                                    fontSize: 12,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    fontFamily:
-                                                        AppThemeData.regular,
-                                                  ),
-                                                ),
-                                                const SizedBox(
-                                                  height: 5,
-                                                ),
-                                                Padding(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(vertical: 4),
-                                                  child: Row(
-                                                    children: [
-                                                      SvgPicture.asset(
-                                                        "assets/icons/ic_calender.svg",
-                                                        height: 18,
-                                                        width: 18,
-                                                        colorFilter: ColorFilter.mode(
-                                                            themeChange
-                                                                    .getThem()
-                                                                ? AppThemeData
-                                                                    .grey200
-                                                                : AppThemeData
-                                                                    .grey700,
-                                                            BlendMode.srcIn),
-                                                      ),
-                                                      const SizedBox(
-                                                        width: 10,
-                                                      ),
-                                                      Text(
-                                                        Constant.timestampToDate(
-                                                            bookingModel
-                                                                .departureDateTime!),
-                                                        maxLines: 1,
-                                                        style: TextStyle(
-                                                          color: themeChange
-                                                                  .getThem()
-                                                              ? AppThemeData
-                                                                  .grey200
-                                                              : AppThemeData
-                                                                  .grey700,
-                                                          fontSize: 14,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          fontFamily:
-                                                              AppThemeData
-                                                                  .medium,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(vertical: 4),
-                                                  child: Row(
-                                                    children: [
-                                                      SvgPicture.asset(
-                                                        "assets/icons/ic_time.svg",
-                                                        height: 18,
-                                                        width: 18,
-                                                        colorFilter: ColorFilter.mode(
-                                                            themeChange
-                                                                    .getThem()
-                                                                ? AppThemeData
-                                                                    .grey200
-                                                                : AppThemeData
-                                                                    .grey700,
-                                                            BlendMode.srcIn),
-                                                      ),
-                                                      const SizedBox(
-                                                        width: 10,
-                                                      ),
-                                                      Text(
-                                                        Constant.timestampToTime(
-                                                            bookingModel
-                                                                .departureDateTime!),
-                                                        maxLines: 1,
-                                                        style: TextStyle(
-                                                          color: themeChange
-                                                                  .getThem()
-                                                              ? AppThemeData
-                                                                  .grey200
-                                                              : AppThemeData
-                                                                  .grey700,
-                                                          fontSize: 14,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          fontFamily:
-                                                              AppThemeData
-                                                                  .medium,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(vertical: 4),
-                                                  child: Row(
-                                                    children: [
-                                                      SvgPicture.asset(
-                                                        "assets/icons/ic_user_icon.svg",
-                                                        height: 18,
-                                                        width: 18,
-                                                        colorFilter: ColorFilter.mode(
-                                                            themeChange
-                                                                    .getThem()
-                                                                ? AppThemeData
-                                                                    .grey200
-                                                                : AppThemeData
-                                                                    .grey700,
-                                                            BlendMode.srcIn),
-                                                      ),
-                                                      const SizedBox(
-                                                        width: 10,
-                                                      ),
-                                                      Text(
-                                                        "${_formatSeatLabelsCsv(bookingModel.bookedSeat)} Seats Booked"
-                                                            .tr,
-                                                        maxLines: 1,
-                                                        style: TextStyle(
-                                                          color: themeChange
-                                                                  .getThem()
-                                                              ? AppThemeData
-                                                                  .grey200
-                                                              : AppThemeData
-                                                                  .grey700,
-                                                          fontSize: 14,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          fontFamily:
-                                                              AppThemeData
-                                                                  .medium,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(vertical: 4),
-                                                  child: Row(
-                                                    children: [
-                                                      SvgPicture.asset(
-                                                        bookingModel.publish ==
-                                                                true
-                                                            ? "assets/icons/ic_check.svg"
-                                                            : "assets/icons/ic_uncheck.svg",
-                                                        height: 18,
-                                                        width: 18,
-                                                        colorFilter: ColorFilter.mode(
-                                                            bookingModel.publish ==
-                                                                    true
-                                                                ? AppThemeData
-                                                                    .success400
-                                                                : AppThemeData
-                                                                    .warning300,
-                                                            BlendMode.srcIn),
-                                                      ),
-                                                      const SizedBox(
-                                                        width: 10,
-                                                      ),
-                                                      Text(
-                                                        bookingModel.publish ==
-                                                                true
-                                                            ? "Published"
-                                                            : "UnPublished",
-                                                        maxLines: 1,
-                                                        style: TextStyle(
-                                                          color: bookingModel.publish ==
-                                                                  true
-                                                              ? AppThemeData
-                                                                  .success400
-                                                              : AppThemeData
-                                                                  .warning300,
-                                                          fontSize: 14,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          fontFamily:
-                                                              AppThemeData
-                                                                  .medium,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                const Padding(
-                                                  padding: EdgeInsets.symmetric(
-                                                      vertical: 5),
-                                                  child: Divider(),
-                                                ),
-                                                Row(
-                                                  children: [
-                                                    Expanded(
-                                                      child: Text(
-                                                        "Publish on : ${Constant.timestampToDateTime(bookingModel.createdAt!)}",
-                                                        maxLines: 1,
-                                                        style: TextStyle(
-                                                          color: themeChange
-                                                                  .getThem()
-                                                              ? AppThemeData
-                                                                  .grey200
-                                                              : AppThemeData
-                                                                  .grey700,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          fontFamily:
-                                                              AppThemeData
-                                                                  .regular,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    // RoundedButtonFill(
-                                                    //   title: bookingModel.status == Constant.onGoing
-                                                    //       ? "Complete"
-                                                    //       : bookingModel.status == Constant.completed
-                                                    //           ? "Completed"
-                                                    //           : "OnGoing",
-                                                    //   color: bookingModel.status == Constant.onGoing
-                                                    //       ? AppThemeData.primary300
-                                                    //       : bookingModel.status == Constant.completed
-                                                    //           ? AppThemeData.success500
-                                                    //           : AppThemeData.secondary400,
-                                                    //   width: 20,
-                                                    //   height: 4,
-                                                    //   fontSizes: 12,
-                                                    //   textColor: AppThemeData.grey50,
-                                                    //   onPress: () async {
-                                                    //     if (bookingModel.status != Constant.completed) {
-                                                    //       if (bookingModel.status == Constant.placed) {
-                                                    //         if (bookingModel.departureDateTime!.toDate().isAfter(DateTime.now())) {
-                                                    //           ShowToastDialog.showToast(
-                                                    //               "You will ride departure time is ${Constant.timestampToDateTime(bookingModel.departureDateTime!)}");
-                                                    //         } else {
-                                                    //           bookingModel.status = Constant.onGoing;
-                                                    //           await BookingUtils.setBooking(bookingModel).then(
-                                                    //             (value) {
-                                                    //               ShowToastDialog.showToast("Status change successfully".tr);
-                                                    //               controller.getBookedRight();
-                                                    //             },
-                                                    //           );
-                                                    //         }
-                                                    //       } else if (bookingModel.status == Constant.onGoing) {
-                                                    //         bookingModel.status = Constant.completed;
-                                                    //
-                                                    //         bookingModel.bookedUserId!.forEach(
-                                                    //           (element) async {
-                                                    //             await UserUtils.getUserProfile(element.toString()).then(
-                                                    //               (value) {
-                                                    //                 SendNotification.sendOneNotification(
-                                                    //                     type: Constant.ride_completed, token: value!.fcmToken.toString(), payload: {});
-                                                    //                 SendNotification.sendOneNotification(type: Constant.feedback, token: value.fcmToken.toString(), payload: {});
-                                                    //               },
-                                                    //             );
-                                                    //           },
-                                                    //         );
-                                                    //         await BookingUtils.setBooking(bookingModel).then(
-                                                    //           (value) {
-                                                    //             ShowToastDialog.showToast("Status change successfully".tr);
-                                                    //             controller.getBookedRight();
-                                                    //           },
-                                                    //         );
-                                                    //       }
-                                                    //     }
-                                                    //   },
-                                                    // ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
+                                      child: _buildBookingCard(
+                                        bookingModel,
+                                        themeChange,
+                                        context,
                                       ),
                                     );
                                   },
@@ -1026,7 +644,7 @@ class MyRideScreen extends StatelessWidget {
                                         }
                                       },
                                       // Use publishes-style visual for Cancelled
-                                      child: _buildPublishesStyleCard(
+                                      child: _buildBookingCard(
                                         bookingModel,
                                         themeChange,
                                         context,
@@ -1111,8 +729,7 @@ class MyRideScreen extends StatelessWidget {
                                                     }
                                                   },
                                                   // Use publishes-style visual for Completed
-                                                  child:
-                                                      _buildPublishesStyleCard(
+                                                  child: _buildBookingCard(
                                                     bookingModel,
                                                     themeChange,
                                                     context,
@@ -1137,12 +754,42 @@ class MyRideScreen extends StatelessWidget {
   }
 
   // Publishes-style card reused for Completed and Cancelled tabs with a custom status label
-  Widget _buildPublishesStyleCard(
+  // Now also used for the main "Published" tab to remove duplication
+  Widget _buildBookingCard(
     BookingModel bookingModel,
     DarkThemeProvider themeChange,
     BuildContext context, {
-    String statusLabel = "Completed",
+    String?
+        statusLabel, // Optional: if null, logic inside decides (e.g., Published/UnPublished)
   }) {
+    // Determine status label and color if not provided
+    String displayStatus;
+    Color statusColor;
+    String statusIcon;
+
+    if (statusLabel != null) {
+      // Use provided override (e.g. "Cancelled", "Completed")
+      displayStatus = statusLabel;
+      if (statusLabel == "Cancelled") {
+        statusColor = AppThemeData.warning300;
+        statusIcon = "assets/icons/ic_cancel.svg";
+      } else {
+        statusColor = AppThemeData.success400;
+        statusIcon = "assets/icons/ic_check.svg";
+      }
+    } else {
+      // Default logic for Published/UnPublished based on model
+      if (bookingModel.publish == true) {
+        displayStatus = "Published";
+        statusColor = AppThemeData.success400;
+        statusIcon = "assets/icons/ic_check.svg";
+      } else {
+        displayStatus = "UnPublished";
+        statusColor = AppThemeData.warning300;
+        statusIcon = "assets/icons/ic_uncheck.svg";
+      }
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Container(
@@ -1210,7 +857,9 @@ class MyRideScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 5),
+              const SizedBox(
+                height: 5,
+              ),
               Text(
                 Constant.timestampToDateTime(bookingModel.departureDateTime!),
                 maxLines: 1,
@@ -1223,7 +872,9 @@ class MyRideScreen extends StatelessWidget {
                   fontFamily: AppThemeData.regular,
                 ),
               ),
-              const SizedBox(height: 5),
+              const SizedBox(
+                height: 5,
+              ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(
@@ -1233,13 +884,14 @@ class MyRideScreen extends StatelessWidget {
                       height: 18,
                       width: 18,
                       colorFilter: ColorFilter.mode(
-                        themeChange.getThem()
-                            ? AppThemeData.grey200
-                            : AppThemeData.grey700,
-                        BlendMode.srcIn,
-                      ),
+                          themeChange.getThem()
+                              ? AppThemeData.grey200
+                              : AppThemeData.grey700,
+                          BlendMode.srcIn),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(
+                      width: 10,
+                    ),
                     Text(
                       Constant.timestampToDate(bookingModel.departureDateTime!),
                       maxLines: 1,
@@ -1264,13 +916,14 @@ class MyRideScreen extends StatelessWidget {
                       height: 18,
                       width: 18,
                       colorFilter: ColorFilter.mode(
-                        themeChange.getThem()
-                            ? AppThemeData.grey200
-                            : AppThemeData.grey700,
-                        BlendMode.srcIn,
-                      ),
+                          themeChange.getThem()
+                              ? AppThemeData.grey200
+                              : AppThemeData.grey700,
+                          BlendMode.srcIn),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(
+                      width: 10,
+                    ),
                     Text(
                       Constant.timestampToTime(bookingModel.departureDateTime!),
                       maxLines: 1,
@@ -1295,15 +948,16 @@ class MyRideScreen extends StatelessWidget {
                       height: 18,
                       width: 18,
                       colorFilter: ColorFilter.mode(
-                        themeChange.getThem()
-                            ? AppThemeData.grey200
-                            : AppThemeData.grey700,
-                        BlendMode.srcIn,
-                      ),
+                          themeChange.getThem()
+                              ? AppThemeData.grey200
+                              : AppThemeData.grey700,
+                          BlendMode.srcIn),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(
+                      width: 10,
+                    ),
                     Text(
-                      "${_formatSeatLabelsCsv(bookingModel.bookedSeat)} Seats Booked"
+                      "${BookingUtils.formatSeatLabelsCsv(bookingModel.bookedSeat)} Seats Booked"
                           .tr,
                       maxLines: 1,
                       style: TextStyle(
@@ -1323,26 +977,20 @@ class MyRideScreen extends StatelessWidget {
                 child: Row(
                   children: [
                     SvgPicture.asset(
-                      statusLabel == "Cancelled"
-                          ? "assets/icons/ic_cancel.svg"
-                          : "assets/icons/ic_check.svg",
+                      statusIcon,
                       height: 18,
                       width: 18,
-                      colorFilter: ColorFilter.mode(
-                        statusLabel == "Cancelled"
-                            ? AppThemeData.warning300
-                            : AppThemeData.success400,
-                        BlendMode.srcIn,
-                      ),
+                      colorFilter:
+                          ColorFilter.mode(statusColor, BlendMode.srcIn),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(
+                      width: 10,
+                    ),
                     Text(
-                      statusLabel,
+                      displayStatus,
                       maxLines: 1,
                       style: TextStyle(
-                        color: statusLabel == "Cancelled"
-                            ? AppThemeData.warning300
-                            : AppThemeData.success400,
+                        color: statusColor,
                         fontSize: 14,
                         overflow: TextOverflow.ellipsis,
                         fontFamily: AppThemeData.medium,
@@ -1377,31 +1025,5 @@ class MyRideScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  // Convert stored seat indices CSV (e.g., "1,2") to labels CSV (e.g., "A1,A2")
-  String _formatSeatLabelsCsv(String? csv) {
-    if (csv == null || csv.trim().isEmpty) return 'No';
-    final parts =
-        csv.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
-    // Filter out seat index 0 (A1 - driver's seat) as it's always occupied by the driver
-    final passengerSeats =
-        parts.where((p) => (int.tryParse(p) ?? -1) != 0).map((p) {
-      final idx = int.tryParse(p) ?? -1;
-      return _seatIndexToLabel(idx);
-    }).toList();
-
-    // If no passenger seats are booked (only driver seat), return 'No'
-    if (passengerSeats.isEmpty) return 'No';
-
-    return passengerSeats.join(',');
-  }
-
-  String _seatIndexToLabel(int index) {
-    const labels = ['A1', 'A2', 'B1', 'B2', 'B3', 'C1', 'C2', 'C3'];
-    if (index >= 0 && index < labels.length) {
-      return labels[index];
-    }
-    return 'S$index';
   }
 }

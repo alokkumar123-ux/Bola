@@ -1,7 +1,5 @@
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:poolmate/app/dashboard_screen.dart';
 import 'package:poolmate/constant/show_toast_dialog.dart';
 import 'package:flutter_cashfree_pg_sdk/api/cfpaymentgateway/cfpaymentgatewayservice.dart';
 import 'package:flutter_cashfree_pg_sdk/api/cfpayment/cfwebcheckoutpayment.dart';
@@ -38,12 +36,6 @@ class _CashfreeScreenState extends State<CashfreeScreen> {
   @override
   void initState() {
     super.initState();
-    print("=== CASHFREE NATIVE SDK INITIALIZATION ===");
-    print("Order ID: ${widget.orderId}");
-    print("Payment Session ID: ${widget.paymentSessionId}");
-    print("Is Sandbox: ${widget.isSandbox}");
-    print("==========================================");
-
     // Set payment callbacks
     cfPaymentGatewayService.setCallback(verifyPayment, onError);
 
@@ -53,7 +45,6 @@ class _CashfreeScreenState extends State<CashfreeScreen> {
 
   // ✅ Payment Success Callback
   void verifyPayment(String orderId) {
-    print("✅ Payment successful for Order ID: $orderId");
     if (!hasNavigated && mounted) {
       setState(() {
         hasNavigated = true;

@@ -455,7 +455,6 @@ class HomeController extends GetxController {
         stopOverModel.distance = route.legs!.first.distance;
         stopOverModel.duration = route.legs!.first.duration;
         stopOverModel.price = price;
-        stopOverModel.recommendedPrice = recommendedPrice;
         return stopOverModel;
       } else {
         return null;

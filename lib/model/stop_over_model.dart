@@ -8,33 +8,28 @@ class StopOverModel {
   String? startAddress;
   Northeast? startLocation;
   String? price;
-  String? recommendedPrice;
 
-  StopOverModel(
-      {this.distance,
-        this.duration,
-        this.endAddress,
-        this.endLocation,
-        this.startAddress,
-        this.startLocation,
-        this.price,
-        this.recommendedPrice,
-      });
+  StopOverModel({
+    this.distance,
+    this.duration,
+    this.endAddress,
+    this.endLocation,
+    this.startAddress,
+    this.startLocation,
+    this.price,
+  });
 
   StopOverModel.fromJson(Map<String, dynamic> json) {
-    distance = json['distance'] != null
-        ? Distance.fromJson(json['distance'])
-        : null;
-    duration = json['duration'] != null
-        ? Distance.fromJson(json['duration'])
-        : null;
+    distance =
+        json['distance'] != null ? Distance.fromJson(json['distance']) : null;
+    duration =
+        json['duration'] != null ? Distance.fromJson(json['duration']) : null;
     endAddress = json['end_address'];
     endLocation = json['end_location'] != null
         ? Northeast.fromJson(json['end_location'])
         : null;
     startAddress = json['start_address'];
     price = json['price'];
-    recommendedPrice = json['recommendedPrice'];
     startLocation = json['start_location'] != null
         ? Northeast.fromJson(json['start_location'])
         : null;
@@ -54,7 +49,6 @@ class StopOverModel {
     }
     data['start_address'] = startAddress;
     data['price'] = price;
-    data['recommendedPrice'] = recommendedPrice;
     if (startLocation != null) {
       data['start_location'] = startLocation!.toJson();
     }

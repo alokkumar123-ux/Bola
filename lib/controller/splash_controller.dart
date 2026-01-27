@@ -11,6 +11,7 @@ import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/utils/preferences.dart';
 import 'package:poolmate/utils/firestore/auth_utils.dart';
 import 'package:poolmate/services/fcm_token_manager.dart';
+import 'package:poolmate/services/pending_payment_service.dart';
 
 class SplashController extends GetxController {
   Timer? timer;
@@ -43,6 +44,17 @@ class SplashController extends GetxController {
         if (_isLoggedIn == true) {
           await FcmTokenManager.instance.initialize();
           print('🔄 Pre-loaded FCM initialization');
+
+          // Check for pending payment recovery (app crash during Cashfree payment)
+          try {
+            bool recovered =
+                await PendingPaymentService.checkAndRecoverPendingPayments();
+            if (recovered) {
+              print('🔄 Recovered pending payment and created booking');
+            }
+          } catch (e) {
+            print('🔄 Pending payment recovery error: $e');
+          }
 
           // Pre-initialize Dashboard Controller to fetch data in background
           if (!Get.isRegistered<DashboardScreenController>()) {
