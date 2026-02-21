@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:poolmate/services/aadhaar_verification_service.dart';
 import 'package:poolmate/model/aadhaar_verification_model.dart';

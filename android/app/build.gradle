@@ -54,23 +54,31 @@ android {
         applicationId "com.alok.poolmate"
         minSdkVersion flutter.minSdkVersion
         targetSdkVersion 36
-        versionCode 37
+        versionCode 38
         versionName "1.4.9"
         multiDexEnabled true
     }
 
     signingConfigs {
         release {
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
-            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
-            storePassword keystoreProperties['storePassword']
+            if (keystorePropertiesFile.exists() && 
+                keystoreProperties['keyAlias'] && 
+                keystoreProperties['storeFile']) {
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+            }
         }
     }
 
     buildTypes {
         release {
-            signingConfig signingConfigs.release
+            if (keystorePropertiesFile.exists() && 
+                keystoreProperties['keyAlias'] && 
+                keystoreProperties['storeFile']) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'

@@ -9,7 +9,6 @@ import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/firebase_options.dart';
 import 'package:poolmate/model/notification_model.dart';
 import 'package:poolmate/utils/firestore/notification_utils.dart';
-import 'package:poolmate/utils/firestore/fcm_token_utils.dart';
 
 class SendNotification {
   static final _scopes = ['https://www.googleapis.com/auth/firebase.messaging'];

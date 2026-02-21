@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:poolmate/constant/collection_name.dart';
 import 'package:poolmate/model/on_boarding_model.dart';

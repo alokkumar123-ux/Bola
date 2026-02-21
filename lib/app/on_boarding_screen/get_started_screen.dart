@@ -6,7 +6,6 @@ import 'package:poolmate/themes/app_them_data.dart';
 import 'package:poolmate/themes/responsive.dart';
 import 'package:poolmate/themes/round_button_fill.dart';
 import 'package:poolmate/utils/dark_theme_provider.dart';
-import 'package:poolmate/utils/network_image_widget.dart';
 import 'package:provider/provider.dart';
 
 class GetStartedScreen extends StatelessWidget {

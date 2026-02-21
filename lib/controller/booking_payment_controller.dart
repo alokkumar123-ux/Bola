@@ -7,7 +7,6 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:poolmate/app/dashboard_screen.dart';
 import 'package:poolmate/app/home_screen/booking_success_screen.dart';
-import 'package:poolmate/app/myride/myride_screen.dart';
 import 'package:poolmate/app/payment/cashfreeScreen.dart';
 import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/constant/send_notification.dart';

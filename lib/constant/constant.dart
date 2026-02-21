@@ -475,7 +475,7 @@ class Constant {
     String randomPart =
         List.generate(10, (_) => chars[rng.nextInt(chars.length)]).join();
 
-    return '$randomPart';
+    return randomPart;
   }
 
   static LanguageModel getLanguage() {
@@ -856,7 +856,7 @@ class Constant {
         quality: 75,
       );
 
-      if (thumbnailBytes == null || thumbnailBytes.isEmpty) {
+      if (thumbnailBytes.isEmpty) {
         throw Exception("Failed to generate thumbnail.");
       }
 

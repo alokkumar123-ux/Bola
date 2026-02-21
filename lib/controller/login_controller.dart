@@ -245,8 +245,8 @@ class LoginController extends GetxController {
 
         // Create a new credential
         final credential = GoogleAuthProvider.credential(
-          accessToken: googleAuth?.accessToken,
-          idToken: googleAuth?.idToken,
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
         );
 
         // Once signed in, return the UserCredential

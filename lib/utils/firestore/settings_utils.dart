@@ -143,7 +143,7 @@ class SettingsUtils {
           return advertiseBannerModel;
         }
       }
-    } catch (error, stackTrace) {
+    } catch (error) {
       print('Error fetching advertise banners: $error');
     }
     return [];

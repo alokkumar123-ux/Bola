@@ -24,6 +24,7 @@ import 'package:poolmate/utils/firestore/user_utils.dart';
 import 'package:poolmate/utils/firestore/auth_utils.dart';
 import 'package:poolmate/services/fcm_token_manager.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -333,6 +334,31 @@ class ProfileScreen extends StatelessWidget {
                               title: "Referral Program".tr,
                               subTitle: 'Invite friends and earn rewards'.tr,
                               svgImage: "assets/icons/ic_wallet.svg",
+                              themeChange: themeChange,
+                            ),
+                            menuItemWidget(
+                              onTap: () {
+                                Get.to(WebViewScreen(
+                                  url: 'https://bolaletsgo.com/#faq',
+                                ));
+                              },
+                              title: "FAQ".tr,
+                              subTitle: 'Frequently asked questions'.tr,
+                              svgImage: "assets/icons/ic_help_support.svg",
+                              themeChange: themeChange,
+                            ),
+                            menuItemWidget(
+                              onTap: () async {
+                                final Uri url = Uri.parse(
+                                    'https://www.youtube.com/watch?v=DE_4jamwYac&list=PLVHZUxZWcQfyNVPVN_YqBm8_cA0s4kaIi');
+                                if (await canLaunchUrl(url)) {
+                                  await launchUrl(url,
+                                      mode: LaunchMode.externalApplication);
+                                }
+                              },
+                              title: "App Tutorial".tr,
+                              subTitle: 'Learn how to use the app'.tr,
+                              svgImage: "assets/icons/ic_document.svg",
                               themeChange: themeChange,
                             ),
                             InkWell(

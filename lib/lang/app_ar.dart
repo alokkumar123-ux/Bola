@@ -230,4 +230,8 @@ const Map<String, String> lnAr = {
   "Withdrawal": "انسحاب",
   "Transaction History": "تاريخ المعاملات",
   "Transaction not found": "لم يتم العثور على المعاملة",
+  "FAQ": "الأسئلة الشائعة",
+  "Frequently asked questions": "الأسئلة المتداولة",
+  "App Tutorial": "دروس التطبيق",
+  "Learn how to use the app": "تعلم كيفية استخدام التطبيق"
 };

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/themes/app_them_data.dart';
 import 'package:poolmate/utils/dark_theme_provider.dart';
 import 'package:provider/provider.dart';

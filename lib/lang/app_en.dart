@@ -256,5 +256,9 @@ const Map<String, String> enUS = {
   'Your SOS request has been submitted to admin.':
       'Your SOS request has been submitted to admin.',
   'Please enable GPS to use the SOS emergency feature.':
-      'Please enable GPS to use the SOS emergency feature.'
+      'Please enable GPS to use the SOS emergency feature.',
+  'FAQ': 'FAQ',
+  'Frequently asked questions': 'Frequently asked questions',
+  'App Tutorial': 'App Tutorial',
+  'Learn how to use the app': 'Learn how to use the app'
 };

@@ -321,7 +321,7 @@ class _PassengerNamesScreenState extends State<PassengerNamesScreen> {
                                         }
                                       });
                                     },
-                                    activeColor: Colors.black,
+                                    activeTrackColor: Colors.black,
                                   ),
                                 ],
                               ),
@@ -398,7 +398,7 @@ class _PassengerNamesScreenState extends State<PassengerNamesScreen> {
                                               color: Colors.grey.shade400),
                                         ),
                                         child: DropdownButtonFormField<String>(
-                                          value: _passengerGenders[seatIndex] ??
+                                          initialValue: _passengerGenders[seatIndex] ??
                                               'Male',
                                           decoration: const InputDecoration(
                                             contentPadding:
@@ -492,7 +492,7 @@ class _PassengerNamesScreenState extends State<PassengerNamesScreen> {
                         ],
                       ),
                     );
-                  }).toList(),
+                  }),
                 ],
               ),
             ),

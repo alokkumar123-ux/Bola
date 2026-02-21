@@ -52,7 +52,7 @@ class BookingUtils {
         .get()
         .then((value) {
       for (var element in value.docs) {
-        bookingList!.add(BookingModel.fromJson(element.data()));
+        bookingList.add(BookingModel.fromJson(element.data()));
       }
     }).catchError((error) {
       print("Failed to get publishes: $error");
@@ -72,7 +72,7 @@ class BookingUtils {
         .get()
         .then((value) {
       for (var element in value.docs) {
-        bookingList!.add(BookingModel.fromJson(element.data()));
+        bookingList.add(BookingModel.fromJson(element.data()));
       }
     }).catchError((error) {
       print("Failed to check active publishes: $error");
@@ -90,7 +90,7 @@ class BookingUtils {
         .get()
         .then((value) {
       for (var element in value.docs) {
-        bookingList!.add(BookingModel.fromJson(element.data()));
+        bookingList.add(BookingModel.fromJson(element.data()));
       }
     }).catchError((error) {
       print("Failed to get my bookings: $error");
@@ -257,7 +257,7 @@ class BookingUtils {
         .get()
         .then((value) {
       for (var element in value.docs) {
-        bookingList!.add(BookingModel.fromJson(element.data()));
+        bookingList.add(BookingModel.fromJson(element.data()));
       }
     }).catchError((error) {
       print("Failed to get cancelled bookings: $error");
@@ -276,7 +276,7 @@ class BookingUtils {
         .get()
         .then((value) {
       for (var element in value.docs) {
-        bookingList!.add(BookingModel.fromJson(element.data()));
+        bookingList.add(BookingModel.fromJson(element.data()));
       }
     }).catchError((error) {
       print("Failed to get completed bookings: $error");

@@ -244,7 +244,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Widget _buildCarShape() {
-    return Container(
+    return SizedBox(
       width: 140,
       height: 70,
       child: Stack(
@@ -430,7 +430,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Widget _buildRoad() {
-    return Container(
+    return SizedBox(
       height: 120,
       child: Column(
         children: [
