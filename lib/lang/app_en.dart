@@ -260,5 +260,7 @@ const Map<String, String> enUS = {
   'FAQ': 'FAQ',
   'Frequently asked questions': 'Frequently asked questions',
   'App Tutorial': 'App Tutorial',
-  'Learn how to use the app': 'Learn how to use the app'
+  'Learn how to use the app': 'Learn how to use the app',
+  "You must give two SOS number, otherwise it's confusing for others":
+      "You must give two SOS number, otherwise it's confusing for others",
 };

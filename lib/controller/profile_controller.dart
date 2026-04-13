@@ -6,6 +6,7 @@ import 'package:poolmate/utils/firestore/auth_utils.dart';
 class ProfileController extends GetxController {
   RxBool isLoading = true.obs;
   Rx<UserModel> userModel = UserModel().obs;
+  bool hasShownSosDialog = false;
 
   @override
   void onInit() {
@@ -20,7 +21,6 @@ class ProfileController extends GetxController {
       }
     });
 
-    print(userModel.value.toJson());
     isLoading.value = false;
   }
 }

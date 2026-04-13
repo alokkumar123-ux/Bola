@@ -20,7 +20,6 @@ import 'package:poolmate/themes/custom_dialog_box.dart';
 import 'package:poolmate/themes/responsive.dart';
 import 'package:poolmate/utils/dark_theme_provider.dart';
 import 'package:poolmate/utils/network_image_widget.dart';
-import 'package:poolmate/utils/firestore/user_utils.dart';
 import 'package:poolmate/utils/firestore/auth_utils.dart';
 import 'package:poolmate/services/fcm_token_manager.dart';
 import 'package:provider/provider.dart';
@@ -35,13 +34,15 @@ class ProfileScreen extends StatelessWidget {
         init: ProfileController(),
         builder: (controller) {
           WidgetsBinding.instance.addPostFrameCallback((_) async {
-            // Always fetch latest user profile from Firebase
-            final user =
-                await UserUtils.getUserProfile(AuthUtils.getCurrentUid());
-            final sosNumbers = user?.sosWhatsAppNumbers;
+            if (controller.isLoading.value) return;
+            if (controller.hasShownSosDialog) return;
+
+            final user = controller.userModel.value;
+            final sosNumbers = user.sosWhatsAppNumbers;
             final hasValidNumber = sosNumbers != null &&
                 sosNumbers.any((n) => n.trim().isNotEmpty);
             if (!hasValidNumber) {
+              controller.hasShownSosDialog = true;
               showDialog(
                 context: context,
                 barrierDismissible: false,
@@ -54,7 +55,10 @@ class ProfileScreen extends StatelessWidget {
                       TextButton(
                         onPressed: () {
                           Navigator.of(context).pop();
-                          Get.to(const EditProfileScreen());
+                          Get.to(const EditProfileScreen(), arguments: {'scrollToBottom': true})?.then((value) {
+                            controller.hasShownSosDialog = false;
+                            controller.getData();
+                          });
                         },
                         child: Text('Go to Edit Profile'),
                       ),

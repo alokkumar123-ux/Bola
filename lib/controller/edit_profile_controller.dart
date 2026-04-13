@@ -28,6 +28,8 @@ class EditProfileController extends GetxController {
       TextEditingController(text: "+91").obs;
   RxString preAddressOfName = "Mr.".obs;
 
+  ScrollController scrollController = ScrollController();
+
   @override
   void onInit() {
     getData();
@@ -69,6 +71,18 @@ class EditProfileController extends GetxController {
     });
 
     isLoading.value = false;
+
+    if (Get.arguments != null && Get.arguments?['scrollToBottom'] == true) {
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (scrollController.hasClients) {
+          scrollController.animateTo(
+            scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+      });
+    }
   }
 
   saveData() async {
@@ -90,12 +104,20 @@ class EditProfileController extends GetxController {
       return;
     }
 
+    // Check if only one SOS number is provided
+    if ((sosNumber1.isNotEmpty && sosNumber2.isEmpty) ||
+        (sosNumber1.isEmpty && sosNumber2.isNotEmpty)) {
+      ShowToastDialog.showToast(
+          "You must give two SOS number".tr);
+      return;
+    }
+
     // Check if both numbers are filled and are the same
     if (sosNumber1.isNotEmpty &&
         sosNumber2.isNotEmpty &&
         sosNumber1 == sosNumber2) {
       ShowToastDialog.showToast(
-          "SOS WhatsApp number 1 and 2 cannot be the same");
+          "SOS WhatsApp number 1 and 2 cannot be the same".tr);
       return;
     }
 

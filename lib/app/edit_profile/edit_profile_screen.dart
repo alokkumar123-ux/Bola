@@ -71,6 +71,7 @@ class EditProfileScreen extends StatelessWidget {
               child: controller.isLoading.value
                   ? Center(child: Constant.loader())
                   : SingleChildScrollView(
+                      controller: controller.scrollController,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
