@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:poolmate/app/add_vehicle/add_vehicle_screen.dart';
+import 'package:poolmate/app/chat/inbox_screen.dart';
 import 'package:poolmate/app/chat/chat_screen.dart';
 import 'package:poolmate/app/myride/passenger_details_screen.dart';
 import 'package:poolmate/app/otp_verification/otp_verification_screen.dart';
@@ -14,6 +15,7 @@ import 'package:poolmate/app/review/review_screen.dart';
 import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/constant/show_toast_dialog.dart';
 import 'package:poolmate/controller/add_your_ride_controller.dart';
+import 'package:poolmate/controller/chat_controller.dart';
 import 'package:poolmate/controller/published_details_controller.dart';
 import 'package:poolmate/model/booking_model.dart';
 import 'package:poolmate/model/map/city_list_model.dart';
@@ -25,6 +27,7 @@ import 'package:poolmate/themes/custom_dialog_box.dart';
 import 'package:poolmate/themes/responsive.dart';
 import 'package:poolmate/themes/round_button_fill.dart';
 import 'package:poolmate/utils/dark_theme_provider.dart';
+import 'package:poolmate/utils/firestore/auth_utils.dart';
 import 'package:poolmate/utils/firestore/user_utils.dart';
 import 'package:poolmate/utils/firestore/review_utils.dart';
 import 'package:poolmate/utils/firestore/booking_utils.dart';
@@ -82,6 +85,26 @@ class PublishedDetailsScreen extends StatelessWidget {
                 ),
               ),
               actions: [
+                // Location share button: only visible when ride is ongoing
+                if (controller.bookingModel.value.status == Constant.onGoing)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 4),
+                    child: IconButton(
+                      tooltip: 'Share Ride Location',
+                      icon: Icon(
+                        Icons.share_location_outlined,
+                        color: AppThemeData.primary300,
+                      ),
+                      onPressed: () {
+                        Get.to(
+                          InboxScreen(
+                            shareRideLocation: true,
+                            bookingModel: controller.bookingModel.value,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                 controller.bookingModel.value.status != Constant.placed
                     ? const SizedBox()
                     : controller.bookingUserList.isEmpty
@@ -1643,6 +1666,155 @@ class PublishedDetailsScreen extends StatelessWidget {
               });
         },
       ),
+    );
+  }
+
+  /// Bottom sheet to choose which booked passenger to share the ride location with.
+  void _showShareLocationSheet(
+    BuildContext context,
+    PublishedDetailsController controller,
+    DarkThemeProvider themeChange,
+  ) {
+    if (controller.bookingUserList.isEmpty) {
+      ShowToastDialog.showToast('No passengers booked yet'.tr);
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: themeChange.getThem()
+          ? AppThemeData.grey800
+          : AppThemeData.grey50,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Handle bar
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: AppThemeData.grey300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Row(
+                children: [
+                  Icon(Icons.share_location_outlined,
+                      color: AppThemeData.primary300, size: 22),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Share Ride Location'.tr,
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontFamily: AppThemeData.bold,
+                      color: themeChange.getThem()
+                          ? AppThemeData.grey100
+                          : AppThemeData.grey900,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Select a passenger to send your current ride location'.tr,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontFamily: AppThemeData.regular,
+                  color: themeChange.getThem()
+                      ? AppThemeData.grey400
+                      : AppThemeData.grey600,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ...controller.bookingUserList.map((bookedUser) {
+                return FutureBuilder<UserModel?>(
+                  future:
+                      UserUtils.getUserProfile(bookedUser.id.toString()),
+                  builder: (context, snap) {
+                    final passengerUser = snap.data;
+                    final name = passengerUser?.fullName() ??
+                        'Passenger ${bookedUser.id?.substring(0, 6) ?? ''}';
+                    return ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: CircleAvatar(
+                        radius: 20,
+                        backgroundImage: passengerUser?.profilePic != null
+                            ? NetworkImage(passengerUser!.profilePic!)
+                            : null,
+                        backgroundColor: AppThemeData.primary300,
+                        child: passengerUser?.profilePic == null
+                            ? const Icon(Icons.person,
+                                color: Colors.white, size: 20)
+                            : null,
+                      ),
+                      title: Text(
+                        name,
+                        style: TextStyle(
+                          fontFamily: AppThemeData.semiBold,
+                          color: themeChange.getThem()
+                              ? AppThemeData.grey100
+                              : AppThemeData.grey800,
+                        ),
+                      ),
+                      trailing: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppThemeData.primary300,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text(
+                          'Send',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: AppThemeData.semiBold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                      onTap: passengerUser == null
+                          ? null
+                          : () async {
+                              Get.back();
+                              try {
+                                // Fetch publisher (sender) user model
+                                final senderUser =
+                                    await UserUtils.getUserProfile(
+                                        AuthUtils.getCurrentUid());
+                                if (senderUser == null) {
+                                  ShowToastDialog.showToast(
+                                      'Could not load your profile'.tr);
+                                  return;
+                                }
+                                await ChatController.sendRideLocationCard(
+                                  senderUser: senderUser,
+                                  receiverUser: passengerUser,
+                                  bookingModel:
+                                      controller.bookingModel.value,
+                                );
+                              } catch (e) {
+                                ShowToastDialog.showToast(
+                                    'Failed to share location: $e'.tr);
+                              }
+                            },
+                    );
+                  },
+                );
+              }).toList(),
+            ],
+          ),
+        );
+      },
     );
   }
 }

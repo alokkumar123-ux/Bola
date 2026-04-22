@@ -22,7 +22,10 @@ import 'package:poolmate/utils/firestore/user_utils.dart';
 import 'package:poolmate/utils/firestore/auth_utils.dart';
 import 'package:poolmate/utils/firestore/settings_utils.dart';
 import 'package:poolmate/utils/firestore/ridealert_utils.dart';
+import 'package:poolmate/utils/firestore/vehicle_utils.dart';
+import 'package:poolmate/model/vehicle_information_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 class HomeController extends GetxController {
   // Seat Management
@@ -64,7 +67,52 @@ class HomeController extends GetxController {
     selectedDepartureTime.clear();
     verifyDriver.value = false;
     isWoman.value = false;
+    checkRcExpiry();
     super.onInit();
+  }
+
+  RxBool isRcExpiringSoon = false.obs;
+  Rx<VehicleInformationModel?> expiringVehicle = Rx<VehicleInformationModel?>(null);
+
+  checkRcExpiry() async {
+    List<VehicleInformationModel>? userVehicles = await VehicleUtils.getUserVehicleInformation();
+    if (userVehicles != null) {
+      bool foundExpiring = false;
+      for (var vehicle in userVehicles) {
+        if (_isRcExpiringWithinDays(vehicle.rcExpiryDate, 7)) {
+          isRcExpiringSoon.value = true;
+          expiringVehicle.value = vehicle;
+          foundExpiring = true;
+          break;
+        }
+      }
+      if (!foundExpiring) {
+        isRcExpiringSoon.value = false;
+        expiringVehicle.value = null;
+      }
+    }
+  }
+
+  bool _isRcExpiringWithinDays(String? dateStr, int days) {
+    if (dateStr == null || dateStr.isEmpty) return false;
+    try {
+      DateTime? d;
+      try { d = DateFormat('dd-MMM-yyyy').parse(dateStr); } catch(e){}
+      if (d == null) {
+        try { d = DateFormat('yyyy-MM-dd').parse(dateStr); } catch(e){}
+      }
+      if (d == null) {
+        d = DateTime.tryParse(dateStr);
+      }
+      if (d != null) {
+        DateTime now = DateTime.now();
+        DateTime targetDate = now.add(Duration(days: days));
+        return d.isBefore(targetDate);
+      }
+    } catch (e) {
+      print('RC Date parse error: $e');
+    }
+    return false;
   }
 
   getSearchHistory() async {

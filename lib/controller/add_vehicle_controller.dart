@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/constant/show_toast_dialog.dart';
 import 'package:poolmate/model/vehicle_brand_model.dart';
@@ -42,6 +43,28 @@ class AddVehicleController extends GetxController {
 
   Rx<VehicleInformationModel> vehicleInformationModel =
       VehicleInformationModel().obs;
+
+  bool isExpired(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) return false;
+    try {
+      DateTime? d;
+      try { d = DateFormat('dd-MMM-yyyy').parse(dateStr); } catch(e){}
+      if (d == null) {
+        try { d = DateFormat('yyyy-MM-dd').parse(dateStr); } catch(e){}
+      }
+      if (d == null) {
+        d = DateTime.tryParse(dateStr);
+      }
+      if (d != null) {
+        DateTime now = DateTime.now();
+        DateTime targetDate = now.add(const Duration(days: 7));
+        return d.isBefore(targetDate);
+      }
+    } catch (e) {
+      print('RC Date parse error: $e');
+    }
+    return false;
+  }
 
   // Check if RC is already verified in Firebase
   checkRcVerificationStatus() async {
@@ -146,6 +169,25 @@ class AddVehicleController extends GetxController {
           vehicleInformationModel.value.vehicleInsuranceUpto =
               rcData['vehicle_insurance_upto'];
           vehicleInformationModel.value.verifiedAt = rcData['verified_at'];
+
+          if (vehicleInformationModel.value.id != null) {
+            await AuthUtils.fireStore
+                .collection('user_vehicle_information')
+                .doc(vehicleInformationModel.value.id)
+                .update({
+              'rcVerified': true,
+              'rcStatus': rcData['rc_status'],
+              'rcExpiryDate': rcData['rc_expiry_date'],
+              'vehicleInsuranceUpto': rcData['vehicle_insurance_upto'],
+              'verifiedAt': rcData['verified_at'],
+            }).catchError((e) {
+              print('Failed to update RC status in Firebase: $e');
+            });
+          }
+
+          // Trigger UI update inside Obx blocks by notifying them that properties changed
+          vehicleInformationModel.refresh();
+          isRcVerified.refresh();
 
           return rcData;
         } else {

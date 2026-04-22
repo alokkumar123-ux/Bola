@@ -578,6 +578,26 @@ class AddYourRideScreen extends StatelessWidget {
         });
   }
 
+  bool _isRcExpired(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) return false;
+    try {
+      DateTime? d;
+      try { d = DateFormat('dd-MMM-yyyy').parse(dateStr); } catch(e){}
+      if (d == null) {
+        try { d = DateFormat('yyyy-MM-dd').parse(dateStr); } catch(e){}
+      }
+      if (d == null) {
+        d = DateTime.tryParse(dateStr);
+      }
+      if (d != null) {
+        return d.isBefore(DateTime.now());
+      }
+    } catch (e) {
+      print('RC Date parse error: $e');
+    }
+    return false;
+  }
+
   addVehicleBuildBottomSheet(BuildContext context, bool isdarkmode) {
     return showModalBottomSheet(
       context: context,
@@ -642,13 +662,15 @@ class AddYourRideScreen extends StatelessWidget {
                           itemBuilder: (context, index) {
                             VehicleInformationModel vehicleInformationModel =
                                 controller.userVehicleList[index];
+                            bool isExpired = _isRcExpired(vehicleInformationModel.rcExpiryDate);
                             return Obx(
                               () => InkWell(
-                                onTap: () {
+                                onTap: isExpired ? null : () {
                                   controller.selectedUserVehicle.value =
                                       vehicleInformationModel;
                                 },
                                 child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
                                       children: [
@@ -659,25 +681,41 @@ class AddYourRideScreen extends StatelessWidget {
                                             textAlign: TextAlign.start,
                                             style: TextStyle(
                                                 fontSize: 16,
-                                                color: themeChange.getThem()
-                                                    ? AppThemeData.grey100
-                                                    : AppThemeData.grey800,
+                                                color: isExpired
+                                                    ? AppThemeData.grey500
+                                                    : (themeChange.getThem()
+                                                        ? AppThemeData.grey100
+                                                        : AppThemeData.grey800),
                                                 fontFamily:
                                                     AppThemeData.medium),
                                           ),
                                         ),
-                                        Radio(
+                                        Radio<VehicleInformationModel>(
                                           value: vehicleInformationModel,
                                           groupValue: controller
                                               .selectedUserVehicle.value,
-                                          activeColor: AppThemeData.primary300,
-                                          onChanged: (value) {
-                                            controller.selectedUserVehicle
-                                                .value = value!;
+                                          activeColor: isExpired ? AppThemeData.grey500 : AppThemeData.primary300,
+                                          onChanged: isExpired ? null : (VehicleInformationModel? value) {
+                                            if (value != null) {
+                                              controller.selectedUserVehicle
+                                                  .value = value;
+                                            }
                                           },
                                         ),
                                       ],
                                     ),
+                                    if (isExpired)
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 4),
+                                        child: Text(
+                                          "Vehicle RC has expired. Please verify your RC to use this vehicle.".tr,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: AppThemeData.warning300,
+                                            fontFamily: AppThemeData.regular,
+                                          ),
+                                        ),
+                                      ),
                                     const Divider(),
                                   ],
                                 ),

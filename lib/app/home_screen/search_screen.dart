@@ -21,6 +21,7 @@ import 'package:provider/provider.dart';
 import 'package:poolmate/utils/firestore/vehicle_utils.dart';
 import 'package:poolmate/utils/firestore/user_utils.dart';
 import 'package:poolmate/utils/firestore/auth_utils.dart';
+import 'package:poolmate/services/share_ride_service.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -220,9 +221,13 @@ class _SearchScreenState extends State<SearchScreen> {
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   Row(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
                                                     children: [
                                                       Expanded(
-                                                        child: RichText(
+                                                        child: Column(
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: [
+                                                            RichText(
                                                           text: TextSpan(
                                                             style: Theme.of(
                                                                     context)
@@ -282,32 +287,113 @@ class _SearchScreenState extends State<SearchScreen> {
                                                             ],
                                                           ),
                                                         ),
+                                                          Text(
+                                                            Constant.amountShow(
+                                                                amount: controller
+                                                                    .getCorrectPrice(
+                                                                        bookingModel,
+                                                                        stopOverModel)
+                                                                    .toString()),
+                                                            maxLines: 1,
+                                                            style: TextStyle(
+                                                              color: themeChange
+                                                                      .getThem()
+                                                                  ? AppThemeData
+                                                                      .grey100
+                                                                  : AppThemeData
+                                                                      .grey800,
+                                                              fontSize: 16,
+                                                              overflow: TextOverflow
+                                                                  .ellipsis,
+                                                              fontFamily:
+                                                                  AppThemeData.bold,
+                                                            ),
+                                                          ),
+                                                        ],
                                                       ),
-                                                      Text(
-                                                        Constant.amountShow(
-                                                            amount: controller
-                                                                .getCorrectPrice(
+                                                    ),
+                                                    Builder(
+                                                      builder: (context) {
+                                                        final avSeats = _calculateAvailableSeats(bookingModel, stopOverModel);
+                                                        final isShareEnabled = avSeats > 0;
+                                                        final distString = "${Constant.calculateDistance(Location(lat: stopOverModel.startLocation!.lat, lng: stopOverModel.startLocation!.lng), controller.pickUpLocation.value).toStringAsFixed(2)} ${Constant.distanceType}";
+                                                        final isShareLoading = ValueNotifier<bool>(false);
+
+                                                        return ValueListenableBuilder<bool>(
+                                                          valueListenable: isShareLoading,
+                                                          builder: (context, isLoading, child) {
+                                                            return Padding(
+                                                              padding: const EdgeInsets.only(left: 8),
+                                                              child: InkWell(
+                                                                onTap: (isShareEnabled && !isLoading) ? () async {
+                                                                  isShareLoading.value = true;
+                                                                  await ShareRideService.shareRide(
+                                                                    context,
                                                                     bookingModel,
-                                                                    stopOverModel)
-                                                                .toString()),
-                                                        maxLines: 1,
-                                                        style: TextStyle(
-                                                          color: themeChange
-                                                                  .getThem()
-                                                              ? AppThemeData
-                                                                  .grey100
-                                                              : AppThemeData
-                                                                  .grey800,
-                                                          fontSize: 16,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          fontFamily:
-                                                              AppThemeData.bold,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  const SizedBox(
+                                                                    stopOverModel,
+                                                                    availableSeats: avSeats,
+                                                                    distance: distString,
+                                                                  );
+                                                                  isShareLoading.value = false;
+                                                                } : null,
+                                                                borderRadius: BorderRadius.circular(8),
+                                                                child: Container(
+                                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                                                  decoration: BoxDecoration(
+                                                                    color: themeChange.getThem()
+                                                                        ? (isShareEnabled ? AppThemeData.grey800 : AppThemeData.grey900)
+                                                                        : (isShareEnabled ? AppThemeData.grey100 : AppThemeData.grey200),
+                                                                    borderRadius: BorderRadius.circular(8),
+                                                                    border: Border.all(
+                                                                      color: themeChange.getThem()
+                                                                          ? (isShareEnabled ? AppThemeData.grey700 : AppThemeData.grey800)
+                                                                          : (isShareEnabled ? AppThemeData.grey300 : AppThemeData.grey200),
+                                                                    ),
+                                                                  ),
+                                                                  child: Row(
+                                                                    mainAxisSize: MainAxisSize.min,
+                                                                    children: [
+                                                                      isLoading
+                                                                          ? SizedBox(
+                                                                              width: 14,
+                                                                              height: 14,
+                                                                              child: CircularProgressIndicator(
+                                                                                strokeWidth: 2,
+                                                                                color: themeChange.getThem()
+                                                                                    ? AppThemeData.grey200
+                                                                                    : AppThemeData.grey600,
+                                                                              ),
+                                                                            )
+                                                                          : Icon(
+                                                                              Icons.share_outlined,
+                                                                              size: 14,
+                                                                              color: themeChange.getThem()
+                                                                                  ? (isShareEnabled ? AppThemeData.grey200 : AppThemeData.grey600)
+                                                                                  : (isShareEnabled ? AppThemeData.grey700 : AppThemeData.grey400),
+                                                                            ),
+                                                                      const SizedBox(width: 4),
+                                                                      Text(
+                                                                        isLoading ? 'Sharing...' : 'Share',
+                                                                        style: TextStyle(
+                                                                          fontSize: 12,
+                                                                          fontFamily: AppThemeData.medium,
+                                                                          color: themeChange.getThem()
+                                                                              ? (isShareEnabled ? AppThemeData.grey200 : AppThemeData.grey600)
+                                                                              : (isShareEnabled ? AppThemeData.grey700 : AppThemeData.grey400),
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            );
+                                                          }
+                                                        );
+                                                      }
+                                                    ),
+                                                  ],
+                                                ),
+                                                const SizedBox(
                                                     height: 5,
                                                   ),
                                                   Text(
@@ -613,7 +699,10 @@ class _SearchScreenState extends State<SearchScreen> {
                                                             return Text(
                                                                 'Error'.tr);
                                                         }
-                                                      })
+                                                        })
+                                                  ,
+
+
                                                 ],
                                               ),
                                             ),

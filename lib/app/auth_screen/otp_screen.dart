@@ -15,6 +15,7 @@ import 'package:poolmate/services/fcm_token_manager.dart';
 import 'package:provider/provider.dart';
 
 import 'package:poolmate/utils/firestore/auth_utils.dart';
+import 'package:poolmate/services/deep_link_service.dart';
 
 class OtpScreen extends StatelessWidget {
   const OtpScreen({super.key});
@@ -170,6 +171,8 @@ class OtpScreen extends StatelessWidget {
                                           }
 
                                           Get.offAll(const DashBoardScreen());
+                                          // Handle pending deep link after login
+                                          await DeepLinkService.handlePendingLink();
                                         } else {
                                           ShowToastDialog.showToast(
                                               "This user is disable please contact administrator"

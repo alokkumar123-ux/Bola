@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:poolmate/controller/dashboard_controller.dart';
 import 'package:poolmate/themes/app_them_data.dart';
 import 'package:poolmate/utils/dark_theme_provider.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:provider/provider.dart';
 
 class DashBoardScreen extends StatelessWidget {
@@ -17,13 +18,43 @@ class DashBoardScreen extends StatelessWidget {
             ? null
             : DashboardScreenController(),
         builder: (controller) {
-          return Scaffold(
-            backgroundColor: themeChange.getThem()
-                ? AppThemeData.grey800
-                : AppThemeData.grey100,
-            body: SafeArea(
-              child: controller.pageList[controller.selectedIndex.value],
-            ),
+          return WillPopScope(
+            onWillPop: () async {
+              bool isRunning = await FlutterBackgroundService().isRunning();
+              if (isRunning) {
+                bool? shouldPop = await showDialog<bool>(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: Text("Location Sharing Active".tr),
+                      content: Text("You are currently sharing your live location. Closing the app might interrupt this depending on OS policies. Are you sure you want to exit?".tr),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: Text("Cancel".tr),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            FlutterBackgroundService().invoke('stopService');
+                            Navigator.of(context).pop(true);
+                          },
+                          child: Text("Exit & Stop".tr, style: const TextStyle(color: Colors.red)),
+                        ),
+                      ],
+                    );
+                  }
+                );
+                return shouldPop ?? false;
+              }
+              return true;
+            },
+            child: Scaffold(
+              backgroundColor: themeChange.getThem()
+                  ? AppThemeData.grey800
+                  : AppThemeData.grey100,
+              body: SafeArea(
+                child: controller.pageList[controller.selectedIndex.value],
+              ),
             bottomNavigationBar: BottomNavigationBar(
               type: BottomNavigationBarType.fixed,
               showUnselectedLabels: true,
@@ -82,7 +113,7 @@ class DashBoardScreen extends StatelessWidget {
                 ),
               ],
             ),
-          );
+          ));
         });
   }
 

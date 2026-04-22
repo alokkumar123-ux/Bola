@@ -16,6 +16,7 @@ import 'package:poolmate/services/whatsapp_auth_service.dart';
 import 'package:poolmate/utils/firestore/auth_utils.dart';
 import 'package:poolmate/utils/firestore/user_utils.dart';
 import 'package:poolmate/services/fcm_token_manager.dart';
+import 'package:poolmate/services/deep_link_service.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class LoginController extends GetxController {
@@ -123,6 +124,8 @@ class LoginController extends GetxController {
                   }
 
                   Get.offAll(const DashBoardScreen());
+                  // Handle pending deep link after Google login
+                  await DeepLinkService.handlePendingLink();
                 } else {
                   await FirebaseAuth.instance.signOut();
                   ShowToastDialog.showToast(
@@ -192,6 +195,8 @@ class LoginController extends GetxController {
                   }
 
                   Get.offAll(const DashBoardScreen());
+                  // Handle pending deep link after Apple login
+                  await DeepLinkService.handlePendingLink();
                 } else {
                   await FirebaseAuth.instance.signOut();
                   ShowToastDialog.showToast(

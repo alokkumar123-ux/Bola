@@ -12,6 +12,7 @@ import 'package:poolmate/utils/preferences.dart';
 import 'package:poolmate/utils/firestore/auth_utils.dart';
 import 'package:poolmate/services/fcm_token_manager.dart';
 import 'package:poolmate/services/pending_payment_service.dart';
+import 'package:poolmate/services/deep_link_service.dart';
 
 class SplashController extends GetxController {
   Timer? timer;
@@ -97,6 +98,9 @@ class SplashController extends GetxController {
             transition: Transition.downToUp,
             duration: const Duration(milliseconds: 800),
           );
+          // After navigating to dashboard, handle any pending deep link
+          // (e.g. user cold-started the app by tapping a ride share link)
+          await DeepLinkService.handlePendingLink();
         } else {
           print('🔄 Navigating to GetStartedScreen');
           Get.offAll(

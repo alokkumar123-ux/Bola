@@ -160,12 +160,14 @@ class EditProfileScreen extends StatelessWidget {
                                   controller:
                                       controller.firstNameController.value,
                                   title: 'First name'.tr,
+                                  enable: !(controller.userModel.value.panVerified == true || controller.userModel.value.aadharVerified == true),
                                 ),
                                 TextFieldWidget(
                                   hintText: 'Enter your last name'.tr,
                                   controller:
                                       controller.lastNameController.value,
                                   title: 'Last name'.tr,
+                                  enable: !(controller.userModel.value.panVerified == true || controller.userModel.value.aadharVerified == true),
                                 ),
                                 InkWell(
                                   onTap: () async {

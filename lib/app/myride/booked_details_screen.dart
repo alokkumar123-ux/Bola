@@ -10,6 +10,7 @@ import 'package:poolmate/app/review/review_screen.dart';
 import 'package:poolmate/constant/constant.dart';
 import 'package:poolmate/constant/show_toast_dialog.dart';
 import 'package:poolmate/controller/booked_details_controller.dart';
+import 'package:poolmate/controller/chat_controller.dart';
 import 'package:poolmate/model/map/geometry.dart';
 import 'package:poolmate/model/sos_model.dart';
 import 'package:poolmate/model/tax_model.dart';
@@ -69,6 +70,18 @@ class BookedDetailsScreen extends StatelessWidget {
                 ),
                 elevation: 0,
                 actions: [
+                  // Location share button: only visible when ride is ongoing
+                  if (controller.bookingModel.value.status ==
+                      Constant.onGoing)
+                    IconButton(
+                      tooltip: 'Share Ride Location',
+                      icon: Icon(
+                        Icons.share_location_outlined,
+                        color: AppThemeData.primary300,
+                      ),
+                      onPressed: () => _shareRideLocationWithPublisher(
+                          context, controller),
+                    ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     child: InkWell(
@@ -1816,5 +1829,57 @@ class BookedDetailsScreen extends StatelessWidget {
     const labels = ['A1', 'A2', 'B1', 'B2', 'B3', 'C1', 'C2', 'C3'];
     if (index >= 0 && index < labels.length) return labels[index];
     return 'S$index';
+  }
+
+  /// Send a ride_location card to the publisher from the passenger side.
+  Future<void> _shareRideLocationWithPublisher(
+    BuildContext context,
+    BookedDetailsController controller,
+  ) async {
+    // Confirmation dialog
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Share Ride Location'),
+        content: const Text(
+          'Send your current location along with the ride details to the publisher?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text('Cancel'.tr),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              'Share'.tr,
+              style: TextStyle(color: AppThemeData.primary300),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      // senderUser = current passenger
+      final senderUser = controller.userModel.value;
+      // receiverUser = publisher
+      final receiverUser = controller.publisherUserModel.value;
+
+      if (senderUser.id == null || receiverUser.id == null) {
+        ShowToastDialog.showToast('User data not loaded yet'.tr);
+        return;
+      }
+
+      await ChatController.sendRideLocationCard(
+        senderUser: senderUser,
+        receiverUser: receiverUser,
+        bookingModel: controller.bookingModel.value,
+      );
+    } catch (e) {
+      ShowToastDialog.showToast('Failed to share location: $e'.tr);
+    }
   }
 }

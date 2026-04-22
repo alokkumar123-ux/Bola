@@ -17,6 +17,7 @@ import 'package:poolmate/utils/firestore/booking_utils.dart';
 import 'package:poolmate/utils/firestore/auth_utils.dart';
 import 'package:poolmate/utils/firestore/user_utils.dart';
 import 'package:poolmate/utils/network_image_widget.dart';
+import 'package:poolmate/services/share_ride_service.dart';
 import 'package:provider/provider.dart';
 
 class MyRideScreen extends StatelessWidget {
@@ -804,57 +805,206 @@ class MyRideScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
+              Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  RichText(
-                    text: TextSpan(
-                      style: Theme.of(context).textTheme.bodyLarge,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Use address strings instead of geocoding
-                        TextSpan(
-                          text: bookingModel.pickUpAddress?.split(',').first ??
-                              'Location',
-                          style: TextStyle(
-                              color: themeChange.getThem()
-                                  ? AppThemeData.grey100
-                                  : AppThemeData.grey800,
-                              fontFamily: AppThemeData.bold,
-                              fontSize: 14),
-                        ),
-                        WidgetSpan(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            child: SvgPicture.asset(
-                                "assets/icons/ic_right_arrow.svg"),
+                        RichText(
+                          text: TextSpan(
+                            style: Theme.of(context).textTheme.bodyLarge,
+                            children: [
+                              // Use address strings instead of geocoding
+                              TextSpan(
+                                text: bookingModel.pickUpAddress
+                                        ?.split(',')
+                                        .first ??
+                                    'Location',
+                                style: TextStyle(
+                                    color: themeChange.getThem()
+                                        ? AppThemeData.grey100
+                                        : AppThemeData.grey800,
+                                    fontFamily: AppThemeData.bold,
+                                    fontSize: 14),
+                              ),
+                              WidgetSpan(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10),
+                                  child: SvgPicture.asset(
+                                      "assets/icons/ic_right_arrow.svg"),
+                                ),
+                              ),
+                              TextSpan(
+                                text: bookingModel.dropAddress
+                                        ?.split(',')
+                                        .first ??
+                                    'Location',
+                                style: TextStyle(
+                                    color: themeChange.getThem()
+                                        ? AppThemeData.grey100
+                                        : AppThemeData.grey800,
+                                    fontFamily: AppThemeData.bold,
+                                    fontSize: 14),
+                              ),
+                            ],
                           ),
                         ),
-                        TextSpan(
-                          text: bookingModel.dropAddress?.split(',').first ??
-                              'Location',
+                        Text(
+                          Constant.amountShow(
+                              amount: bookingModel.pricePerSeat.toString()),
+                          maxLines: 1,
                           style: TextStyle(
-                              color: themeChange.getThem()
-                                  ? AppThemeData.grey100
-                                  : AppThemeData.grey800,
-                              fontFamily: AppThemeData.bold,
-                              fontSize: 14),
+                            color: themeChange.getThem()
+                                ? AppThemeData.grey100
+                                : AppThemeData.grey800,
+                            fontSize: 16,
+                            overflow: TextOverflow.ellipsis,
+                            fontFamily: AppThemeData.bold,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  Text(
-                    Constant.amountShow(
-                        amount: bookingModel.pricePerSeat.toString()),
-                    maxLines: 1,
-                    style: TextStyle(
-                      color: themeChange.getThem()
-                          ? AppThemeData.grey100
-                          : AppThemeData.grey800,
-                      fontSize: 16,
-                      overflow: TextOverflow.ellipsis,
-                      fontFamily: AppThemeData.bold,
-                    ),
-                  ),
+                  if (statusLabel == null)
+                    Builder(builder: (context) {
+                      // Calculate available seats
+                      int avSeats = 0;
+                      final totalS = int.tryParse(
+                              bookingModel.vehicleInformation?.seatCount ??
+                                  '0') ??
+                          0;
+                      final allowed = bookingModel.selectedSeats ?? [];
+                      final bookedSStr = (bookingModel.bookedSeat ?? "0")
+                          .split(',')
+                          .where((s) => s.isNotEmpty);
+                      final bookedS =
+                          bookedSStr.map((s) => int.tryParse(s) ?? -1).toList();
+                      final tempSel = bookingModel.tempSeatSelection ?? [];
+
+                      for (int i = 1; i < totalS; i++) {
+                        if (allowed.contains(i.toString()) &&
+                            !bookedS.contains(i) &&
+                            !tempSel.contains(i)) {
+                          avSeats++;
+                        }
+                      }
+
+                      // Calculate distance
+                      String distString = "N/A";
+                      if (bookingModel
+                                  .pickupLocation?.geometry?.location?.lat !=
+                              null &&
+                          bookingModel.dropLocation?.geometry?.location?.lat !=
+                              null) {
+                        final startLoc =
+                            bookingModel.pickupLocation!.geometry!.location!;
+                        final endLoc =
+                            bookingModel.dropLocation!.geometry!.location!;
+                        distString =
+                            "${Constant.calculateDistance(startLoc, endLoc).toStringAsFixed(2)} ${Constant.distanceType}";
+                      }
+
+                      final isShareEnabled = avSeats > 0;
+                      final isShareLoading = ValueNotifier<bool>(false);
+
+                      return ValueListenableBuilder<bool>(
+                        valueListenable: isShareLoading,
+                        builder: (context, isLoading, child) {
+                          return Padding(
+                            padding: const EdgeInsets.only(left: 8),
+                            child: InkWell(
+                              onTap: (isShareEnabled && !isLoading)
+                                  ? () async {
+                                      isShareLoading.value = true;
+                                      final stopOver = StopOverModel(
+                                        startAddress: bookingModel.pickUpAddress,
+                                        endAddress: bookingModel.dropAddress,
+                                        price: bookingModel.pricePerSeat,
+                                      );
+                                      await ShareRideService.shareRide(
+                                        context,
+                                        bookingModel,
+                                        stopOver,
+                                        availableSeats: avSeats,
+                                        distance: distString,
+                                      );
+                                      isShareLoading.value = false;
+                                    }
+                                  : null,
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: themeChange.getThem()
+                                      ? (isShareEnabled
+                                          ? AppThemeData.grey800
+                                          : AppThemeData.grey900)
+                                      : (isShareEnabled
+                                          ? AppThemeData.grey100
+                                          : AppThemeData.grey200),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: themeChange.getThem()
+                                        ? (isShareEnabled
+                                            ? AppThemeData.grey700
+                                            : AppThemeData.grey800)
+                                        : (isShareEnabled
+                                            ? AppThemeData.grey300
+                                            : AppThemeData.grey200),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    isLoading
+                                        ? SizedBox(
+                                            width: 14,
+                                            height: 14,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: themeChange.getThem()
+                                                  ? AppThemeData.grey200
+                                                  : AppThemeData.grey600,
+                                            ),
+                                          )
+                                        : Icon(
+                                            Icons.share_outlined,
+                                            size: 14,
+                                            color: themeChange.getThem()
+                                                ? (isShareEnabled
+                                                    ? AppThemeData.grey200
+                                                    : AppThemeData.grey600)
+                                                : (isShareEnabled
+                                                    ? AppThemeData.grey700
+                                                    : AppThemeData.grey400),
+                                          ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      isLoading ? 'Sharing...' : 'Share',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontFamily: AppThemeData.medium,
+                                        color: themeChange.getThem()
+                                            ? (isShareEnabled
+                                                ? AppThemeData.grey200
+                                                : AppThemeData.grey600)
+                                            : (isShareEnabled
+                                                ? AppThemeData.grey700
+                                                : AppThemeData.grey400),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                      );
+                    }),
                 ],
               ),
               const SizedBox(

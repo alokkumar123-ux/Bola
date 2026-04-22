@@ -23,6 +23,8 @@ import 'package:poolmate/utils/preferences.dart';
 import 'package:poolmate/services/sos_audio_service.dart';
 import 'package:poolmate/utils/notification_service.dart';
 import 'package:provider/provider.dart';
+import 'package:poolmate/services/location_background_service.dart';
+import 'package:poolmate/services/deep_link_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -166,6 +168,13 @@ void main() async {
       onNotificationDisplayedMethod: awesomeOnNotificationDisplayedMethod,
       onDismissActionReceivedMethod: awesomeOnDismissActionReceivedMethod,
     );
+
+    // Initialize Background Location Service
+    try {
+      await initializeBackgroundLocationService();
+    } catch (e) {
+      print('Background location service failed to initialize: $e');
+    }
   }
 
   runApp(const MyApp());
@@ -185,6 +194,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void initState() {
     getCurrentAppTheme();
     WidgetsBinding.instance.addObserver(this);
+    // Initialize deep link listener for App Links (https://bolaletsgo.com/ride/*)
+    DeepLinkService.instance.initialize();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (Preferences.getString(Preferences.languageCodeKey)
           .toString()

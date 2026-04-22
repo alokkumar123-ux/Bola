@@ -113,98 +113,82 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                                 const SizedBox(
                                   width: 10,
                                 ),
-                                Obx(() => controller.isRcVerified.value
-                                    ? Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 8),
+                                Obx(() {
+                                  bool isVerified = controller.isRcVerified.value;
+                                  bool isExpired = isVerified && controller.isExpired(controller.vehicleInformationModel.value.rcExpiryDate);
+
+                                  Future<void> performVerification() async {
+                                    if (controller.licensePlatNumberController.value.text.isEmpty) {
+                                      ShowToastDialog.showToast("Please enter vehicle registration number".tr);
+                                      return;
+                                    }
+
+                                    ShowToastDialog.showLoader("Checking vehicle number...".tr);
+                                    final vehicleExists = await controller.checkVehicleNumberExists(controller.licensePlatNumberController.value.text);
+                                    ShowToastDialog.closeLoader();
+
+                                    if (vehicleExists) {
+                                      ShowToastDialog.showToast("This vehicle number is already registered".tr);
+                                      return;
+                                    }
+
+                                    ShowToastDialog.showLoader("Verifying RC...".tr);
+                                    final rcData = await controller.verifyRcWithApi(controller.licensePlatNumberController.value.text);
+                                    ShowToastDialog.closeLoader();
+
+                                    if (rcData != null) {
+                                      controller.isRcVerified.value = true;
+                                      String message = "RC verified successfully".tr;
+                                      if (rcData['rc_expiry_date'] != null) {
+                                        message += "\nExpiry: ${rcData['rc_expiry_date']}";
+                                      }
+                                      if (rcData['rc_status'] != null) {
+                                        message += "\nStatus: ${rcData['rc_status']}";
+                                      }
+                                      ShowToastDialog.showToast(message);
+                                    }
+                                  }
+
+                                  if (isVerified && !isExpired) {
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: AppThemeData.success300,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          const Icon(Icons.check_circle, color: Colors.white, size: 18),
+                                          const SizedBox(width: 4),
+                                          Text("Verified".tr, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                        ],
+                                      ),
+                                    );
+                                  } else if (isExpired) {
+                                    return InkWell(
+                                      onTap: performVerification,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                         decoration: BoxDecoration(
-                                          color: AppThemeData.success300,
-                                          borderRadius:
-                                              BorderRadius.circular(8),
+                                          color: AppThemeData.warning300,
+                                          borderRadius: BorderRadius.circular(8),
                                         ),
                                         child: Row(
                                           children: [
-                                            const Icon(
-                                              Icons.check_circle,
-                                              color: Colors.white,
-                                              size: 18,
-                                            ),
+                                            const Icon(Icons.cancel, color: Colors.white, size: 18),
                                             const SizedBox(width: 4),
-                                            Text(
-                                              "Verified".tr,
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
+                                            Text("Verify".tr, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                                           ],
                                         ),
-                                      )
-                                    : TextButton(
-                                        onPressed: () async {
-                                          if (controller
-                                              .licensePlatNumberController
-                                              .value
-                                              .text
-                                              .isEmpty) {
-                                            ShowToastDialog.showToast(
-                                                "Please enter vehicle registration number"
-                                                    .tr);
-                                            return;
-                                          }
-
-                                          // Show loading while checking
-                                          ShowToastDialog.showLoader(
-                                              "Checking vehicle number...".tr);
-
-                                          // Check if vehicle number already exists
-                                          final vehicleExists = await controller
-                                              .checkVehicleNumberExists(controller
-                                                  .licensePlatNumberController
-                                                  .value
-                                                  .text);
-
-                                          ShowToastDialog.closeLoader();
-
-                                          if (vehicleExists) {
-                                            ShowToastDialog.showToast(
-                                                "This vehicle number is already registered"
-                                                    .tr);
-                                            return;
-                                          }
-
-                                          // Call API to verify RC
-                                          ShowToastDialog.showLoader(
-                                              "Verifying RC...".tr);
-
-                                          final rcData = await controller
-                                              .verifyRcWithApi(controller
-                                                  .licensePlatNumberController
-                                                  .value
-                                                  .text);
-
-                                          ShowToastDialog.closeLoader();
-
-                                          if (rcData != null) {
-                                            controller.isRcVerified.value =
-                                                true;
-
-                                            // Show success message with RC details
-                                            String message =
-                                                "RC verified successfully".tr;
-                                            if (rcData['rc_expiry_date'] !=
-                                                null) {
-                                              message +=
-                                                  "\nExpiry: ${rcData['rc_expiry_date']}";
-                                            }
-                                            if (rcData['rc_status'] != null) {
-                                              message +=
-                                                  "\nStatus: ${rcData['rc_status']}";
-                                            }
-                                            ShowToastDialog.showToast(message);
-                                          }
-                                        },
-                                        child: Text("Verify".tr)))
+                                      ),
+                                    );
+                                  } else {
+                                    return TextButton(
+                                      onPressed: performVerification,
+                                      child: Text("Verify".tr),
+                                    );
+                                  }
+                                })
                               ],
                             ),
                             Obx(() => !controller.isRcVerified.value
@@ -232,85 +216,73 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                                   )
                                 : const SizedBox.shrink()),
                             // Display RC Information when verified
-                            Obx(() => controller.isRcVerified.value == true
-                                ? Container(
-                                    margin: const EdgeInsets.only(bottom: 16),
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: themeChange.getThem()
-                                          ? AppThemeData.grey800
-                                          : AppThemeData.grey100,
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(
-                                        color: AppThemeData.success300,
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                            Obx(() {
+                              if (controller.isRcVerified.value != true) return const SizedBox.shrink();
+                              
+                              bool isExpired = controller.isExpired(controller.vehicleInformationModel.value.rcExpiryDate);
+                              Color statusColor = isExpired ? AppThemeData.warning300 : AppThemeData.success300;
+                              IconData statusIcon = isExpired ? Icons.cancel : Icons.verified;
+
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 16),
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: themeChange.getThem()
+                                      ? AppThemeData.grey800
+                                      : AppThemeData.grey100,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: statusColor,
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
                                       children: [
-                                        Row(
-                                          children: [
-                                            Icon(
-                                              Icons.verified,
-                                              color: AppThemeData.success300,
-                                              size: 20,
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Text(
-                                              "RC Information".tr,
-                                              style: TextStyle(
-                                                fontFamily:
-                                                    AppThemeData.semiBold,
-                                                fontSize: 14,
-                                                color: themeChange.getThem()
-                                                    ? AppThemeData.grey100
-                                                    : AppThemeData.grey800,
-                                              ),
-                                            ),
-                                          ],
+                                        Icon(
+                                          statusIcon,
+                                          color: statusColor,
+                                          size: 20,
                                         ),
-                                        const SizedBox(height: 12),
-                                        _buildRcInfoRow(
-                                          "RC Status".tr,
-                                          controller.vehicleInformationModel
-                                                  .value.rcStatus ??
-                                              "N/A",
-                                          themeChange,
-                                        ),
-                                        const SizedBox(height: 8),
-                                        _buildRcInfoRow(
-                                          "RC Expiry Date".tr,
-                                          controller.vehicleInformationModel
-                                                  .value.rcExpiryDate ??
-                                              "N/A",
-                                          themeChange,
-                                        ),
-                                        const SizedBox(height: 8),
-                                        _buildRcInfoRow(
-                                          "Insurance Valid Upto".tr,
-                                          controller.vehicleInformationModel
-                                                  .value.vehicleInsuranceUpto ??
-                                              "N/A",
-                                          themeChange,
-                                        ),
-                                        if (controller.vehicleInformationModel
-                                                .value.verifiedAt !=
-                                            null) ...[
-                                          const SizedBox(height: 8),
-                                          _buildRcInfoRow(
-                                            "Verified At".tr,
-                                            controller.vehicleInformationModel
-                                                    .value.verifiedAt ??
-                                                "N/A",
-                                            themeChange,
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          "RC Information".tr,
+                                          style: TextStyle(
+                                            fontFamily: AppThemeData.semiBold,
+                                            fontSize: 14,
+                                            color: themeChange.getThem()
+                                                ? AppThemeData.grey100
+                                                : AppThemeData.grey800,
                                           ),
-                                        ],
+                                        ),
                                       ],
                                     ),
-                                  )
-                                : const SizedBox.shrink()),
+                                    const SizedBox(height: 12),
+                                    _buildRcInfoRow(
+                                      "RC Expiry Date".tr,
+                                      controller.vehicleInformationModel.value.rcExpiryDate ?? "N/A",
+                                      themeChange,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    _buildRcInfoRow(
+                                      "Insurance Valid Upto".tr,
+                                      controller.vehicleInformationModel.value.vehicleInsuranceUpto ?? "N/A",
+                                      themeChange,
+                                    ),
+                                    if (controller.vehicleInformationModel.value.verifiedAt != null) ...[
+                                      const SizedBox(height: 8),
+                                      _buildRcInfoRow(
+                                        "Verified At".tr,
+                                        controller.vehicleInformationModel.value.verifiedAt ?? "N/A",
+                                        themeChange,
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              );
+                            }),
                             Column(
                               mainAxisAlignment: MainAxisAlignment.start,
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -878,96 +850,6 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                             const SizedBox(
                               height: 16,
                             ),
-                            // SizedBox(
-                            //   height: 100,
-                            //   child: SingleChildScrollView(
-                            //     scrollDirection: Axis.horizontal,
-                            //     child: Row(
-                            //       children: [
-                            //         Padding(
-                            //           padding: const EdgeInsets.symmetric(
-                            //               horizontal: 8.0),
-                            //           child: InkWell(
-                            //             onTap: () {
-                            //               buildBottomSheet(context, controller);
-                            //             },
-                            //             child: Container(
-                            //               width: 100,
-                            //               height: 100.0,
-                            //               decoration: BoxDecoration(
-                            //                 color: themeChange.getThem()
-                            //                     ? AppThemeData.grey800
-                            //                     : AppThemeData.grey100,
-                            //                 borderRadius: BorderRadius.all(
-                            //                   Radius.circular(10),
-                            //                 ),
-                            //               ),
-                            //               child: Icon(Icons.add,
-                            //                   color: AppThemeData.primary300),
-                            //             ),
-                            //           ),
-                            //         ),
-                            //         ListView.builder(
-                            //           itemCount: controller.images.length,
-                            //           shrinkWrap: true,
-                            //           scrollDirection: Axis.horizontal,
-                            //           physics:
-                            //               const NeverScrollableScrollPhysics(),
-                            //           itemBuilder: (context, index) {
-                            //             return Padding(
-                            //               padding: const EdgeInsets.symmetric(
-                            //                   horizontal: 5),
-                            //               child: Stack(
-                            //                 children: [
-                            //                   ClipRRect(
-                            //                     borderRadius:
-                            //                         const BorderRadius.all(
-                            //                             Radius.circular(10)),
-                            //                     child: controller.images[index]
-                            //                                 .runtimeType ==
-                            //                             XFile
-                            //                         ? Image.file(
-                            //                             File(controller
-                            //                                 .images[index].path),
-                            //                             fit: BoxFit.cover,
-                            //                             width: 100,
-                            //                             height: 100.0,
-                            //                           )
-                            //                         : NetworkImageWidget(
-                            //                             imageUrl: controller
-                            //                                 .images[index],
-                            //                             fit: BoxFit.cover,
-                            //                             width: 100,
-                            //                             height: 100.0,
-                            //                           ),
-                            //                   ),
-                            //                   Positioned(
-                            //                     bottom: 0,
-                            //                     top: 0,
-                            //                     left: 0,
-                            //                     right: 0,
-                            //                     child: InkWell(
-                            //                       onTap: () {
-                            //                         controller.images
-                            //                             .removeAt(index);
-                            //                       },
-                            //                       child: const Icon(
-                            //                         Icons.remove_circle,
-                            //                         size: 30,
-                            //                         color:
-                            //                             AppThemeData.warning300,
-                            //                       ),
-                            //                     ),
-                            //                   ),
-                            //                 ],
-                            //               ),
-                            //             );
-                            //           },
-                            //         ),
-                            //       ],
-                            //     ),
-                            //   ),
-                            // ),
                             const SizedBox(
                               height: 16,
                             ),

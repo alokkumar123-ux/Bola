@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:poolmate/app/add_vehicle/add_vehicle_screen.dart';
 import 'package:poolmate/app/add_your_ride/add_your_ride_screen.dart';
 import 'package:poolmate/app/home_screen/datepicker_screen.dart';
 import 'package:poolmate/app/home_screen/view_all_search_screen.dart';
@@ -124,9 +125,64 @@ class HomeScreen extends StatelessWidget {
                                       ),
                                     ),
                                   ),
+                                  Obx(() => Visibility(
+                                        visible: controller.isRcExpiringSoon.value,
+                                        child: Container(
+                                          margin: EdgeInsets.only(
+                                            top: controller.bannerList.isNotEmpty
+                                                ? Responsive.height(2, context)
+                                                : MediaQuery.of(context).size.height * 0.15,
+                                            left: Responsive.width(4, context),
+                                            right: Responsive.width(4, context),
+                                          ),
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: AppThemeData.warning50,
+                                            borderRadius: BorderRadius.circular(8),
+                                            border: Border.all(color: AppThemeData.warning300),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              const Icon(Icons.warning_amber_rounded, color: AppThemeData.warning300, size: 28),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: Text(
+                                                  "The RC for your vehicle (${controller.expiringVehicle.value?.licensePlatNumber ?? ''}) is expiring soon or expired. Please verify and renew it.".tr,
+                                                  style: const TextStyle(
+                                                    color: AppThemeData.warning500,
+                                                    fontSize: 12,
+                                                    fontFamily: AppThemeData.semiBold,
+                                                    height: 1.3,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              ElevatedButton(
+                                                onPressed: () {
+                                                  Get.to(const AddVehicleScreen(), arguments: {
+                                                    'vehicleInformationModel': controller.expiringVehicle.value
+                                                  })?.then((_) {
+                                                    controller.checkRcExpiry();
+                                                  });
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: AppThemeData.warning300,
+                                                  foregroundColor: Colors.white,
+                                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                                  minimumSize: const Size(60, 36),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(6),
+                                                  ),
+                                                ),
+                                                child: Text("Verify".tr),
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      )),
                                   Container(
                                     margin: EdgeInsets.only(
-                                      top: controller.bannerList.isNotEmpty
+                                      top: controller.bannerList.isNotEmpty || controller.isRcExpiringSoon.value
                                           ? Responsive.height(3, context)
                                           : MediaQuery.of(context).size.height *
                                               .20,
