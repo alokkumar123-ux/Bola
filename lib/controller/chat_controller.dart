@@ -16,6 +16,8 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:poolmate/constant/show_toast_dialog.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class ChatController extends GetxController {
   final messageTextEditorController = TextEditingController().obs;
@@ -28,32 +30,41 @@ class ChatController extends GetxController {
   }
 
   RxBool isSharingLocation = false.obs;
+  RxBool isSharingLiveLocation = false.obs;
   String? activeLocationChatId;
 
   _checkActiveLocationShare() async {
     bool isRunning = await FlutterBackgroundService().isRunning();
     if (isRunning) {
       isSharingLocation.value = true;
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      isSharingLiveLocation.value = prefs.getBool('isSharingLiveLocation') ?? false;
     }
 
-    FlutterBackgroundService().on('locationSharingStopped').listen((event) {
+    FlutterBackgroundService().on('locationSharingStopped').listen((event) async {
       isSharingLocation.value = false;
+      isSharingLiveLocation.value = false;
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setBool('isSharingLiveLocation', false);
     });
 
-    FlutterBackgroundService().on('locationPermissionRequired').listen((event) {
+    FlutterBackgroundService().on('locationPermissionRequired').listen((event) async {
       isSharingLocation.value = false;
+      isSharingLiveLocation.value = false;
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setBool('isSharingLiveLocation', false);
       ShowToastDialog.showToast(
           "Please enable 'Allow all the time' location permission to continue live sharing."
               .tr);
     });
   }
 
-  void startLiveLocationSharing(int durationType) async {
+  static Future<bool> requestBackgroundLocationPermissions() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       ShowToastDialog.showToast(
           "Location services are disabled, please enable them.".tr);
-      return;
+      return false;
     }
 
     // Request foreground permission first
@@ -61,7 +72,7 @@ class ChatController extends GetxController {
     if (!status.isGranted) {
       ShowToastDialog.showToast(
           "Location permission is required for live tracking.".tr);
-      return;
+      return false;
     }
 
     // Now request background permission (Allow all the time)
@@ -87,7 +98,7 @@ class ChatController extends GetxController {
         ),
       );
 
-      if (proceed != true) return;
+      if (proceed != true) return false;
 
       alwaysStatus = await Permission.locationAlways.request();
       if (!alwaysStatus.isGranted) {
@@ -95,7 +106,7 @@ class ChatController extends GetxController {
             "Please enable 'Allow all the time' in Settings to share live location."
                 .tr);
         await openAppSettings();
-        return;
+        return false;
       }
     }
 
@@ -106,7 +117,7 @@ class ChatController extends GetxController {
           "Live sharing in background requires 'Allow all the time' location permission."
               .tr);
       await openAppSettings();
-      return;
+      return false;
     }
 
     // Request notification permission (required for foreground service on Android 13+)
@@ -116,6 +127,13 @@ class ChatController extends GetxController {
 
     // Give the app a split second to return to the active foreground state after system dialogs close, avoiding service startup failures on Android 14+
     await Future.delayed(const Duration(milliseconds: 500));
+    
+    return true;
+  }
+
+  void startLiveLocationSharing(int durationType) async {
+    bool hasPermission = await requestBackgroundLocationPermissions();
+    if (!hasPermission) return;
 
     // durationType: 1=15 min, 2=Manually, 3=During ride
     int? durationMins;
@@ -209,6 +227,9 @@ class ChatController extends GetxController {
         .set(locationMsg.toJson());
 
     isSharingLocation.value = true;
+    isSharingLiveLocation.value = true;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool('isSharingLiveLocation', true);
     activeLocationChatId = locationMsg.chatID;
 
     await FlutterBackgroundService().startService();
@@ -235,6 +256,9 @@ class ChatController extends GetxController {
 
   void stopLiveLocationSharing() async {
     isSharingLocation.value = false;
+    isSharingLiveLocation.value = false;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool('isSharingLiveLocation', false);
     FlutterBackgroundService().invoke('stopService');
   }
 
@@ -458,6 +482,7 @@ class ChatController extends GetxController {
     required BookingModel bookingModel,
     bool showLoader = true,
     bool showSuccessToast = true,
+    bool startContinuousSharing = false,
   }) async {
     try {
       if (showLoader) {
@@ -531,6 +556,7 @@ class ChatController extends GetxController {
         // Sender name for display
         'senderName': senderUser.fullName(),
         'bookingId': bookingModel.id ?? '',
+        'isActive': startContinuousSharing,
       };
 
       // Get current unread count for the receiver
@@ -612,6 +638,15 @@ class ChatController extends GetxController {
           .collection(senderUser.id.toString())
           .doc(chatModel.chatID)
           .set(chatModel.toJson());
+
+      if (startContinuousSharing) {
+        FlutterBackgroundService().invoke('startSharing', {
+          'senderId': senderUser.id.toString(),
+          'receiverId': receiverUser.id.toString(),
+          'chatId': chatModel.chatID,
+          'bookingId': bookingModel.id,
+        });
+      }
 
       // Push notification
       if (receiverUser.fcmToken != null && receiverUser.fcmToken!.isNotEmpty) {

@@ -32,6 +32,7 @@ import 'package:poolmate/utils/firestore/user_utils.dart';
 import 'package:poolmate/utils/firestore/review_utils.dart';
 import 'package:poolmate/utils/firestore/booking_utils.dart';
 import 'package:poolmate/utils/network_image_widget.dart';
+import 'package:poolmate/widgets/share_location_tooltip.dart';
 import 'package:provider/provider.dart';
 import 'package:timelines_plus/timelines_plus.dart';
 
@@ -89,13 +90,9 @@ class PublishedDetailsScreen extends StatelessWidget {
                 if (controller.bookingModel.value.status == Constant.onGoing)
                   Padding(
                     padding: const EdgeInsets.only(right: 4),
-                    child: IconButton(
-                      tooltip: 'Share Ride Location',
-                      icon: Icon(
-                        Icons.share_location_outlined,
-                        color: AppThemeData.primary300,
-                      ),
-                      onPressed: () {
+                    child: ShareLocationTooltip(
+                      bookingId: controller.bookingModel.value.id.toString(),
+                      onShare: () {
                         Get.to(
                           InboxScreen(
                             shareRideLocation: true,
@@ -103,6 +100,21 @@ class PublishedDetailsScreen extends StatelessWidget {
                           ),
                         );
                       },
+                      child: IconButton(
+                        tooltip: 'Share Ride Location',
+                        icon: Icon(
+                          Icons.share_location_outlined,
+                          color: AppThemeData.primary300,
+                        ),
+                        onPressed: () {
+                          Get.to(
+                            InboxScreen(
+                              shareRideLocation: true,
+                              bookingModel: controller.bookingModel.value,
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
                 controller.bookingModel.value.status != Constant.placed

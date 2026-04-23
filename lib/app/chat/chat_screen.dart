@@ -239,20 +239,18 @@ class ChatScreen extends StatelessWidget {
                                   child: Obx(() => Container(
                                       padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
-                                        color:
-                                            controller.isSharingLocation.value
-                                                ? AppThemeData.primary300
-                                                : Colors.transparent,
+                                        color: controller.isSharingLiveLocation.value
+                                            ? AppThemeData.primary300
+                                            : Colors.transparent,
                                         shape: BoxShape.circle,
                                       ),
                                       child: Icon(
-                                        controller.isSharingLocation.value
+                                        controller.isSharingLiveLocation.value
                                             ? Icons.location_on
                                             : Icons.location_on_outlined,
-                                        color:
-                                            controller.isSharingLocation.value
-                                                ? Colors.white
-                                                : AppThemeData.primary300,
+                                        color: controller.isSharingLiveLocation.value
+                                            ? Colors.white
+                                            : AppThemeData.primary300,
                                         size: 26,
                                       )))),
                               const SizedBox(
@@ -288,7 +286,7 @@ class ChatScreen extends StatelessWidget {
 
   void _showLocationDurationBottomSheet(BuildContext context,
       ChatController controller, DarkThemeProvider themeChange) {
-    if (controller.isSharingLocation.value) {
+    if (controller.isSharingLiveLocation.value) {
       // If already sharing, just ask to stop
       showDialog(
           context: context,
@@ -314,6 +312,7 @@ class ChatScreen extends StatelessWidget {
           });
       return;
     }
+
 
     showModalBottomSheet(
         context: context,
@@ -593,20 +592,16 @@ class ChatScreen extends StatelessWidget {
                 child: Stack(
                   children: [
                     if (lat != 0.0 && lng != 0.0)
-                      GoogleMap(
-                        initialCameraPosition: CameraPosition(
-                          target: LatLng(lat, lng),
-                          zoom: 15,
-                        ),
+                      LiveAutoUpdatingMap(
+                        currentLat: lat,
+                        currentLng: lng,
+                        zoom: 15,
                         markers: {
                           Marker(
                             markerId: const MarkerId('live_location'),
                             position: LatLng(lat, lng),
                           )
                         },
-                        zoomControlsEnabled: false,
-                        scrollGesturesEnabled: false,
-                        myLocationButtonEnabled: false,
                       ),
                     if (lat == 0.0)
                       const Center(child: CircularProgressIndicator()),
@@ -686,68 +681,12 @@ class ChatScreen extends StatelessWidget {
 
     final double currentLat = (meta['currentLat'] ?? 0.0).toDouble();
     final double currentLng = (meta['currentLng'] ?? 0.0).toDouble();
-    final bool hasCurrentLocation = currentLat != 0.0 && currentLng != 0.0;
-    final double currentAccuracyMeters =
-        (meta['currentAccuracyMeters'] ?? 0.0).toDouble();
 
     final String senderName = meta['senderName'] ?? 'Someone';
     final String bookingId = (meta['bookingId'] ?? '').toString();
     final String updatedAt = chatModel.timestamp != null
         ? Constant.timestampToDateTime(chatModel.timestamp!)
         : 'Unknown time';
-
-    final List<LatLng> routePoints = _buildRoutePoints(
-      startLat: startLat,
-      startLng: startLng,
-      currentLat: currentLat,
-      currentLng: currentLng,
-      endLat: endLat,
-      endLng: endLng,
-    );
-    final bool hasRoutePath = routePoints.length >= 2;
-
-    Widget locationRow({
-      required IconData icon,
-      required Color iconColor,
-      required String label,
-      required String address,
-    }) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 5),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: iconColor, size: 18),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 11,
-                      fontFamily: AppThemeData.medium,
-                    ),
-                  ),
-                  Text(
-                    address.isEmpty ? 'Unknown' : address,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 13,
-                      fontFamily: AppThemeData.semiBold,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      );
-    }
 
     return Row(
       mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -757,249 +696,242 @@ class ChatScreen extends StatelessWidget {
             crossAxisAlignment:
                 isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
             children: [
-              InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: () {
-                  _showRideRouteDetailsSheet(
-                    context: context,
-                    themeChange: themeChange,
-                    senderName: senderName,
-                    startAddress: startAddress,
-                    startLat: startLat,
-                    startLng: startLng,
-                    currentLat: currentLat,
-                    currentLng: currentLng,
-                    endAddress: endAddress,
-                    endLat: endLat,
-                    endLng: endLng,
-                    updatedAt: updatedAt,
-                    bookingId: bookingId,
-                  );
-                },
-                child: Container(
-                  width: MediaQuery.of(context).size.width * 0.78,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    gradient: LinearGradient(
-                      colors: [
-                        AppThemeData.primary300,
-                        AppThemeData.primary300.withOpacity(0.75),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+              Container(
+                width: MediaQuery.of(context).size.width * 0.78,
+                decoration: BoxDecoration(
+                  color: themeChange.getThem()
+                      ? AppThemeData.grey800
+                      : Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppThemeData.primary300.withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
+                  ],
+                  border: Border.all(
+                    color: themeChange.getThem()
+                        ? AppThemeData.grey700
+                        : AppThemeData.grey200,
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Header
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.18),
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(16),
-                            topRight: Radius.circular(16),
-                          ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: AppThemeData.primary300.withOpacity(0.1),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(16),
+                          topRight: Radius.circular(16),
                         ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.my_location,
-                                color: Colors.white, size: 18),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                '$senderName shared ride location',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontFamily: AppThemeData.bold,
-                                  fontSize: 13,
-                                ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.directions_car,
+                              color: AppThemeData.primary300, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              isMe
+                                  ? 'You shared a ride'.tr
+                                  : '$senderName shared a ride',
+                              style: TextStyle(
+                                color: themeChange.getThem()
+                                    ? AppThemeData.grey100
+                                    : AppThemeData.grey900,
+                                fontFamily: AppThemeData.semiBold,
+                                fontSize: 14,
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-
-                      // Mini map (current location only)
-                      if (hasCurrentLocation)
-                        SizedBox(
-                          height: 140,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.zero,
-                            child: Stack(
-                              children: [
-                                GoogleMap(
-                                  initialCameraPosition: CameraPosition(
-                                    target: LatLng(currentLat, currentLng),
-                                    zoom: 14,
-                                  ),
-                                  markers: {
-                                    if (_isValidCoordinate(startLat, startLng))
-                                      Marker(
-                                        markerId: const MarkerId('ride_start'),
-                                        position: LatLng(startLat, startLng),
-                                        icon: BitmapDescriptor
-                                            .defaultMarkerWithHue(
-                                                BitmapDescriptor.hueOrange),
-                                      ),
-                                    if (_isValidCoordinate(
-                                        currentLat, currentLng))
-                                      Marker(
-                                        markerId:
-                                            const MarkerId('ride_current'),
-                                        position:
-                                            LatLng(currentLat, currentLng),
-                                        icon: BitmapDescriptor
-                                            .defaultMarkerWithHue(
-                                                BitmapDescriptor.hueAzure),
-                                      ),
-                                    if (_isValidCoordinate(endLat, endLng))
-                                      Marker(
-                                        markerId: const MarkerId('ride_end'),
-                                        position: LatLng(endLat, endLng),
-                                        icon: BitmapDescriptor
-                                            .defaultMarkerWithHue(
-                                                BitmapDescriptor.hueGreen),
-                                      ),
-                                  },
-                                  polylines: hasRoutePath
-                                      ? {
-                                          Polyline(
-                                            polylineId: const PolylineId(
-                                                'ride_route_preview'),
-                                            points: routePoints,
-                                            width: 4,
-                                            color: Colors.black87,
-                                            geodesic: true,
-                                          ),
-                                        }
-                                      : {},
-                                  zoomControlsEnabled: false,
-                                  scrollGesturesEnabled: false,
-                                  myLocationButtonEnabled: false,
-                                  mapToolbarEnabled: false,
-                                ),
-                                // Overlay badge
-                                Positioned(
-                                  top: 8,
-                                  right: 8,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: Colors.black.withOpacity(0.55),
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: const Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.navigation,
-                                            color: Colors.white, size: 12),
-                                        SizedBox(width: 4),
-                                        Text(
-                                          'Live',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
                           ),
-                        ),
-
-                      // Location details
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
-                        child: Column(
-                          children: [
-                            locationRow(
-                              icon: Icons.trip_origin,
-                              iconColor: Colors.orange,
-                              label: 'START',
-                              address: startAddress,
-                            ),
-                            if (hasCurrentLocation) ...[
-                              const Divider(color: Colors.white24, height: 1),
-                              locationRow(
-                                icon: Icons.my_location,
-                                iconColor: Colors.lightBlueAccent,
-                                label: 'CURRENT LOCATION',
-                                address:
-                                    '${currentLat.toStringAsFixed(6)}, ${currentLng.toStringAsFixed(6)}${currentAccuracyMeters > 0 ? ' (±${currentAccuracyMeters.toStringAsFixed(0)}m)' : ''}',
+                        ],
+                      ),
+                    ),
+                    // Route Info
+                    Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Column(
+                        children: [
+                          // Start
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(Icons.radio_button_checked,
+                                  color: Colors.orange, size: 16),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('PICKUP'.tr,
+                                        style: TextStyle(
+                                            fontSize: 10,
+                                            color: themeChange.getThem()
+                                                ? AppThemeData.grey400
+                                                : AppThemeData.grey500,
+                                            fontFamily: AppThemeData.bold)),
+                                    Text(
+                                        startAddress.isEmpty
+                                            ? 'Unknown'.tr
+                                            : startAddress,
+                                        style: TextStyle(
+                                            fontSize: 13,
+                                            color: themeChange.getThem()
+                                                ? AppThemeData.grey100
+                                                : AppThemeData.grey900,
+                                            fontFamily: AppThemeData.medium),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis),
+                                  ],
+                                ),
                               ),
                             ],
-                            const Divider(color: Colors.white24, height: 1),
-                            locationRow(
-                              icon: Icons.location_on,
-                              iconColor: Colors.greenAccent,
-                              label: 'END',
-                              address: endAddress,
+                          ),
+                          // Connecting line
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                left: 7, top: 4, bottom: 4),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Container(
+                                  width: 2,
+                                  height: 16,
+                                  color: themeChange.getThem()
+                                      ? AppThemeData.grey700
+                                      : AppThemeData.grey300),
                             ),
+                          ),
+                          // Dropoff
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(Icons.location_on,
+                                  color: Colors.green, size: 16),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('DROPOFF'.tr,
+                                        style: TextStyle(
+                                            fontSize: 10,
+                                            color: themeChange.getThem()
+                                                ? AppThemeData.grey400
+                                                : AppThemeData.grey500,
+                                            fontFamily: AppThemeData.bold)),
+                                    Text(
+                                        endAddress.isEmpty
+                                            ? 'Unknown'.tr
+                                            : endAddress,
+                                        style: TextStyle(
+                                            fontSize: 13,
+                                            color: themeChange.getThem()
+                                                ? AppThemeData.grey100
+                                                : AppThemeData.grey900,
+                                            fontFamily: AppThemeData.medium),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    Divider(
+                        height: 1,
+                        color: themeChange.getThem()
+                            ? AppThemeData.grey700
+                            : AppThemeData.grey200),
+
+                    // View Map Button
+                    InkWell(
+                      onTap: () {
+                        _showRideRouteDetailsSheet(
+                          context: context,
+                          themeChange: themeChange,
+                          senderName: senderName,
+                          startAddress: startAddress,
+                          startLat: startLat,
+                          startLng: startLng,
+                          currentLat: currentLat,
+                          currentLng: currentLng,
+                          endAddress: endAddress,
+                          endLat: endLat,
+                          endLng: endLng,
+                          updatedAt: updatedAt,
+                          bookingId: bookingId,
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        alignment: Alignment.center,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.map_outlined,
+                                size: 18, color: AppThemeData.primary300),
+                            const SizedBox(width: 8),
+                            Text('View Live Map'.tr,
+                                style: TextStyle(
+                                    color: AppThemeData.primary300,
+                                    fontFamily: AppThemeData.semiBold,
+                                    fontSize: 14)),
                           ],
                         ),
                       ),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.14),
-                          borderRadius: const BorderRadius.only(
-                            bottomLeft: Radius.circular(16),
-                            bottomRight: Radius.circular(16),
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Row(
-                              children: [
-                                Icon(Icons.expand_more,
-                                    color: Colors.white, size: 16),
-                                SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    'Tap to view full route',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontFamily: AppThemeData.semiBold,
-                                      fontSize: 12,
-                                    ),
-                                  ),
+                    ),
+
+                    // Stop sharing button (only if isMe and currently sharing this specific ride)
+                    if (isMe && meta['isActive'] == true)
+                      Column(
+                        children: [
+                          Divider(
+                              height: 1,
+                              color: themeChange.getThem()
+                                  ? AppThemeData.grey700
+                                  : AppThemeData.grey200),
+                          InkWell(
+                            onTap: () {
+                              final controller = Get.find<ChatController>();
+                              controller.stopLiveLocationSharing();
+                            },
+                            child: Container(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 12),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: Colors.red.withOpacity(0.05),
+                                borderRadius: const BorderRadius.only(
+                                  bottomLeft: Radius.circular(16),
+                                  bottomRight: Radius.circular(16),
                                 ),
-                                Icon(Icons.touch_app,
-                                    color: Colors.white70, size: 16),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Open in maps for turn-by-turn navigation'.tr,
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontFamily: AppThemeData.medium,
-                                fontSize: 12,
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.stop_circle_outlined,
+                                      size: 18, color: Colors.red),
+                                  const SizedBox(width: 8),
+                                  Text('Stop Sharing'.tr,
+                                      style: const TextStyle(
+                                          color: Colors.red,
+                                          fontFamily: AppThemeData.semiBold,
+                                          fontSize: 14)),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                  ],
                 ),
               ),
               const SizedBox(height: 5),
@@ -1468,6 +1400,60 @@ class ChatScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class LiveAutoUpdatingMap extends StatefulWidget {
+  final double currentLat;
+  final double currentLng;
+  final double zoom;
+  final Set<Marker> markers;
+  final Set<Polyline> polylines;
+
+  const LiveAutoUpdatingMap({
+    Key? key,
+    required this.currentLat,
+    required this.currentLng,
+    this.zoom = 14,
+    this.markers = const <Marker>{},
+    this.polylines = const <Polyline>{},
+  }) : super(key: key);
+
+  @override
+  State<LiveAutoUpdatingMap> createState() => _LiveAutoUpdatingMapState();
+}
+
+class _LiveAutoUpdatingMapState extends State<LiveAutoUpdatingMap> {
+  GoogleMapController? _controller;
+
+  @override
+  void didUpdateWidget(covariant LiveAutoUpdatingMap oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentLat != widget.currentLat ||
+        oldWidget.currentLng != widget.currentLng) {
+      _controller?.animateCamera(
+        CameraUpdate.newLatLng(LatLng(widget.currentLat, widget.currentLng)),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GoogleMap(
+      initialCameraPosition: CameraPosition(
+        target: LatLng(widget.currentLat, widget.currentLng),
+        zoom: widget.zoom,
+      ),
+      markers: widget.markers,
+      polylines: widget.polylines,
+      zoomControlsEnabled: false,
+      scrollGesturesEnabled: false,
+      myLocationButtonEnabled: false,
+      mapToolbarEnabled: false,
+      onMapCreated: (controller) {
+        _controller = controller;
+      },
     );
   }
 }

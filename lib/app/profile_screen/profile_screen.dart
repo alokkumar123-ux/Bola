@@ -24,6 +24,7 @@ import 'package:poolmate/utils/firestore/auth_utils.dart';
 import 'package:poolmate/services/fcm_token_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:poolmate/widgets/app_tutorial_tooltip.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -67,6 +68,18 @@ class ProfileScreen extends StatelessWidget {
                 },
               );
             }
+            if (controller.isTutorialAvailable.value && !ProfileController.hasShownTutorialThisSession) {
+              ProfileController.hasShownTutorialThisSession = true;
+              if (controller.tutorialKey.currentContext != null) {
+                await Scrollable.ensureVisible(
+                  controller.tutorialKey.currentContext!,
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.easeInOut,
+                );
+                // Show tooltip after scrolling
+                controller.showTutorialTooltip.value = true;
+              }
+            }
           });
           return Scaffold(
             backgroundColor: themeChange.getThem()
@@ -105,6 +118,7 @@ class ProfileScreen extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 30),
                       child: SingleChildScrollView(
+                        controller: controller.scrollController,
                         child: Column(
                           children: [
                             ClipRRect(
@@ -351,19 +365,31 @@ class ProfileScreen extends StatelessWidget {
                               svgImage: "assets/icons/ic_help_support.svg",
                               themeChange: themeChange,
                             ),
-                            menuItemWidget(
-                              onTap: () async {
+                            AppTutorialTooltip(
+                              key: controller.tutorialKey,
+                              onWatch: () async {
                                 final Uri url = Uri.parse(
                                     'https://www.youtube.com/watch?v=DE_4jamwYac&list=PLVHZUxZWcQfyNVPVN_YqBm8_cA0s4kaIi');
                                 if (await canLaunchUrl(url)) {
-                                  await launchUrl(url,
-                                      mode: LaunchMode.externalApplication);
+                                  await launchUrl(url, mode: LaunchMode.externalApplication);
                                 }
                               },
-                              title: "App Tutorial".tr,
-                              subTitle: 'Learn how to use the app'.tr,
-                              svgImage: "assets/icons/ic_document.svg",
-                              themeChange: themeChange,
+                              onSkip: () {
+                                // Just hide, handled in the widget
+                              },
+                              child: menuItemWidget(
+                                onTap: () async {
+                                  final Uri url = Uri.parse(
+                                      'https://www.youtube.com/watch?v=DE_4jamwYac&list=PLVHZUxZWcQfyNVPVN_YqBm8_cA0s4kaIi');
+                                  if (await canLaunchUrl(url)) {
+                                    await launchUrl(url, mode: LaunchMode.externalApplication);
+                                  }
+                                },
+                                title: "App Tutorial".tr,
+                                subTitle: 'Learn how to use the app'.tr,
+                                svgImage: "assets/icons/ic_document.svg",
+                                themeChange: themeChange,
+                              ),
                             ),
                             InkWell(
                               splashColor: Colors.transparent,

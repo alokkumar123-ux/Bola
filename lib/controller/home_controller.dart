@@ -493,12 +493,6 @@ class HomeController extends GetxController {
                         .vehicleInformation?.vehicleType?.perKmCharges ??
                     '0'))
             .toString();
-        String recommendedPrice = (double.parse(Constant.distanceCalculate(
-                    route.legs![0].distance!.value.toString())) *
-                double.parse(bookingModel
-                        .vehicleInformation?.vehicleType?.perKmCharges ??
-                    '0'))
-            .toString();
         stopOverModel.distance = route.legs!.first.distance;
         stopOverModel.duration = route.legs!.first.duration;
         stopOverModel.price = price;

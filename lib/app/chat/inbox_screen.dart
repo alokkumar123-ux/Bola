@@ -18,6 +18,7 @@ import 'package:poolmate/utils/network_image_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:poolmate/utils/firestore/user_utils.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 
 class InboxScreen extends StatelessWidget {
   const InboxScreen({
@@ -830,7 +831,14 @@ class InboxScreen extends StatelessWidget {
     }
 
     try {
+      bool hasPermission = await ChatController.requestBackgroundLocationPermissions();
+      if (!hasPermission) return;
+
       ShowToastDialog.showLoader("Sending...".tr);
+
+      // Start the background service so it is ready before we invoke startSharing
+      await FlutterBackgroundService().startService();
+      await Future.delayed(const Duration(milliseconds: 2500));
 
       int successCount = 0;
       int failedCount = 0;
@@ -850,6 +858,7 @@ class InboxScreen extends StatelessWidget {
             bookingModel: bookingModel!,
             showLoader: false,
             showSuccessToast: false,
+            startContinuousSharing: true,
           );
           successCount++;
         } catch (_) {
