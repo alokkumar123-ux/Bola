@@ -33,8 +33,19 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace "com.alok.poolmate"
+
+    // ─────────────────────────────────────────────────────────────
+    // compileSdk 36 = Android 16 (latest as of 2026)
+    // ─────────────────────────────────────────────────────────────
     compileSdk 36
-    ndkVersion flutter.ndkVersion
+
+    // ─────────────────────────────────────────────────────────────
+    // NDK r27b (27.2.12479018) — REQUIRED for 16 KB memory page
+    // size support (Android 15+ compliance deadline May 2026).
+    // Using flutter.ndkVersion is NOT sufficient — it may resolve
+    // to an older NDK that produces 4 KB aligned .so files.
+    // ─────────────────────────────────────────────────────────────
+    ndkVersion "27.2.12479018"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
@@ -54,15 +65,27 @@ android {
         applicationId "com.alok.poolmate"
         minSdkVersion flutter.minSdkVersion
         targetSdkVersion 36
-        versionCode 39
-        versionName "1.5.0"
+        versionCode 51
+        versionName "1.6.0"
         multiDexEnabled true
+
+        // Vector drawable support
+        vectorDrawables.useSupportLibrary = true
+
+        // ─────────────────────────────────────────────────────────
+        // ABI Filters — ensure 16 KB page-aligned .so files are
+        // packaged for all supported ABIs. arm64-v8a is required
+        // for Android 15 16 KB page size compliance.
+        // ─────────────────────────────────────────────────────────
+        ndk {
+            abiFilters "arm64-v8a", "armeabi-v7a", "x86_64"
+        }
     }
 
     signingConfigs {
         release {
-            if (keystorePropertiesFile.exists() && 
-                keystoreProperties['keyAlias'] && 
+            if (keystorePropertiesFile.exists() &&
+                keystoreProperties['keyAlias'] &&
                 keystoreProperties['storeFile']) {
                 keyAlias keystoreProperties['keyAlias']
                 keyPassword keystoreProperties['keyPassword']
@@ -74,14 +97,14 @@ android {
 
     buildTypes {
         release {
-            if (keystorePropertiesFile.exists() && 
-                keystoreProperties['keyAlias'] && 
+            if (keystorePropertiesFile.exists() &&
+                keystoreProperties['keyAlias'] &&
                 keystoreProperties['storeFile']) {
                 signingConfig signingConfigs.release
             }
             minifyEnabled true
             shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
             minifyEnabled false
@@ -96,7 +119,12 @@ android {
         }
     }
 
-    // Support for 16 KB memory page sizes (required for Android 15+)
+    // ─────────────────────────────────────────────────────────────
+    // 16 KB Memory Page Size Support (Android 15 / API 35+)
+    // useLegacyPackaging = false  → uses page-aligned zip packaging
+    // This is REQUIRED alongside NDK r27b to pass Google Play's
+    // 16 KB compatibility check (deadline: May 31, 2026).
+    // ─────────────────────────────────────────────────────────────
     packaging {
         jniLibs {
             useLegacyPackaging = false
@@ -113,7 +141,7 @@ dependencies {
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'io.card:android-sdk:5.5.1'
 
-    // PlayCore for in-app review - need both review and review-ktx
+    // PlayCore for in-app review
     implementation "com.google.android.play:review:2.0.2"
     implementation "com.google.android.play:review-ktx:2.0.2"
 }

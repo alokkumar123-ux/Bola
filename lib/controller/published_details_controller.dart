@@ -19,6 +19,8 @@ import 'package:poolmate/utils/firestore/referral_utils.dart';
 import 'package:poolmate/utils/firestore/user_utils.dart';
 import 'package:poolmate/utils/firestore/wallet_utils.dart';
 import 'package:poolmate/utils/firestore/review_utils.dart';
+import 'package:poolmate/utils/co2_utils.dart';
+
 
 class PublishedDetailsController extends GetxController {
   @override
@@ -27,8 +29,14 @@ class PublishedDetailsController extends GetxController {
     super.onInit();
   }
 
+  RxBool isLoading = false.obs;
+  // Notified after ride completion with CO2 data for popup
+  RxDouble rideCompletedCo2Kg = 0.0.obs;
+  RxDouble rideCompletedDistanceKm = 0.0.obs;
+  RxInt rideCompletedPassengers = 0.obs;
   Rx<BookingModel> bookingModel = BookingModel().obs;
   RxList<BookedUserModel> bookingUserList = <BookedUserModel>[].obs;
+
 
   RxList<CityModel> stopOver = <CityModel>[].obs;
   Rx<UserModel> publisherUserModel = UserModel().obs;
@@ -114,6 +122,8 @@ class PublishedDetailsController extends GetxController {
             bookingModel: latestBooking,
             bookedUsers: bookingUserList.toList(),
           );
+          // Save CO2 data for driver + passengers
+          await saveCo2ForCompletedRide(latestBooking);
         }
       }
 
@@ -159,7 +169,70 @@ class PublishedDetailsController extends GetxController {
     }
   }
 
+  /// Save CO₂ savings to Firestore for the driver when a ride completes.
+  /// Each passenger CO₂ savings is also attributed to passengers via their profile.
+  Future<void> saveCo2ForCompletedRide(BookingModel booking) async {
+    try {
+      final double distanceKm =
+          Co2Utils.distanceMetresToKm(booking.distance);
+      // Total passengers = driver(1) + booked seats count
+      final int bookedSeats =
+          int.tryParse(booking.bookedSeat ?? '0') ?? 0;
+      final int totalPassengers = 1 + bookedSeats;
+
+      if (distanceKm <= 0 || totalPassengers <= 1) return;
+
+      final double co2SavedKg = Co2Utils.calculateCo2SavedKg(
+        distanceKm: distanceKm,
+        passengers: totalPassengers,
+      );
+      final double treesEquivalent = Co2Utils.co2ToTrees(co2SavedKg);
+
+      // Update driver's profile
+      if (booking.createdBy != null && booking.createdBy!.isNotEmpty) {
+        await FirebaseFirestore.instance
+            .collection(CollectionName.users)
+            .doc(booking.createdBy)
+            .update({
+          'totalCo2SavedKg': FieldValue.increment(co2SavedKg),
+          'totalTreesEquivalent': FieldValue.increment(treesEquivalent),
+        });
+      }
+
+      // Update each passenger's profile (passenger gets only per person CO2)
+      for (final bookedUser in bookingUserList) {
+        if (bookedUser.id != null && bookedUser.id!.isNotEmpty) {
+          // Passenger gets credit for their seats (or at least 1 person's worth)
+          final int userBookedSeats = int.tryParse(bookedUser.bookedSeat ?? '1') ?? 1;
+          final double passengerCo2Saved = Co2Utils.calculateCo2SavedKg(
+            distanceKm: distanceKm,
+            passengers: userBookedSeats + 1, // +1 for the formula (driver + their seats)
+          );
+          final double passengerTrees = Co2Utils.co2ToTrees(passengerCo2Saved);
+
+          await FirebaseFirestore.instance
+              .collection(CollectionName.users)
+              .doc(bookedUser.id)
+              .update({
+            'totalCo2SavedKg': FieldValue.increment(passengerCo2Saved),
+            'totalTreesEquivalent': FieldValue.increment(passengerTrees),
+          });
+        }
+      }
+
+      // Expose to the screen for showing the popup
+      rideCompletedCo2Kg.value = co2SavedKg;
+      rideCompletedDistanceKm.value = distanceKm;
+      rideCompletedPassengers.value = totalPassengers;
+
+      print('✅ CO₂ saved: ${co2SavedKg.toStringAsFixed(3)} kg for $totalPassengers people over ${distanceKm.toStringAsFixed(1)} km');
+    } catch (e) {
+      print('❌ Error saving CO₂ data: $e');
+    }
+  }
+
   publishRide() async {
+
     ShowToastDialog.showLoader("Please wait");
     if (bookingUserList.isEmpty) {
       await BookingUtils.setBooking(bookingModel.value).then((value) {

@@ -30,6 +30,8 @@ import 'package:poolmate/services/ticket_service.dart';
 import 'package:poolmate/app/pdf_viewer/pdf_viewer_screen.dart';
 import 'package:poolmate/app/chat/inbox_screen.dart';
 import 'package:poolmate/widgets/share_location_tooltip.dart';
+import 'package:poolmate/app/co2_impact/co2_ride_summary_popup.dart';
+import 'package:poolmate/utils/co2_utils.dart';
 
 class BookedDetailsScreen extends StatelessWidget {
   const BookedDetailsScreen({super.key});
@@ -37,9 +39,28 @@ class BookedDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeChange = Provider.of<DarkThemeProvider>(context);
+    bool _co2PopupShown = false;
     return GetX(
         init: BookedDetailsController(),
         builder: (controller) {
+          // Show CO₂ popup for passenger when ride is completed
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!_co2PopupShown &&
+                controller.bookingModel.value.status == Constant.completed) {
+              _co2PopupShown = true;
+              final double distKm = Co2Utils.distanceMetresToKm(
+                  controller.bookingModel.value.distance);
+              final int bookedSeats = int.tryParse(
+                      controller.bookingModel.value.bookedSeat ?? '0') ??
+                  0;
+              final int totalPax = 1 + bookedSeats;
+              showCo2RideSummaryPopup(
+                context,
+                distanceKm: distKm,
+                passengers: totalPax,
+              );
+            }
+          });
           return Scaffold(
               backgroundColor: themeChange.getThem()
                   ? AppThemeData.grey800

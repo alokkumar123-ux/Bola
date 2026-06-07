@@ -17,6 +17,8 @@ import 'package:poolmate/utils/firestore/auth_utils.dart';
 import 'package:poolmate/utils/firestore/user_utils.dart';
 import 'package:poolmate/services/fcm_token_manager.dart';
 import 'package:poolmate/services/deep_link_service.dart';
+// GOOGLE PLAY REVIEW LOGIN
+import 'package:poolmate/services/google_play_review_config.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class LoginController extends GetxController {
@@ -38,6 +40,36 @@ class LoginController extends GetxController {
   /// Send OTP via WhatsApp Authentication
   sendCode() async {
     ShowToastDialog.showLoader("please wait...".tr);
+
+    // -------------------------------------------------------
+    // GOOGLE PLAY REVIEW LOGIN: Intercept the review number.
+    // If this is the dedicated review account, skip WhatsApp
+    // entirely and navigate directly to OTP screen.
+    // -------------------------------------------------------
+    if (GooglePlayReviewConfig.isReviewNumber(
+      countryCode: countryCodeController.value.text,
+      phoneNumber: phoneNumber.value.text,
+    )) {
+      debugPrint(
+        '[GOOGLE PLAY REVIEW LOGIN] Review number detected in sendCode(). '
+        'Skipping WhatsApp OTP — navigating directly to OTP screen.',
+      );
+      ShowToastDialog.closeLoader();
+
+      // Navigate to OTP screen with the static review OTP pre-stored.
+      // The 'isReviewMode' flag tells OtpController to use bypass auth.
+      Get.to(const OtpScreen(), arguments: {
+        'countryCode': countryCodeController.value.text,
+        'phoneNumber': phoneNumber.value.text,
+        'otp': GooglePlayReviewConfig.reviewOtp,
+        'isLogin': true,         // reviewer is always treated as an existing user
+        'isReviewMode': true,    // GOOGLE PLAY REVIEW LOGIN flag
+      });
+      return; // <-- early return: WhatsApp is never called
+    }
+    // -------------------------------------------------------
+    // Normal flow continues below for all real users
+    // -------------------------------------------------------
 
     // Check if user exists in Firebase before sending OTP
     bool userExists = await AuthUtils.userExistByPhoneNumber(

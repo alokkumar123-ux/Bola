@@ -57,8 +57,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     final themeChange = Provider.of<DarkThemeProvider>(context);
-    return GetX(
-        init: HomeController(),
+    return GetX<HomeController>(
         builder: (controller) {
           return Scaffold(
             backgroundColor: themeChange.getThem()
@@ -1402,15 +1401,26 @@ class _SearchScreenState extends State<SearchScreen> {
     setState(() {});
   }
 
-  // Get filtered bookings based on selected vehicle type
+  // Get filtered bookings based on selected vehicle type and time
   List<BookingModel> _getFilteredBookings(List<BookingModel> bookings) {
-    if (_selectedVehicleType == null) {
-      return bookings; // Return all if no filter selected
-    }
-
-    return bookings
-        .where((booking) => _matchesVehicleTypeFilter(booking))
-        .toList();
+    final now = DateTime.now();
+    return bookings.where((booking) {
+      // Check vehicle type filter
+      if (_selectedVehicleType != null &&
+          booking.vehicleInformation?.vehicleType?.id !=
+              _selectedVehicleType!.id) {
+        return false;
+      }
+      
+      // Check if ride has already departed
+      if (booking.departureDateTime != null) {
+        if (booking.departureDateTime!.toDate().isBefore(now)) {
+          return false;
+        }
+      }
+      
+      return true;
+    }).toList();
   }
 
   // Check if a booking matches the selected vehicle type filter

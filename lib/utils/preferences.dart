@@ -6,6 +6,7 @@ class Preferences {
   static const isFinishOnBoardingKey = "isFinishOnBoardingKey";
   static const isClickOnNotification = "isClickOnNotification";
   static const currentUserIdKey = "currentUserIdKey";
+  static const locationDisclosureAccepted = "locationDisclosureAccepted";
 
   static late SharedPreferences pref;
 

@@ -429,15 +429,15 @@ class Constant {
 
   static String calculateReview(
       {required String? reviewCount, required String? reviewSum}) {
-    if (reviewCount == null && reviewSum == null) {
+    if (reviewCount == null || reviewSum == null) {
       return "0";
     }
-    if (reviewCount == "0.0" && reviewSum == "0.0") {
+    double count = double.tryParse(reviewCount.toString()) ?? 0.0;
+    double sum = double.tryParse(reviewSum.toString()) ?? 0.0;
+    if (count == 0.0) {
       return "0";
     }
-    return (double.parse(reviewSum.toString()) /
-            double.parse(reviewCount.toString()))
-        .toStringAsFixed(1);
+    return (sum / count).toStringAsFixed(1);
   }
 
   static String getUuid() {

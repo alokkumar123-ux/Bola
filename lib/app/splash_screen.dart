@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:poolmate/controller/splash_controller.dart';
+import 'package:poolmate/app/location_disclosure/location_permission_flow.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -66,13 +67,13 @@ class _SplashScreenState extends State<SplashScreen>
     await _morphController.forward();
 
     // Run scene animation but stop before navigation happens
-    // SplashController navigates at 3500ms, so stop animation before that
     _sceneController.repeat();
 
-    // Stop animation after 2 seconds to prevent lag during transition
+    // Wait and navigate directly
     Future.delayed(const Duration(milliseconds: 2000), () {
       if (mounted) {
         _sceneController.stop();
+        Get.find<SplashController>().redirectScreen();
       }
     });
   }

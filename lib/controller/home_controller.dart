@@ -159,15 +159,17 @@ class HomeController extends GetxController {
           Constant.taxList = value;
         }
       });
-      Timestamp startTime;
-      if (Constant.dateCustomizationShow(selectedDate.value) == "Today") {
-        startTime = Timestamp.fromDate(DateTime.now());
-      } else {
-        startTime = Timestamp.fromDate(DateTime(selectedDate.value.year,
-            selectedDate.value.month, selectedDate.value.day, 0, 0, 0));
+      DateTime searchStart = DateTime(selectedDate.value.year,
+          selectedDate.value.month, selectedDate.value.day, 0, 0, 0);
+      
+      // Do not show past rides. If searching for today (or past), start from current time.
+      if (searchStart.isBefore(DateTime.now())) {
+        searchStart = DateTime.now();
       }
+
+      Timestamp startTime = Timestamp.fromDate(searchStart);
       Timestamp endTime = Timestamp.fromDate(DateTime(selectedDate.value.year,
-          selectedDate.value.month, selectedDate.value.day, 23, 59, 0));
+          selectedDate.value.month, selectedDate.value.day, 23, 59, 59));
       await FirebaseFirestore.instance
           .collection(CollectionName.booking)
           .where('departureDateTime', isGreaterThanOrEqualTo: startTime)
@@ -210,15 +212,18 @@ class HomeController extends GetxController {
       // Auto-create ride alert if no rides found
       await autoCreateRideAlert();
 
-      Get.to(const SearchScreen())?.then((v) async {
+      if (searchedBookingList.isNotEmpty) {
+        Get.to(const SearchScreen())?.then((v) async {
+          await getSearchHistory();
+        });
+      } else {
+        ShowToastDialog.showToast("No rides found");
         await getSearchHistory();
-      });
+      }
     } catch (e) {
       print('Error in searchRide: $e');
       ShowToastDialog.closeLoader();
-      Get.to(const SearchScreen())?.then((v) async {
-        await getSearchHistory();
-      });
+      ShowToastDialog.showToast("Something went wrong");
     }
   }
 

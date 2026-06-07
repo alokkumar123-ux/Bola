@@ -28,7 +28,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeChange = Provider.of<DarkThemeProvider>(context);
-    return GetX(
+    return GetX<HomeController>(
       init: HomeController(),
       builder: (controller) {
         return Scaffold(

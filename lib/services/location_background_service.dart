@@ -13,11 +13,18 @@ Future<void> initializeBackgroundLocationService() async {
   await service.configure(
     androidConfiguration: AndroidConfiguration(
       onStart: onStart,
+      // IMPORTANT: autoStart MUST be false.
+      // Setting true causes startForegroundService() to be called on every
+      // app launch. On Android 12+ (and MIUI devices) if startForeground()
+      // is not called within ~5 s the OS throws
+      // ForegroundServiceDidNotStartInTimeException and kills the app.
+      // The service is started on-demand via startService() only when the
+      // user actively begins a live-location share.
       autoStart: false,
       isForegroundMode: true,
       notificationChannelId: 'high_importance_channel',
-      initialNotificationTitle: 'Location Sharing Active',
-      initialNotificationContent: 'Sharing your live location in chat',
+      initialNotificationTitle: 'Bola Background Tracking Active',
+      initialNotificationContent: 'Tracking live location for your safety',
       foregroundServiceNotificationId: 888,
       foregroundServiceTypes: [AndroidForegroundType.location],
     ),
@@ -73,7 +80,6 @@ void onStart(ServiceInstance service) async {
     }
 
     activeShares.clear();
-
     service.invoke('locationSharingStopped');
     service.stopSelf();
   }

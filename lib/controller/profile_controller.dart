@@ -5,11 +5,13 @@ import 'package:poolmate/constant/collection_name.dart';
 import 'package:poolmate/model/user_model.dart';
 import 'package:poolmate/utils/firestore/user_utils.dart';
 import 'package:poolmate/utils/firestore/auth_utils.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class ProfileController extends GetxController {
   RxBool isLoading = true.obs;
   Rx<UserModel> userModel = UserModel().obs;
   bool hasShownSosDialog = false;
+  RxString appVersion = "".obs;
 
   static bool hasShownTutorialThisSession = false;
   RxBool isTutorialAvailable = false.obs;
@@ -37,6 +39,13 @@ class ProfileController extends GetxController {
       }
     } catch (e) {
       print("Error fetching tutorial settings: $e");
+    }
+
+    try {
+      PackageInfo packageInfo = await PackageInfo.fromPlatform();
+      appVersion.value = "v${packageInfo.version}+${packageInfo.buildNumber}";
+    } catch (e) {
+      print("Error fetching app version: $e");
     }
 
     isLoading.value = false;

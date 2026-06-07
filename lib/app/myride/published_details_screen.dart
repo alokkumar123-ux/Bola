@@ -35,6 +35,7 @@ import 'package:poolmate/utils/network_image_widget.dart';
 import 'package:poolmate/widgets/share_location_tooltip.dart';
 import 'package:provider/provider.dart';
 import 'package:timelines_plus/timelines_plus.dart';
+import 'package:poolmate/app/co2_impact/co2_ride_summary_popup.dart';
 
 class PublishedDetailsScreen extends StatelessWidget {
   const PublishedDetailsScreen({super.key});
@@ -45,6 +46,21 @@ class PublishedDetailsScreen extends StatelessWidget {
     return GetX(
         init: PublishedDetailsController(),
         builder: (controller) {
+          // Show CO₂ popup when driver completes the last stop
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (controller.rideCompletedCo2Kg.value > 0) {
+              final double dist = controller.rideCompletedDistanceKm.value;
+              final int pax = controller.rideCompletedPassengers.value;
+              // Reset so it doesn't show again
+              controller.rideCompletedCo2Kg.value = 0.0;
+              showCo2RideSummaryPopup(
+                context,
+                distanceKm: dist,
+                passengers: pax,
+              );
+            }
+          });
+
           return Scaffold(
             backgroundColor: themeChange.getThem()
                 ? AppThemeData.grey800

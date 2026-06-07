@@ -38,6 +38,8 @@ class UserModel {
   String? reviewCount;
   String? reviewSum;
   List<String>? sosWhatsAppNumbers;
+  double? totalCo2SavedKg;        // lifetime CO₂ saved in kg
+  double? totalTreesEquivalent;   // lifetime trees equivalent
   UserModel({
     this.id,
     this.firstName,
@@ -60,6 +62,8 @@ class UserModel {
     this.aadharVerified,
     this.panVerified,
     this.sosWhatsAppNumbers,
+    this.totalCo2SavedKg,
+    this.totalTreesEquivalent,
     this.referralCode,
     this.referredBy,
     this.referralStage,
@@ -118,6 +122,8 @@ class UserModel {
     sosWhatsAppNumbers = json['sosWhatsAppNumbers'] != null
         ? List<String>.from(json['sosWhatsAppNumbers'])
         : null;
+    totalCo2SavedKg = (json['totalCo2SavedKg'] as num?)?.toDouble() ?? 0.0;
+    totalTreesEquivalent = (json['totalTreesEquivalent'] as num?)?.toDouble() ?? 0.0;
   }
 
   Map<String, dynamic> toJson() {
@@ -157,6 +163,8 @@ class UserModel {
     data['reviewSum'] = reviewSum;
     data['reviewCount'] = reviewCount;
     data['sosWhatsAppNumbers'] = sosWhatsAppNumbers;
+    data['totalCo2SavedKg'] = totalCo2SavedKg ?? 0.0;
+    data['totalTreesEquivalent'] = totalTreesEquivalent ?? 0.0;
     return data;
   }
 }

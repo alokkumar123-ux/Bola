@@ -25,6 +25,7 @@ import 'package:poolmate/services/fcm_token_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:poolmate/widgets/app_tutorial_tooltip.dart';
+import 'package:poolmate/app/co2_impact/co2_impact_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -244,6 +245,14 @@ class ProfileScreen extends StatelessWidget {
                             const SizedBox(
                               height: 32,
                             ),
+
+                            // ── CO₂ Impact Summary Card ──────────────────
+                            _Co2SummaryCard(
+                              themeChange: themeChange,
+                              co2Saved: controller.userModel.value.totalCo2SavedKg ?? 0.0,
+                              onTap: () => Get.to(const Co2ImpactScreen()),
+                            ),
+                            const SizedBox(height: 16),
 
                             menuItemWidget(
                               onTap: () {
@@ -466,7 +475,7 @@ class ProfileScreen extends StatelessWidget {
                                   ),
                                 ],
                               ),
-                            )
+                            ),
                             // menuItemWidget(
                             //   onTap: () {},
                             //   title: "Account Verification",
@@ -595,6 +604,114 @@ class ProfileScreen extends StatelessWidget {
           child: Divider(),
         ),
       ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CO₂ Summary Card for Profile Screen
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _Co2SummaryCard extends StatelessWidget {
+  final dynamic themeChange;
+  final double co2Saved;
+  final VoidCallback onTap;
+
+  const _Co2SummaryCard({
+    required this.themeChange,
+    required this.co2Saved,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final double trees = co2Saved / 21.0;
+    final String co2Display = co2Saved < 1.0
+        ? '${(co2Saved * 1000).toStringAsFixed(0)} g'
+        : '${co2Saved.toStringAsFixed(2)} kg';
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Ink(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF086640), Color(0xFF10B271), Color(0xFF5DFFBE)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Color.fromRGBO(16, 178, 113, 0.30),
+              blurRadius: 18,
+              offset: const Offset(0, 6),
+            )
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+          child: Row(
+            children: [
+              // Icon + label
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      Text('🌱', style: TextStyle(fontSize: 22)),
+                      SizedBox(width: 8),
+                      Text(
+                        'CO₂ Impact',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontFamily: AppThemeData.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Your ride-sharing contribution',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white70,
+                      fontFamily: AppThemeData.regular,
+                    ),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              // Stats column
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '$co2Display CO₂',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      color: Colors.white,
+                      fontFamily: AppThemeData.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '🌳 ${trees.toStringAsFixed(2)} trees',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.white70,
+                      fontFamily: AppThemeData.medium,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 8),
+              const Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 16),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

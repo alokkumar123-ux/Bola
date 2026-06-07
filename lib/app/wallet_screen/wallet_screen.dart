@@ -256,98 +256,132 @@ class WalletScreen extends StatelessWidget {
       WalletTransactionModel transactionModel) {
     return Column(
       children: [
-        InkWell(
-          onTap: () async {
-            if (transactionModel.type == "publisher") {
-              BookingModel? bookingModel =
-                  await BookingUtils.getMyBookingByUserId(
-                      transactionModel.transactionId.toString());
-
-              if (bookingModel != null) {
-                Get.to(const PublishedDetailsScreen(),
-                    arguments: {"bookingModel": bookingModel});
-              }
-            } else {
-              BookingModel? bookingModel =
-                  await BookingUtils.getMyBookingByUserId(
-                      transactionModel.transactionId.toString());
-              if (bookingModel != null) {
-                BookedUserModel? bookingUserModel =
-                    await BookingUtils.getMyBookingUser(bookingModel);
-                Get.to(const BookedDetailsScreen(), arguments: {
-                  "bookingModel": bookingModel,
-                  "bookingUserModel": bookingUserModel
-                });
-              }
-            }
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 5),
-            child: Row(
-              children: [
-                transactionModel.isCredit == false
-                    ? SvgPicture.asset(
-                        "assets/icons/ic_debit.svg",
-                        height: 24,
-                        width: 24,
-                      )
-                    : SvgPicture.asset(
-                        "assets/icons/ic_credit.svg",
-                        height: 24,
-                        width: 24,
-                      ),
-                const SizedBox(
-                  width: 10,
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              transactionModel.note.toString(),
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontFamily: AppThemeData.bold,
-                                color: themeChange.getThem()
-                                    ? AppThemeData.grey100
-                                    : AppThemeData.grey800,
-                              ),
-                            ),
-                          ),
-                          Text(
-                            Constant.amountShow(
-                                amount: transactionModel.amount.toString()),
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontFamily: AppThemeData.medium,
-                              color: transactionModel.isCredit == true
-                                  ? AppThemeData.success400
-                                  : AppThemeData.warning300,
-                            ),
-                          )
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 4,
-                      ),
-                      Text(
-                        Constant.timestampToDateTime(
-                            transactionModel.createdDate!),
-                        style: TextStyle(
-                            fontSize: 12,
-                            fontFamily: AppThemeData.regular,
-                            color: themeChange.getThem()
-                                ? AppThemeData.grey200
-                                : AppThemeData.grey700),
-                      ),
-                    ],
+        Theme(
+          data: Theme.of(Get.context!).copyWith(dividerColor: Colors.transparent),
+          child: ExpansionTile(
+            tilePadding: const EdgeInsets.symmetric(vertical: 5),
+            leading: transactionModel.isCredit == false
+                ? SvgPicture.asset(
+                    "assets/icons/ic_debit.svg",
+                    height: 24,
+                    width: 24,
+                  )
+                : SvgPicture.asset(
+                    "assets/icons/ic_credit.svg",
+                    height: 24,
+                    width: 24,
                   ),
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        transactionModel.note.toString(),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontFamily: AppThemeData.bold,
+                          color: themeChange.getThem()
+                              ? AppThemeData.grey100
+                              : AppThemeData.grey800,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      Constant.amountShow(
+                          amount: transactionModel.amount.toString()),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontFamily: AppThemeData.medium,
+                        color: transactionModel.isCredit == true
+                            ? AppThemeData.success400
+                            : AppThemeData.warning300,
+                      ),
+                    )
+                  ],
+                ),
+                const SizedBox(
+                  height: 4,
+                ),
+                Text(
+                  Constant.timestampToDateTime(
+                      transactionModel.createdDate!),
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontFamily: AppThemeData.regular,
+                      color: themeChange.getThem()
+                          ? AppThemeData.grey200
+                          : AppThemeData.grey700),
                 ),
               ],
             ),
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 40, bottom: 10, right: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text("Transaction ID: ", style: TextStyle(fontFamily: AppThemeData.medium, fontSize: 12, color: themeChange.getThem() ? AppThemeData.grey300 : AppThemeData.grey600)),
+                        Expanded(child: Text(transactionModel.id ?? "-", style: TextStyle(fontFamily: AppThemeData.regular, fontSize: 12, color: themeChange.getThem() ? AppThemeData.grey200 : AppThemeData.grey700))),
+                      ]
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Text("Payment Type: ", style: TextStyle(fontFamily: AppThemeData.medium, fontSize: 12, color: themeChange.getThem() ? AppThemeData.grey300 : AppThemeData.grey600)),
+                        Expanded(child: Text(transactionModel.paymentType ?? "-", style: TextStyle(fontFamily: AppThemeData.regular, fontSize: 12, color: themeChange.getThem() ? AppThemeData.grey200 : AppThemeData.grey700))),
+                      ]
+                    ),
+                    const SizedBox(height: 12),
+                    if (transactionModel.transactionId != null && transactionModel.transactionId!.isNotEmpty)
+                      InkWell(
+                        onTap: () async {
+                          ShowToastDialog.showLoader("Please wait");
+                          if (transactionModel.type == "publisher") {
+                            BookingModel? bookingModel =
+                                await BookingUtils.getMyBookingByUserId(
+                                    transactionModel.transactionId.toString());
+                            ShowToastDialog.closeLoader();
+                            if (bookingModel != null) {
+                              Get.to(const PublishedDetailsScreen(),
+                                  arguments: {"bookingModel": bookingModel});
+                            } else {
+                              ShowToastDialog.showToast("Booking not found");
+                            }
+                          } else {
+                            BookingModel? bookingModel =
+                                await BookingUtils.getMyBookingByUserId(
+                                    transactionModel.transactionId.toString());
+                            if (bookingModel != null) {
+                              BookedUserModel? bookingUserModel =
+                                  await BookingUtils.getMyBookingUser(bookingModel);
+                              ShowToastDialog.closeLoader();
+                              Get.to(const BookedDetailsScreen(), arguments: {
+                                "bookingModel": bookingModel,
+                                "bookingUserModel": bookingUserModel
+                              });
+                            } else {
+                              ShowToastDialog.closeLoader();
+                              ShowToastDialog.showToast("Booking not found");
+                            }
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: AppThemeData.primary300,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Text("View Booking Details", style: TextStyle(color: Colors.white, fontSize: 12, fontFamily: AppThemeData.medium)),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
         const Divider(),
